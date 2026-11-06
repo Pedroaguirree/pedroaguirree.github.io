@@ -1,5 +1,5 @@
 const CONFIG = {
-  whatsapp: "5511997261919",
+  whatsapp: "",
   linkedin: "",
   nascimento: [1998, 10, 22],
   inicioDev: [2023, 8],
@@ -103,7 +103,7 @@ const EN = {
   "form.3.p": "Rocketseat, short course: front-end, back-end, networks, servers and databases",
 
   "cont.titulo": "Let's talk?",
-  "cont.p": "I am open to new opportunities, preferably remote. The fastest way to reach me is by email or WhatsApp.",
+  "cont.p": "I am open to new opportunities, preferably remote. The fastest way to reach me is by email.",
   "cont.email": "Send an email", "cont.copiar": "Copy address", "cont.whats": "Message me on WhatsApp", "cont.github": "See my GitHub",
   "rod.p": "Made by Pedro Aguirre with HTML, CSS and JavaScript, with help from Claude Code.",
   "rod.term": "Open terminal",
