@@ -117,7 +117,7 @@ p { margin: 0 0 1em; }
 .hero-links span { color: var(--mute); font-size: .85em; }
 @media (min-width: 861px) {
   .hero-in { position: relative; }
-  .hero-links { position: absolute; right: var(--gut); bottom: 546px; margin: 0; justify-content: flex-end; }
+  .hero-links { position: absolute; z-index: 5; right: var(--gut); bottom: 546px; margin: 0; justify-content: flex-end; }
 }
 @media (min-width: 861px) and (max-width: 1100px) {
   .hero-links { bottom: 562px; }
