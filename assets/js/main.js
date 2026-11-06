@@ -16,7 +16,7 @@ const EN = {
   "nav.trajetoria": "Journey", "nav.experiencia": "Experience", "nav.projetos": "Projects",
   "nav.habilidades": "Skills", "nav.formacao": "Education", "nav.contato": "Contact",
   "hero.lead": "Junior .NET developer working with C#, ASP.NET and SQL Server. I build features for systems that industrial companies use to manage safety and operations, and I look after part of the infrastructure: databases, backups and servers on Azure.",
-  "hero.projetos": "See projects", "hero.cv": "Download résumé (PDF)",
+  "hero.projetos": "See projects", "hero.cv": "Download résumé (PDF)", "hero.links": "Contacts", "hero.email": "Email",
   "foto.label": "Pedro Aguirre: show personal details", "cracha.label": "Professional summary",
   "nota.l1": "Pedro Aguirre, ", "nota.anos": " years old,", "nota.l2": "Jundiaí, Brazil",
   "cracha.status": "Open to new opportunities",
