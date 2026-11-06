@@ -143,7 +143,7 @@ Se usar outro nome de repositório (ex.: `portfolio`), o endereço vira `https:/
 
 ## Antes de divulgar
 
-- [ ] Preencher o WhatsApp (e o LinkedIn, se quiser) no `CONFIG`.
+- [x] LinkedIn preenchido no `CONFIG` (o WhatsApp ficou vazio de propósito).
 - [ ] Abrir o site no computador e no celular e testar os dois idiomas.
 - [ ] Colar o link no WhatsApp ou no LinkedIn e conferir se aparece a imagem de prévia (`og.png`).
 - [ ] Colocar o link no LinkedIn, no perfil do GitHub e no currículo.
