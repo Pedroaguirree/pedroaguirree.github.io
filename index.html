@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pedro Aguirre, desenvolvedor de software</title>
+<meta name="description" content="Portfólio e currículo de Pedro Aguirre, desenvolvedor júnior em C#, ASP.NET e SQL Server, de Jundiaí (SP).">
+<meta property="og:title" content="Pedro Aguirre, desenvolvedor de software">
+<meta property="og:description" content="Desenvolvedor júnior em C#, ASP.NET e SQL Server. Projetos, experiência e formação.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://pedroaguirree.github.io/assets/img/og.png">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&family=Caveat:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<a class="pular" href="#conteudo" data-i18n="pular">Pular para o conteúdo</a>
+
+<header class="topo">
+  <div class="topo-in">
+    <a class="marca" href="#inicio" aria-label="Pedro Aguirre, início">Pedro Aguirre</a>
+    <nav class="menu" aria-label="Seções" id="menu">
+      <a href="#trajetoria" data-i18n="nav.trajetoria">Trajetória</a>
+      <a href="#experiencia" data-i18n="nav.experiencia">Experiência</a>
+      <a href="#projetos" data-i18n="nav.projetos">Projetos</a>
+      <a href="#habilidades" data-i18n="nav.habilidades">Habilidades</a>
+      <a href="#formacao" data-i18n="nav.formacao">Formação</a>
+      <a href="#contato" data-i18n="nav.contato">Contato</a>
+    </nav>
+    <div class="controles">
+      <button type="button" class="ctl" id="btn-lang" aria-label="Read in English" title="Read in English">EN</button>
+      <button type="button" class="ctl menu-btn" id="btn-menu" aria-expanded="false" aria-controls="menu" aria-label="Abrir menu">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="conteudo">
+
+<section class="hero" id="inicio">
+  <div class="hero-in">
+    <div class="hero-texto">
+      <h1 class="nome">Pedro<br>Aguirre</h1>
+      <p class="lead" data-i18n="hero.lead">Desenvolvedor .NET júnior, com C#, ASP.NET e SQL Server. Trabalho em sistemas que indústrias usam para gerenciar segurança e operações, e cuido de parte da infraestrutura: bancos de dados, backups e servidores no Azure.</p>
+      <div class="acoes">
+        <a class="btn btn-pri" href="#projetos" data-i18n="hero.projetos">Ver projetos</a>
+        <a class="btn btn-sec" id="btn-cv" href="assets/cv/curriculo-pedro-aguirre.pdf" download data-i18n="hero.cv">Baixar currículo (PDF)</a>
+      </div>
+    </div>
+
+    <div class="palco" id="palco">
+      <button type="button" class="foto" id="foto-pedro" aria-expanded="false" aria-controls="nota" aria-label="Pedro Aguirre: mostrar informações pessoais" data-i18n-attr="aria-label:foto.label">
+        <picture>
+          <source media="(max-width: 860px)" srcset="assets/img/pedro-alto.webp 1x, assets/img/pedro-alto@2x.webp 2x">
+          <source srcset="assets/img/pedro.webp 1x, assets/img/pedro@2x.webp 2x">
+          <img src="assets/img/pedro.webp" alt="" width="300" height="444">
+        </picture>
+      </button>
+
+      <div class="nota" id="nota">
+        <svg class="nota-pc" viewBox="0 0 380 130" aria-hidden="true">
+          <text x="4" y="74" transform="rotate(-4 120 70)"><tspan data-i18n="nota.l1">Pedro Aguirre, </tspan><tspan data-idade>27</tspan><tspan data-i18n="nota.anos"> anos,</tspan></text>
+          <text x="10" y="112" transform="rotate(-4 120 70)" data-i18n="nota.l2">de Jundiaí - SP</text>
+          <path class="seta" pathLength="1" d="M226 108 C 282 124, 344 98, 370 16"/>
+          <path class="ponta" pathLength="1" d="M354 26 L370 16 L377 34"/>
+        </svg>
+        <svg class="nota-cel" viewBox="0 0 270 240" aria-hidden="true">
+          <text x="4" y="34" transform="rotate(-3 120 40)"><tspan data-i18n="nota.l1">Pedro Aguirre, </tspan><tspan data-idade>27</tspan><tspan data-i18n="nota.anos"> anos,</tspan></text>
+          <text x="10" y="68" transform="rotate(-3 120 40)" data-i18n="nota.l2">de Jundiaí - SP</text>
+          <path class="seta" pathLength="1" d="M64 82 C 40 130, 44 190, 84 228"/>
+          <path class="ponta" pathLength="1" d="M66 224 L84 228 L85 209"/>
+        </svg>
+        <p class="sr-only"><span data-i18n="nota.l1">Pedro Aguirre, </span><span data-idade>27</span><span data-i18n="nota.anos"> anos,</span> <span data-i18n="nota.l2">de Jundiaí - SP</span></p>
+      </div>
+
+      <aside class="cracha" aria-label="Resumo profissional" data-i18n-attr="aria-label:cracha.label">
+        <span class="furo" aria-hidden="true"></span>
+        <p class="status"><span class="ponto" aria-hidden="true"></span><span data-i18n="cracha.status">Aberto a novas oportunidades</span></p>
+        <div class="soft">
+          <p class="soft-tit">Soft skills</p>
+          <ul>
+            <li data-i18n="soft.1">Comunicação</li>
+            <li data-i18n="soft.3">Proatividade</li>
+            <li data-i18n="soft.2">Trabalho em equipe</li>
+            <li data-i18n="soft.4">Organização</li>
+            <li data-i18n="soft.5">Aprendizado contínuo</li>
+          </ul>
+        </div>
+        <dl class="fatos">
+          <div><dt data-i18n="cracha.empresa">Empresa</dt><dd>Cautus.Digital</dd></div>
+          <div><dt data-i18n="cracha.area">Desenvolvendo há</dt><dd data-tempo-dev>3 anos</dd></div>
+          <div><dt data-i18n="cracha.estudo">Estudando</dt><dd data-i18n="cracha.estudo.v">ADS na Fatec Jundiaí</dd></div>
+        </dl>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<section class="secao" id="trajetoria" aria-labelledby="t-trajetoria">
+  <div class="sec-in">
+    <header class="sec-cab">
+      <h2 id="t-trajetoria" data-i18n="traj.titulo">Da logística ao código</h2>
+      <p data-i18n="traj.intro">Comecei a carreira programando embarques numa indústria de papel. Hoje programo sistemas. O caminho até aqui:</p>
+    </header>
+
+    <ol class="linha" id="linha">
+      <li class="marco">
+        <span class="ano">2019</span>
+        <div class="marco-txt">
+          <h3 data-i18n="traj.1.t">Analista de logística na Bignardi</h3>
+          <p data-i18n="traj.1.p">Programação de embarque dos pedidos comerciais, gestão logística e logística reversa. Foi onde aprendi a organizar processos e a trabalhar com prazo.</p>
+        </div>
+      </li>
+      <li class="marco">
+        <span class="ano">2022</span>
+        <div class="marco-txt">
+          <h3 data-i18n="traj.2.t">Primeiro contato com programação</h3>
+          <p data-i18n="traj.2.p">Fiz o Discovery da Rocketseat, minha introdução a front-end, back-end, redes, servidores e banco de dados.</p>
+        </div>
+      </li>
+      <li class="marco">
+        <span class="ano">2023</span>
+        <div class="marco-txt">
+          <h3 data-i18n="traj.3.t">Lógica em C e o primeiro emprego como dev</h3>
+          <p data-i18n="traj.3.p">Curso de lógica de programação em C no Senac e, em agosto, entrei na Cautus.Digital como desenvolvedor de software júnior.</p>
+        </div>
+      </li>
+      <li class="marco">
+        <span class="ano">2024</span>
+        <div class="marco-txt">
+          <h3 data-i18n="traj.4.t">Fatec Jundiaí e projeto na P&amp;G</h3>
+          <p data-i18n="traj.4.p">Comecei o curso de Análise e Desenvolvimento de Sistemas e passei 5 meses trabalhando presencialmente na P&amp;G, em Louveira, implantando um projeto de automação para a logística.</p>
+        </div>
+      </li>
+      <li class="marco">
+        <span class="ano">2026</span>
+        <div class="marco-txt">
+          <h3 data-i18n="traj.5.t">Nuvem, infraestrutura e projetos próprios</h3>
+          <p data-i18n="traj.5.p">Passei a trabalhar com o Azure, monitorando servidores e levando os anexos dos clientes para a nuvem. Fora do trabalho, tirei do papel o PeJu Finanças e o AutoNF com o Claude Code.</p>
+        </div>
+      </li>
+      <li class="marco futuro">
+        <span class="ano">2027</span>
+        <div class="marco-txt">
+          <h3 data-i18n="traj.6.t">Formatura prevista</h3>
+          <p data-i18n="traj.6.p">Conclusão da graduação prevista para julho.</p>
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section class="secao" id="experiencia" aria-labelledby="t-exp">
+  <div class="sec-in">
+    <header class="sec-cab">
+      <h2 id="t-exp" data-i18n="exp.titulo">Experiência</h2>
+    </header>
+
+    <article class="emprego">
+      <div class="emprego-cab">
+        <div>
+          <h3>Cautus.Digital <span class="sub" data-i18n="exp.c.plataforma">(plataforma Digitalss)</span></h3>
+          <p class="cargo" data-i18n="exp.c.cargo">Desenvolvedor de software júnior</p>
+        </div>
+        <p class="quando"><span data-i18n="exp.c.quando">ago. 2023 até hoje</span><br><span class="mute" data-i18n="exp.c.onde">Remoto, Campo Limpo Paulista (SP)</span></p>
+      </div>
+      <p class="emprego-intro" data-i18n="exp.c.intro">Foi aqui que tive a oportunidade de crescer e evoluir como desenvolvedor. A Digitalss é uma plataforma que indústrias usam para gerenciar segurança e operações, com módulos de gestão de contratistas, gestão de documentos, permissão de serviço, inspeções, incidentes e votações da CIPA, entre outros.</p>
+
+      <div class="destaque">
+        <div class="destaque-cab">
+          <h4 data-i18n="exp.pg.t">Projeto presencial na P&amp;G</h4>
+          <p class="mute" data-i18n="exp.pg.q">Louveira (SP), 2024, 5 meses</p>
+        </div>
+        <p data-i18n="exp.pg.p">Trabalhei presencialmente na P&amp;G, em Louveira, implantando um sistema de automação da logística: ao chegar, o motorista faz o check-in num tablet, o sistema avisa a equipe para separar a carga e, quando ela fica pronta, manda uma mensagem para ele encostar na doca e carregar.</p>
+      </div>
+
+      <div class="abas" role="tablist" aria-label="Frentes de trabalho">
+        <button type="button" role="tab" id="aba-dev" aria-controls="painel-dev" aria-selected="true" data-i18n="exp.aba.dev">Desenvolvimento</button>
+        <button type="button" role="tab" id="aba-infra" aria-controls="painel-infra" aria-selected="false" tabindex="-1" data-i18n="exp.aba.infra">Infraestrutura e bancos</button>
+        <button type="button" role="tab" id="aba-azure" aria-controls="painel-azure" aria-selected="false" tabindex="-1">Microsoft Azure</button>
+      </div>
+
+      <div class="painel" role="tabpanel" id="painel-dev" aria-labelledby="aba-dev">
+        <ul class="lista">
+          <li data-i18n="exp.dev.1">Desenvolvo e mantenho funcionalidades dos módulos do sistema em ASP.NET Web Forms (ASPX) com C#.</li>
+          <li data-i18n="exp.dev.2">Escrevo consultas e ajustes no SQL Server, que guarda os dados de cada cliente.</li>
+          <li data-i18n="exp.dev.3">Trabalho nas telas com JavaScript, HTML e CSS.</li>
+          <li data-i18n="exp.dev.4">Uso o Claude Code no dia a dia para planejar, escrever, revisar e testar código, e o time também trabalha com o Claude. Fora do trabalho, uso o Claude Code nos meus projetos.</li>
+        </ul>
+        <p class="tags"><span>C#</span><span>ASP.NET Web Forms</span><span>SQL Server</span><span>JavaScript</span><span>Claude Code</span></p>
+      </div>
+      <div class="painel" role="tabpanel" id="painel-infra" aria-labelledby="aba-infra" hidden>
+        <ul class="lista">
+          <li data-i18n="exp.infra.1">Monitoro o espaço em disco dos servidores e faço a limpeza quando necessário.</li>
+          <li data-i18n="exp.infra.2">Crio e mantenho tarefas automáticas no Agendador de Tarefas do Windows.</li>
+          <li data-i18n="exp.infra.3">Cuido da manutenção dos backups dos bancos de dados dos clientes.</li>
+          <li data-i18n="exp.infra.4">Acompanho o tamanho dos bancos no SQL Server e faço limpeza e shrink quando necessário.</li>
+        </ul>
+        <p class="tags"><span>SQL Server</span><span>Windows Server</span><span data-i18n="tag.agendador">Agendador de Tarefas</span><span>Backup</span></p>
+      </div>
+      <div class="painel" role="tabpanel" id="painel-azure" aria-labelledby="aba-azure" hidden>
+        <ul class="lista">
+          <li data-i18n="exp.azure.1">Faço o monitoramento dos servidores no Azure.</li>
+          <li data-i18n="exp.azure.2">Trabalho na migração dos anexos dos cerca de 43 clientes, do disco dos servidores para o Azure Blob Storage, configurando o armazenamento de cada cliente.</li>
+        </ul>
+        <p class="tags"><span>Microsoft Azure</span><span>Azure Blob Storage</span><span data-i18n="tag.monitoramento">Monitoramento de servidores</span></p>
+      </div>
+    </article>
+
+    <article class="emprego emprego-menor">
+      <div class="emprego-cab">
+        <div>
+          <h3>Bignardi</h3>
+          <p class="cargo" data-i18n="exp.b.cargo">Analista de logística júnior</p>
+        </div>
+        <p class="quando"><span data-i18n="exp.b.quando">set. 2019 a nov. 2021</span><br><span class="mute" data-i18n="exp.b.onde">Jundiaí (SP)</span></p>
+      </div>
+      <p data-i18n="exp.b.p">Indústria e comércio de papéis e artefatos. Fazia a programação de embarque dos pedidos comerciais e atuava com gestão logística e logística reversa.</p>
+    </article>
+  </div>
+</section>
+
+<section class="secao" id="projetos" aria-labelledby="t-proj">
+  <div class="sec-in">
+    <header class="sec-cab">
+      <h2 id="t-proj" data-i18n="proj.titulo">Projetos</h2>
+      <p data-i18n="proj.intro">Projetos que criei por conta própria, para resolver problemas reais.</p>
+    </header>
+
+    <article class="projeto" id="peju">
+      <div class="projeto-txt">
+        <h3>PeJu Finanças</h3>
+        <p class="projeto-sub" data-i18n="peju.sub">Controle financeiro pessoal na nuvem</p>
+        <p data-i18n="peju.p">Um app web para organizar o dinheiro do mês: lançar gastos em segundos, ver para onde vai o salário e planejar compras parceladas. Nasceu de uma necessidade real e é usado no dia a dia por mim e pela minha família.</p>
+        <ul class="lista">
+          <li data-i18n="peju.1">Login com Google e dados sincronizados em tempo real entre celular e computador, funcionando até sem internet.</li>
+          <li data-i18n="peju.2">Em desenvolvimento: bot de WhatsApp com IA, para que uma mensagem ou um áudio como “gastei 85 no mercado” vire um lançamento na categoria certa.</li>
+          <li data-i18n="peju.3">Relatório anual com gráficos, metas de economia, limites por categoria e compras parceladas lançadas mês a mês.</li>
+          <li data-i18n="peju.4">Importa extratos bancários (OFX e CSV), exporta para Excel e faz backup completo.</li>
+          <li data-i18n="peju.5">Testes de ponta a ponta com Playwright, simulando o Firebase localmente.</li>
+        </ul>
+        <p class="tags"><span>JavaScript</span><span>Firebase</span><span>Firestore</span><span>Cloud Functions</span><span>Node.js</span><span>Google Gemini</span><span>WhatsApp Cloud API</span><span>Playwright</span></p>
+      </div>
+      <div class="galeria" data-galeria>
+        <div class="galeria-abas" role="tablist" aria-label="Telas do PeJu Finanças">
+          <button type="button" role="tab" aria-selected="true" data-src="assets/img/peju-painel.webp" data-w="1280" data-h="1200" data-i18n="g.painel">Painel do mês</button>
+          <button type="button" role="tab" aria-selected="false" tabindex="-1" data-src="assets/img/peju-relatorio.webp" data-w="1280" data-h="1200" data-i18n="g.relatorio">Relatório anual</button>
+          <button type="button" role="tab" aria-selected="false" tabindex="-1" data-src="assets/img/peju-celular.webp" data-w="780" data-h="1688" data-tipo="celular" data-i18n="g.celular">No celular</button>
+          <button type="button" role="tab" aria-selected="false" tabindex="-1" data-src="assets/img/peju-whatsapp.webp" data-w="330" data-h="367" data-tipo="solto" data-i18n="g.whatsapp">Bot de WhatsApp</button>
+        </div>
+        <button type="button" class="tela" data-ampliar aria-label="Ampliar imagem">
+          <img src="assets/img/peju-painel.webp" alt="Tela do PeJu Finanças" width="1280" height="1200" loading="lazy">
+        </button>
+      </div>
+    </article>
+
+    <article class="projeto projeto-inv" id="autonf">
+      <div class="projeto-txt">
+        <h3>AutoNF</h3>
+        <p class="projeto-sub" data-i18n="nf.sub">Emissor de notas fiscais de serviço para Windows</p>
+        <p data-i18n="nf.p">Aplicativo desktop que emite NFS-e no padrão nacional direto na API oficial da Receita (Sefin Nacional), assinando com o certificado digital A1. Fiz para uma psicóloga emitir as notas do mês em poucos cliques, com os dados guardados só no computador dela.</p>
+        <ul class="lista">
+          <li data-i18n="nf.1">Integração com a Sefin Nacional com autenticação mTLS e assinatura digital do XML.</li>
+          <li data-i18n="nf.2">Servidor local em Python (Flask) com interface em HTML, CSS e JavaScript, e banco SQLite.</li>
+          <li data-i18n="nf.3">Backup criptografado (AES-256-GCM), envio da nota por e-mail e exclusão de dados de paciente seguindo a LGPD.</li>
+          <li data-i18n="nf.4">Auditoria de segurança com 15 correções e 175 testes automatizados, 92 deles de ponta a ponta com Playwright.</li>
+          <li data-i18n="nf.5">Empacotado como executável com PyInstaller e acompanhado de manual de uso em PDF.</li>
+        </ul>
+        <p class="tags"><span>Python</span><span>Flask</span><span>SQLite</span><span>pytest</span><span>Playwright</span><span>PyInstaller</span><span>NFS-e</span></p>
+      </div>
+      <div class="galeria" data-galeria>
+        <div class="galeria-abas" role="tablist" aria-label="Telas do AutoNF">
+          <button type="button" role="tab" aria-selected="true" data-src="assets/img/autonf-inicio.webp" data-w="1280" data-h="800" data-i18n="g.inicio">Início</button>
+          <button type="button" role="tab" aria-selected="false" tabindex="-1" data-src="assets/img/autonf-emitir.webp" data-w="1280" data-h="800" data-i18n="g.emitir">Emitir nota</button>
+          <button type="button" role="tab" aria-selected="false" tabindex="-1" data-src="assets/img/autonf-nota.webp" data-w="1280" data-h="800" data-i18n="g.emitida">Nota emitida</button>
+          <button type="button" role="tab" aria-selected="false" tabindex="-1" data-src="assets/img/autonf-fechar.webp" data-w="1280" data-h="800" data-i18n="g.fechar">Fechar o mês</button>
+        </div>
+        <button type="button" class="tela" data-ampliar aria-label="Ampliar imagem">
+          <img src="assets/img/autonf-inicio.webp" alt="Tela do AutoNF" width="1280" height="800" loading="lazy">
+        </button>
+        <p class="legenda mute" data-i18n="nf.legenda">Telas com dados fictícios.</p>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="secao secao-ia" id="ia" aria-labelledby="t-ia">
+  <div class="sec-in ia">
+    <div class="ia-cab">
+      <img class="ia-logo" data-src="assets/img/claude-logo.svg assets/img/claude-logo.png" alt="Claude" hidden>
+      <h2 id="t-ia" data-i18n="ia.titulo">IA como ferramenta</h2>
+    </div>
+    <div class="ia-txt">
+      <p data-i18n="ia.1">Para mim, a IA é uma ferramenta de trabalho, como o editor de código ou o SQL Server. Uso o Claude Code para planejar, escrever, revisar e testar código, no trabalho e nos meus projetos pessoais.</p>
+      <p data-i18n="ia.2">A tecnologia muda rápido, e acredito que precisamos nos atualizar junto com ela. Bem usada, ela nos leva mais longe. Quem decide, revisa e responde pelo resultado continua sendo eu.</p>
+      <dl class="ia-lista">
+        <div><dt data-i18n="ia.l1.t">No trabalho</dt><dd data-i18n="ia.l1.v">O time usa o Claude no dia a dia, e eu uso o Claude Code no desenvolvimento.</dd></div>
+        <div><dt data-i18n="ia.l2.t">Nos projetos</dt><dd data-i18n="ia.l2.v">PeJu Finanças, AutoNF e este site foram feitos com o Claude Code.</dd></div>
+        <div><dt data-i18n="ia.l3.t">Para quê</dt><dd data-i18n="ia.l3.v">Planejar, escrever, revisar e testar código, e aprender coisas novas mais rápido.</dd></div>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<section class="secao" id="habilidades" aria-labelledby="t-hab">
+  <div class="sec-in">
+    <header class="sec-cab">
+      <h2 id="t-hab" data-i18n="hab.titulo">Habilidades</h2>
+      <p data-i18n="hab.intro">Organizadas pelo lugar onde uso cada uma.</p>
+    </header>
+    <div class="hab">
+      <section class="hab-grupo">
+        <h3 data-i18n="hab.trab">No trabalho, todo dia</h3>
+        <ul>
+          <li>C#</li><li>ASP.NET Web Forms (ASPX)</li><li>SQL Server</li><li>JavaScript</li><li data-i18n="hab.htmlcss">HTML e CSS</li>
+        </ul>
+      </section>
+      <section class="hab-grupo">
+        <h3 data-i18n="hab.infra">Infraestrutura e nuvem</h3>
+        <ul>
+          <li>Microsoft Azure</li>
+          <li>Azure Blob Storage</li>
+          <li data-i18n="hab.infra.2">Monitoramento de servidores e bancos</li>
+          <li data-i18n="hab.infra.1">Backup e manutenção de bancos</li>
+          <li data-i18n="hab.infra.3">Agendador de Tarefas do Windows</li>
+        </ul>
+      </section>
+      <section class="hab-grupo">
+        <h3 data-i18n="hab.proj">Nos projetos pessoais</h3>
+        <ul>
+          <li data-i18n="hab.proj.py">Python e Flask</li><li>Node.js</li><li>Firebase</li><li>SQLite</li><li data-i18n="hab.proj.1">Testes com pytest e Playwright</li><li data-i18n="hab.proj.git">Git e GitHub</li>
+        </ul>
+      </section>
+      <section class="hab-grupo">
+        <h3 data-i18n="hab.ia">IA no desenvolvimento</h3>
+        <ul>
+          <li>Claude Code <span class="onde" data-i18n="hab.ia.cc">no trabalho e nos projetos pessoais</span></li>
+          <li>Claude <span class="onde" data-i18n="hab.ia.claude">com o time, no trabalho</span></li>
+          <li>Google Gemini API <span class="onde" data-i18n="hab.ia.gemini">no bot de WhatsApp do PeJu</span></li>
+        </ul>
+        <h3 data-i18n="hab.antes">Da carreira anterior</h3>
+        <ul>
+          <li data-i18n="hab.antes.1">Logística e organização de processos</li>
+        </ul>
+      </section>
+    </div>
+  </div>
+</section>
+
+<section class="secao" id="formacao" aria-labelledby="t-form">
+  <div class="sec-in">
+    <header class="sec-cab">
+      <h2 id="t-form" data-i18n="form.titulo">Formação</h2>
+    </header>
+    <ul class="formacao">
+      <li>
+        <p class="quando" data-i18n="form.1.q">jul. 2024 a jul. 2027 (em andamento)</p>
+        <div>
+          <h3 data-i18n="form.1.t">Análise e Desenvolvimento de Sistemas</h3>
+          <p data-i18n="form.1.p">Fatec Jundiaí, curso superior de tecnologia</p>
+        </div>
+      </li>
+      <li>
+        <p class="quando" data-i18n="form.2.q">jun. a ago. 2023</p>
+        <div>
+          <h3 data-i18n="form.2.t">Lógica de Programação</h3>
+          <p data-i18n="form.2.p">Senac São Paulo, curso técnico com linguagem C</p>
+        </div>
+      </li>
+      <li>
+        <p class="quando" data-i18n="form.3.q">jan. a mar. 2022</p>
+        <div>
+          <h3 data-i18n="form.3.t">Discovery: introdução à programação</h3>
+          <p data-i18n="form.3.p">Rocketseat, curso livre: front-end, back-end, redes, servidores e banco de dados</p>
+        </div>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<section class="secao contato" id="contato" aria-labelledby="t-contato">
+  <div class="sec-in">
+    <h2 id="t-contato" data-i18n="cont.titulo">Vamos conversar?</h2>
+    <p class="lead" data-i18n="cont.p">Estou aberto a novas oportunidades, de preferência remotas. O jeito mais rápido de falar comigo é por e-mail ou WhatsApp.</p>
+    <div class="contato-lista">
+      <div class="contato-item">
+        <a class="btn btn-pri" href="mailto:pedro.aguirre687@gmail.com" data-i18n="cont.email">Enviar e-mail</a>
+        <button type="button" class="btn btn-sec" id="copiar-email" data-email="pedro.aguirre687@gmail.com"><span data-i18n="cont.copiar">Copiar endereço</span></button>
+        <span class="mute end">pedro.aguirre687@gmail.com</span>
+      </div>
+      <div class="contato-item" id="contato-whats" hidden>
+        <a class="btn btn-sec" id="link-whats" href="#" target="_blank" rel="noopener" data-i18n="cont.whats">Chamar no WhatsApp</a>
+      </div>
+      <div class="contato-item">
+        <a class="btn btn-sec" href="https://github.com/Pedroaguirree" target="_blank" rel="noopener" data-i18n="cont.github">Ver meu GitHub</a>
+        <a class="btn btn-sec" id="contato-linkedin" href="#" target="_blank" rel="noopener" hidden>LinkedIn</a>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="rodape">
+  <div class="sec-in rodape-in">
+    <p data-i18n="rod.p">Feito por Pedro Aguirre com HTML, CSS e JavaScript, com ajuda do Claude Code.</p>
+    <button type="button" class="term-abrir" id="term-abrir"><span aria-hidden="true">&gt;_</span> <span data-i18n="rod.term">Abrir terminal</span></button>
+  </div>
+</footer>
+
+<dialog class="lightbox" id="lightbox" aria-label="Imagem ampliada">
+  <form method="dialog"><button class="fechar" aria-label="Fechar" data-i18n-attr="aria-label:fechar">×</button></form>
+  <img alt="">
+</dialog>
+
+<dialog class="terminal" id="terminal" aria-label="Terminal">
+  <div class="term-barra">
+    <span>pedro@portfolio: ~</span>
+    <form method="dialog"><button class="fechar" aria-label="Fechar terminal">×</button></form>
+  </div>
+  <div class="term-saida" id="term-saida" aria-live="polite"></div>
+  <form class="term-linha" id="term-form" autocomplete="off">
+    <label for="term-in">$</label>
+    <input id="term-in" spellcheck="false" autocapitalize="off" aria-label="Comando">
+  </form>
+</dialog>
+
+<script src="assets/js/main.js"></script>
+</body>
+</html>
