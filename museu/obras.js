@@ -75,6 +75,10 @@ window.MUSEU = {
               "pag08.jpg","pag09.jpg","pag10.jpg","pag11.jpg","pag12.jpg","pag13.jpg","pag14.jpg"],
   },
 
+  // Bilhetes dos visitantes (Supabase). Cole aqui a Project URL e a chave publishable/anon.
+  // Enquanto estiver vazio, a mesinha de bilhetes não aparece.
+  recados: { url: "https://uxtiifmutbklcnoemrev.supabase.co", chave: "sb_publishable_Bafk5NOm9bNDQJbiZdM8NA_8uJ5SG9T" },
+
   // Mensagem na folha sobre o pilar, em frente à parede "Museu do Pedro".
   // Cada linha vira um parágrafo.
   mensagem: `Aqui estão alguns desenhos/pinturas que fiz ao longo desse ano de 2026, tem sido um processo criativo muito interessante de descobrir, agradeço a você que tirou um tempo para acessar esse "museu" e entrar um pouco dentro da minha mente.

@@ -124,6 +124,37 @@
   #bRibbon{position:absolute;left:calc(50% + 14px);top:calc(100% - 4px);width:10px;height:64px;z-index:60;pointer-events:none;
     background:linear-gradient(90deg,#5f1d1f,#8b2b2c 45%,#6a2123);clip-path:polygon(0 0,100% 0,100% 100%,50% 84%,0 100%);
     box-shadow:0 2px 3px rgba(0,0,0,.4);transition:left .9s cubic-bezier(.45,.05,.25,1)}
+  /* visitors' notes */
+  #rec{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:16px}
+  #rBg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,#3b3027 0%,#17120f 60%,#0a0807 100%);opacity:0;transition:opacity .35s}
+  #rec.show #rBg{opacity:1}
+  .rPanel{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;max-height:100%;overflow:auto;padding:8px}
+  .pit{position:relative;width:min(340px,78vw,46vh);aspect-ratio:1;border-radius:2px 2px 4px 2px;padding:28px 24px 22px;
+    box-shadow:0 18px 40px rgba(0,0,0,.5),0 3px 8px rgba(0,0,0,.35);transform:rotate(-1.5deg);
+    background-image:linear-gradient(to bottom,rgba(0,0,0,.07),rgba(0,0,0,0) 14%),linear-gradient(135deg,rgba(255,255,255,.25),rgba(0,0,0,.04));
+    font-family:Caveat,"Segoe Script",cursive;color:#2b241d;display:flex;flex-direction:column}
+  .pit::after{content:"";position:absolute;right:0;bottom:0;width:26%;height:26%;pointer-events:none;
+    background:linear-gradient(135deg,transparent 48%,rgba(0,0,0,.10) 50%,rgba(255,255,255,.35) 54%,transparent 72%)}
+  #rText{flex:1;width:100%;border:0;background:transparent;resize:none;outline:none;font:500 clamp(22px,3.6vh,30px)/1.22 Caveat,"Segoe Script",cursive;color:#2b241d;
+    -webkit-user-select:text;user-select:text}
+  #rText::placeholder{color:rgba(43,36,29,.45)}
+  #rSign{font:500 22px/1 Caveat,cursive;text-align:right;min-height:22px;color:#4a3d30}
+  .rRow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;color:var(--ink);font-size:15px}
+  .sw{width:34px;height:34px;border-radius:4px;border:2px solid transparent;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.4)}
+  .sw.on{border-color:#fff;transform:scale(1.12)}
+  #rName{font:15px Karla,system-ui,sans-serif;color:var(--ink);background:rgba(255,255,255,.07);border:1px solid var(--line);border-radius:4px;padding:8px 10px;width:220px;
+    -webkit-user-select:text;user-select:text}
+  #rName:disabled{opacity:.4}
+  .rRow label{display:flex;align-items:center;gap:8px;cursor:pointer}
+  .rRow input[type=checkbox]{width:18px;height:18px;accent-color:var(--brass)}
+  #rCount{color:var(--muted);font-size:13px}
+  #rStatus{font-size:14px;color:var(--muted);min-height:18px;text-align:center} #rStatus.err{color:#ff9a8a}
+  .rBtns{display:flex;gap:10px} .rBtns .btn{width:auto;padding:10px 18px;font-size:16px}
+  #rReadNote{font-size:clamp(22px,3.6vh,30px);line-height:1.25;overflow:auto;white-space:pre-wrap;word-break:break-word;flex:1}
+  #rReadSign{font-size:22px;text-align:right;color:#4a3d30}
+  #rReadDate{color:var(--muted);font-size:13px}
+  #rToast{position:fixed;left:50%;top:18%;transform:translateX(-50%);background:rgba(20,17,15,.88);border:1px solid var(--brass);color:var(--ink);
+    padding:10px 16px;border-radius:4px;font-size:15px;pointer-events:none;transition:opacity .6s}
   /* artist's note */
   #note{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px}
   #nBg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,#3b3027 0%,#17120f 60%,#0a0807 100%);opacity:0;transition:opacity .4s}
@@ -284,6 +315,24 @@
   <div id="nCard" role="dialog" aria-label="Mensagem do artista"></div>
   <span id="nHint"></span>
 </div>
+
+<div id="rec" class="hidden">
+  <div id="rBg"></div>
+  <div class="rPanel" id="rWrite">
+    <div class="pit" id="rPit"><textarea id="rText" maxlength="280" placeholder="Escreva seu bilhete…" spellcheck="true"></textarea><div id="rSign"></div></div>
+    <div class="rRow" id="rColors"></div>
+    <div class="rRow"><label><input type="checkbox" id="rUseName"> Assinar com meu nome</label><input id="rName" maxlength="40" placeholder="Seu nome" autocomplete="name" disabled></div>
+    <div class="rRow"><span id="rCount">0 / 280</span></div>
+    <div class="rBtns"><button class="btn ghost" id="rCancel">Cancelar</button><button class="btn" id="rPost">Colar na parede</button></div>
+    <div id="rStatus"></div>
+  </div>
+  <div class="rPanel hidden" id="rRead">
+    <div class="pit" id="rReadPit"><div id="rReadNote"></div><div id="rReadSign"></div></div>
+    <span id="rReadDate"></span>
+    <div class="rBtns"><button class="btn ghost" id="rReadClose">Voltar</button><button class="btn" id="rReadWrite">Deixar o meu</button></div>
+  </div>
+</div>
+<div id="rToast" class="hidden"></div>
 
 <div id="loading"><div class="px" id="loadTxt">Pendurando os quadros…</div><div class="bar"><i id="loadBar"></i></div></div>
 
@@ -1074,6 +1123,176 @@ function closeNote(){
 }
 $('note').addEventListener('click', e => { if (!e.target.closest('#nCard')) closeNote(); });
 
+/* ---------- Visitors' notes (post-its) ---------- */
+let addRecMenu = null;
+const REC_COLORS = { amarelo: '#fff07a', rosa: '#ffb6d3', azul: '#a6dcff', verde: '#bdf0a6', laranja: '#ffc47e', lilas: '#d9bdff' };
+const REC = { url: (CFG.recados?.url || '').replace(/\/+$/, ''), key: CFG.recados?.chave || '', list: [], byId: new Map(), meshes: [], table: [],
+  slots: [], cor: 'amarelo', pops: [], busy: false, readIdx: -1 };
+REC.on = !!(REC.url && REC.key);
+function recHeaders(extra = {}){ const h = { apikey: REC.key, 'Content-Type': 'application/json', ...extra }; if (REC.key.startsWith('eyJ')) h.Authorization = 'Bearer ' + REC.key; return h; }
+async function recFetch(){
+  const r = await fetch(`${REC.url}/rest/v1/recados?select=id,criado_em,texto,nome,cor&order=criado_em.asc&limit=2000`, { headers: recHeaders() });
+  if (!r.ok) throw new Error(r.status);
+  return r.json();
+}
+async function recLoad(){
+  if (!REC.on || !REC.ready) return;
+  try { for (const n of await recFetch()) recAdd(n, false); } catch (e) { console.warn('recados', e); }
+}
+async function recInit(){
+  // only show the table where the database can actually be reached (not inside Claude's preview, which blocks outside hosts)
+  let rows;
+  try { rows = await Promise.race([recFetch(), new Promise((_, r) => setTimeout(() => r(new Error('timeout')), 12000))]); }
+  catch (e) { console.warn('recados indisponíveis', e); REC.on = false; return; }
+  try { await document.fonts.load('40px Caveat'); } catch {}
+  REC.slots = recSlots(); buildRecTable(); REC.ready = true;
+  for (const n of rows) recAdd(n, false);
+  addRecMenu?.();
+}
+function hash(str){ let h = 2166136261; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+function recSlots(){
+  // spots on the entrance face of the middle wall: a cluster that grows from beside the little table
+  const P = partLen(ROOM.W), S = 0.122, out = [];
+  const regions = [[-P / 2 + 0.16, -0.95, -P / 2 + 0.95], [0.95, P / 2 - 0.16, P / 2 - 0.95]];
+  for (const [x0, x1, sx] of regions) {
+    const pts = [];
+    for (let y = 0.86; y <= 2.06; y += S) for (let x = x0 + S / 2; x <= x1 - S / 2 + 1e-6; x += S) {
+      const rr = rng(hash(`${x.toFixed(2)}:${y.toFixed(2)}`))();
+      pts.push({ x, y, d: Math.hypot((x - sx) * 0.8, y - 1.5) + rr * 0.18 });
+    }
+    pts.sort((a, b) => a.d - b.d); out.push(...pts);
+  }
+  return out;
+}
+function noteCanvas(n){
+  return makeCanvas(256, 256, (c, w, h) => {
+    const col = REC_COLORS[n.cor] || REC_COLORS.amarelo;
+    c.fillStyle = col; c.fillRect(0, 0, w, h);
+    let g = c.createLinearGradient(0, 0, 0, h); g.addColorStop(0, 'rgba(0,0,0,.08)'); g.addColorStop(.13, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.05)');
+    c.fillStyle = g; c.fillRect(0, 0, w, h);
+    g = c.createLinearGradient(w, h, w * .7, h * .7); g.addColorStop(0, 'rgba(0,0,0,.14)'); g.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = g; c.fillRect(w * .6, h * .6, w * .4, h * .4);
+    c.fillStyle = '#2b241d'; c.textBaseline = 'top';
+    const words = (n.texto || '').replace(/\s+/g, ' ').trim().split(' ');
+    let size = 44, lines = [];
+    const fit = () => { c.font = `500 ${size}px Caveat, "Segoe Script", cursive`; lines = []; let line = '';
+      for (const wd of words) { const t = line ? line + ' ' + wd : wd; if (c.measureText(t).width > w - 34 && line) { lines.push(line); line = wd; } else line = t; }
+      if (line) lines.push(line); };
+    fit(); while (lines.length * size * 1.08 > (n.nome ? 178 : 208) && size > 16) { size -= 2; fit(); }
+    const maxL = Math.floor((n.nome ? 178 : 208) / (size * 1.08)); if (lines.length > maxL) { lines = lines.slice(0, maxL); lines[maxL - 1] += '…'; }
+    lines.forEach((l, i) => c.fillText(l, 17, 22 + i * size * 1.08));
+    if (n.nome) { c.font = '500 26px Caveat, cursive'; c.fillStyle = '#4a3d30'; c.textAlign = 'right'; c.fillText('— ' + n.nome, w - 16, h - 40); }
+  });
+}
+const recShadowMat = () => new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, opacity: 0.32, depthWrite: false });
+function recAdd(n, pop){
+  if (!n?.id || REC.byId.has(n.id) || !REC.slots.length) return;
+  const k = REC.list.length; REC.list.push(n); REC.byId.set(n.id, k);
+  const slot = REC.slots[k % REC.slots.length], layer = Math.floor(k / REC.slots.length);
+  const r = rng(hash(n.id)), jx = (r() - .5) * 0.04, jy = (r() - .5) * 0.04, rot = (r() - .5) * 0.26;
+  const g = new THREE.Group();
+  g.position.set(slot.x + jx + layer * 0.03, slot.y + jy - layer * 0.025, PART_T / 2 + 0.006 + layer * 0.004 + (k % 97) * 0.00002);
+  g.rotation.z = rot;
+  const sh = new THREE.Mesh(new THREE.PlaneGeometry(0.118, 0.118), recShadowMat()); sh.position.set(0.004, -0.006, -0.0015); g.add(sh);
+  const geo = new THREE.PlaneGeometry(0.104, 0.104, 1, 4); const pos = geo.attributes.position;
+  for (let i = 0; i < pos.count; i++) { const y = pos.getY(i); if (y < 0) pos.setZ(i, ((-y) / 0.052) ** 2 * 0.006); }   // the lower half lifts off the wall
+  geo.computeVertexNormals();
+  const m = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ map: smoothTex(noteCanvas(n)), emissive: 0x2a2620 }));
+  m.userData.rec = k; g.add(m); scene.add(g); REC.meshes.push(m); pickables.push(m);
+  if (pop) { g.scale.setScalar(0.01); REC.pops.push({ g, t: 0 }); }
+}
+function buildRecTable(){
+  const P = partLen(ROOM.W), x = -P / 2 + 0.5, z = PART_T / 2 + 0.5, W = FRAME_SETS.nogueira;
+  const g = new THREE.Group(); g.position.set(x, 0, z); scene.add(g);
+  const top = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.035, 0.44), W.outer); top.position.y = 0.76; g.add(top);
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) { const leg = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.74, 0.035), W.inner); leg.position.set(sx * 0.27, 0.37, sz * 0.18); g.add(leg); }
+  colliders.push({ x0: x - 0.31, x1: x + 0.31, z0: z - 0.22, z1: z + 0.22 });
+  const cols = Object.values(REC_COLORS), meshes = [top];
+  cols.forEach((col, i) => {
+    const pad = new THREE.Mesh(new THREE.BoxGeometry(0.076, 0.018 + (i % 3) * 0.004, 0.076), new THREE.MeshLambertMaterial({ color: col }));
+    pad.position.set(-0.2 + (i % 3) * 0.1 + (i > 2 ? 0.04 : 0), 0.778 + 0.01, -0.08 + Math.floor(i / 3) * 0.11); pad.rotation.y = (i * 37 % 11 - 5) * 0.04; g.add(pad); meshes.push(pad);
+  });
+  const loose = new THREE.Mesh(new THREE.PlaneGeometry(0.076, 0.076), new THREE.MeshLambertMaterial({ color: REC_COLORS.rosa, side: THREE.DoubleSide }));
+  loose.rotation.set(-Math.PI / 2, 0, 0.5); loose.position.set(0.16, 0.7785, 0.1); g.add(loose); meshes.push(loose);
+  const pen = new THREE.Mesh(new THREE.CylinderGeometry(0.0045, 0.0045, 0.14, 10), new THREE.MeshStandardMaterial({ color: 0x1f2a44, roughness: .4 }));
+  pen.rotation.set(0, 0.4, Math.PI / 2); pen.position.set(0.15, 0.782, 0.02); g.add(pen);
+  const card = makeCanvas(400, 200, (c, w, h) => { c.fillStyle = '#f6f2e9'; c.fillRect(0, 0, w, h); c.fillStyle = '#2a221c'; c.textAlign = 'center';
+    c.font = 'italic bold 44px Georgia, serif'; c.fillText('Deixe um bilhete', w / 2, 86); c.fillStyle = '#9a7a3e'; c.fillRect(w / 2 - 40, 106, 80, 3);
+    c.font = '26px Georgia, serif'; c.fillStyle = '#5a4b40'; c.fillText('e cole na parede', w / 2, 150); });
+  const cm = new THREE.Mesh(new THREE.PlaneGeometry(0.17, 0.085), new THREE.MeshBasicMaterial({ map: smoothTex(card), side: THREE.DoubleSide }));
+  cm.position.set(0.15, 0.83, 0.13); cm.rotation.x = -0.35; g.add(cm); meshes.push(cm);
+  for (const m of meshes) { m.userData.recWrite = true; pickables.push(m); }
+  const lamp = new THREE.PointLight(0xffe9c8, 0.8, 2.6, 1.6); lamp.position.set(0.1, 1.8, 0.3); g.add(lamp);
+}
+function recPaint(){
+  const col = REC_COLORS[REC.cor]; $('rPit').style.backgroundColor = col; $('rReadPit').style.backgroundColor = col;
+  for (const b of $('rColors').children) b.classList.toggle('on', b.dataset.cor === REC.cor);
+  const nm = $('rUseName').checked ? $('rName').value.trim() : ''; $('rSign').textContent = nm ? '— ' + nm : '';
+  $('rCount').textContent = `${$('rText').value.length} / 280`;
+}
+for (const [k, col] of Object.entries(REC_COLORS)) {
+  const b = document.createElement('button'); b.className = 'sw'; b.dataset.cor = k; b.style.background = col; b.title = k; b.setAttribute('aria-label', 'cor ' + k);
+  b.addEventListener('click', () => { REC.cor = k; recPaint(); }); $('rColors').appendChild(b);
+}
+$('rUseName').addEventListener('change', () => { $('rName').disabled = !$('rUseName').checked; if ($('rUseName').checked) $('rName').focus(); recPaint(); });
+$('rName').addEventListener('input', recPaint); $('rText').addEventListener('input', recPaint);
+function recShow(which){
+  state = 'rec'; if (locked) document.exitPointerLock();
+  $('hint').classList.add('hidden'); $('cross').classList.add('hidden'); $('prompt').classList.add('hidden'); $('touch').classList.add('hidden');
+  $('rWrite').classList.toggle('hidden', which !== 'write'); $('rRead').classList.toggle('hidden', which !== 'read');
+  const v = $('rec'); v.classList.remove('hidden', 'show'); void v.offsetWidth; v.classList.add('show');
+  const pit = which === 'write' ? $('rPit') : $('rReadPit');
+  pit.animate([{ transform: 'translateY(50px) rotate(-8deg) scale(.6)', opacity: 0 }, { transform: 'rotate(-1.5deg)', opacity: 1 }], { duration: 450, easing: 'cubic-bezier(.2,.8,.2,1)' });
+  Z.opened = performance.now();
+}
+function openRecWrite(){
+  if (!REC.on) return;
+  $('rStatus').textContent = ''; $('rStatus').className = '';
+  try { const nm = localStorage.getItem('rec-nome'); if (nm) { $('rName').value = nm; } } catch {}
+  recPaint(); recShow('write');
+  if (!isTouch) setTimeout(() => $('rText').focus(), 300);
+}
+function openRecRead(k){
+  const n = REC.list[k]; if (!n) return; REC.readIdx = k;
+  $('rReadNote').textContent = n.texto; $('rReadSign').textContent = n.nome ? '— ' + n.nome : '';
+  $('rReadPit').style.backgroundColor = REC_COLORS[n.cor] || REC_COLORS.amarelo;
+  let d = ''; try { d = new Date(n.criado_em).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' }); } catch {}
+  $('rReadDate').textContent = d ? `deixado em ${d}` : '';
+  recShow('read');
+}
+function closeRec(){
+  if (performance.now() - Z.opened < 300) return;
+  document.activeElement?.blur?.(); $('rec').classList.remove('show'); setTimeout(startPlaying, 200);
+}
+function recToast(t){ const el = $('rToast'); el.textContent = t; el.classList.remove('hidden'); el.style.opacity = 1; clearTimeout(recToast.tm);
+  recToast.tm = setTimeout(() => { el.style.opacity = 0; setTimeout(() => el.classList.add('hidden'), 700); }, 3500); }
+async function recPost(){
+  if (REC.busy) return;
+  const texto = $('rText').value.trim(), nome = $('rUseName').checked ? $('rName').value.trim().slice(0, 40) : '';
+  const st = $('rStatus');
+  if (!texto) { st.textContent = 'Escreva alguma coisa antes de colar :)'; st.className = 'err'; return; }
+  let last = 0; try { last = +localStorage.getItem('rec-last') || 0; } catch {}
+  const wait = Math.ceil((last + 30000 - Date.now()) / 1000);
+  if (wait > 0) { st.textContent = `Espere ${wait}s para colar outro bilhete.`; st.className = 'err'; return; }
+  REC.busy = true; $('rPost').disabled = true; st.textContent = 'Colando…'; st.className = '';
+  try {
+    const r = await fetch(`${REC.url}/rest/v1/recados`, { method: 'POST', headers: recHeaders({ Prefer: 'return=representation' }),
+      body: JSON.stringify({ texto: texto.slice(0, 280), nome: nome || null, cor: REC.cor }) });
+    if (!r.ok) throw new Error(r.status);
+    const [n] = await r.json();
+    try { localStorage.setItem('rec-last', String(Date.now())); if (nome) localStorage.setItem('rec-nome', nome); } catch {}
+    $('rText').value = ''; recPaint();
+    Z.opened = 0; closeRec();
+    setTimeout(() => { recAdd(n, true); recToast('Seu bilhete está na parede 💛'); }, 350);
+  } catch (e) { console.warn('postar', e); st.textContent = 'Não consegui colar agora. Tente de novo em instantes.'; st.className = 'err'; }
+  finally { REC.busy = false; $('rPost').disabled = false; }
+}
+$('rPost').addEventListener('click', recPost);
+$('rCancel').addEventListener('click', closeRec);
+$('rReadClose').addEventListener('click', closeRec);
+$('rReadWrite').addEventListener('click', () => { Z.opened = 0; $('rec').classList.remove('show'); setTimeout(openRecWrite, 150); });
+$('rec').addEventListener('click', e => { if (e.target.id === 'rBg' || e.target.id === 'rec') closeRec(); });
+setInterval(() => { if (REC.on && state === 'playing' && !document.hidden) recLoad(); }, 60000);
+
 /* ---------- Player & controls ---------- */
 const player = { x: 0, z: 0, yaw: 0, pitch: 0, vx: 0, vz: 0, bob: 0 };
 const keys = {}; let state = 'menu'; let locked = false; let lockOK = !isTouch && 'requestPointerLock' in canvas;
@@ -1083,7 +1302,7 @@ let target = -1;
 function placePlayerStart(){ player.x = 0; player.z = ROOM.D / 2 - 1.8; player.yaw = 0; player.pitch = 0; }
 
 function startPlaying(){
-  $('menu').classList.add('hidden'); $('viewer').classList.add('hidden'); $('viewer').classList.remove('show'); $('book').classList.add('hidden'); $('book').classList.remove('show'); $('note').classList.add('hidden'); $('note').classList.remove('show'); state = 'playing';
+  $('menu').classList.add('hidden'); $('viewer').classList.add('hidden'); $('viewer').classList.remove('show'); $('book').classList.add('hidden'); $('book').classList.remove('show'); $('note').classList.add('hidden'); $('note').classList.remove('show'); $('rec').classList.add('hidden'); $('rec').classList.remove('show'); state = 'playing';
   $('cross').classList.remove('hidden'); if (isTouch) $('touch').classList.remove('hidden');
   if (lockOK) {
     try { const pr = canvas.requestPointerLock(); if (pr && pr.catch) pr.catch(() => {}); } catch {}
@@ -1109,6 +1328,8 @@ function paintingScreenRect(idx){
 function openViewer(idx){
   if (idx === -2) return openBook();
   if (idx === -3) return openNote();
+  if (idx === -4) return openRecWrite();
+  if (idx <= -100) return openRecRead(-100 - idx);
   if (idx < 0) return;
   vIdx = idx; const a = paintings[idx].art; state = 'inspect';
   if (locked) document.exitPointerLock();
@@ -1322,6 +1543,7 @@ addEventListener('keydown', e => {
     return;
   }
   keys[e.code] = true;
+  if (state === 'rec') { if (e.code === 'Escape') { e.preventDefault(); closeRec(); } return; }
   if (state === 'note') { if (e.code === 'Escape' || e.code === 'KeyE' || e.code === 'Enter') { e.preventDefault(); closeNote(); } return; }
   if (state === 'book') {
     if (e.code === 'ArrowRight' || e.code === 'KeyD' || e.code === 'Space') { e.preventDefault(); bookGo(1); }
@@ -1398,6 +1620,8 @@ function pick(cx, cy, far){
   ray.setFromCamera(v, camera); ray.far = far;
   const hit = ray.intersectObjects(pickables, false)[0]; if (hit?.object.userData.book && hit.distance < 3) return -2;
   if (hit?.object.userData.note && hit.distance < 3) return -3;
+  if (hit?.object.userData.recWrite && hit.distance < 3) return -4;
+  if (hit?.object.userData.rec !== undefined && hit.distance < 3) return -100 - hit.object.userData.rec;
   const i = hit?.object.userData.idx;
   return i !== undefined && hit.distance <= viewDist(i) ? i : -1;
 }
@@ -1409,6 +1633,8 @@ function showHint(txt, ms = 7000){ const h = $('hint'); h.textContent = txt; h.c
 /* ---------- Loop ---------- */
 const clock = new THREE.Clock(); const center = new THREE.Vector2(0, 0);
 function update(dt){
+  for (let i = REC.pops.length - 1; i >= 0; i--) { const p = REC.pops[i]; p.t += dt / 0.45; const t = Math.min(1, p.t), e = 1 + 2.2 * Math.pow(t - 1, 3) + 1.2 * Math.pow(t - 1, 2);
+    p.g.scale.setScalar(Math.max(0.01, e)); if (t >= 1) { p.g.scale.setScalar(1); REC.pops.splice(i, 1); } }
   if (state === 'playing') {
     let fx = 0, fz = 0;
     if (keys.KeyW || keys.ArrowUp) fz += 1; if (keys.KeyS || keys.ArrowDown) fz -= 1;
@@ -1425,8 +1651,9 @@ function update(dt){
     ray.setFromCamera(center, camera); ray.far = 4;
     const hit = ray.intersectObjects(pickables, false)[0]; const ud = hit?.object.userData || {};
     const isSoon = !!ud.soon && hit.distance < 3, isNote = !!ud.note && hit.distance < 2.4, isBook = !!ud.book && hit.distance < 2.6;
+    const isWrite = !!ud.recWrite && hit.distance < 2.6, isRec = ud.rec !== undefined && hit.distance < 2.4;
     const hi = hit && !isSoon ? ud.idx : undefined;
-    target = isBook ? -2 : isNote ? -3 : (hi !== undefined && hit.distance <= viewDist(hi) ? hi : -1);
+    target = isBook ? -2 : isNote ? -3 : isWrite ? -4 : isRec ? -100 - ud.rec : (hi !== undefined && hit.distance <= viewDist(hi) ? hi : -1);
     const on = target >= 0 || target <= -2;
     $('cross').classList.toggle('on', on);
     $('tView').classList.toggle('on', on);
@@ -1434,6 +1661,8 @@ function update(dt){
     if (isSoon) { pr.textContent = /constru/i.test(ud.soon) ? 'Em construção: uma obra que ainda estou fazendo' : 'Em breve: uma obra nova vai ficar aqui'; pr.classList.remove('hidden'); }
     else if (isBook) { pr.innerHTML = `${isTouch ? '' : '<kbd>E</kbd>'}folhear o caderno criativo`; pr.classList.remove('hidden'); }
     else if (isNote) { pr.innerHTML = `${isTouch ? '' : '<kbd>E</kbd>'}ler a mensagem`; pr.classList.remove('hidden'); }
+    else if (isWrite) { pr.innerHTML = `${isTouch ? '' : '<kbd>E</kbd>'}escrever um bilhete`; pr.classList.remove('hidden'); }
+    else if (isRec) { pr.innerHTML = `${isTouch ? '' : '<kbd>E</kbd>'}ler o bilhete${REC.list[ud.rec]?.nome ? ' de ' + escapeHtml(REC.list[ud.rec].nome) : ''}`; pr.classList.remove('hidden'); }
     else if (target >= 0) { pr.innerHTML = `${isTouch ? '' : '<kbd>E</kbd>'}ver de perto: ${escapeHtml(paintings[target].art.titulo || 'Sem título')}${paintings[target].art.verso ? ' (tem verso)' : ''}`; pr.classList.remove('hidden'); }
     else pr.classList.add('hidden');
   } else {
@@ -1493,11 +1722,15 @@ function loop(){
   }
   pickables = [...paintings.flatMap(p => p.meshes), ...soon.flatMap(p => p.meshes), ...occluders, ...bookMeshes];
   buildNote().then(() => { pickables.push(...noteMeshes); });
+  if (REC.on) recInit();
   // menu list
   const lista = $('lista');
   const extra = [];
   if (NOTE) extra.push(['Mensagem do artista', 'no pilar', () => { player.x = 0; player.z = PART_T / 2 + 0.9 + 1.05; player.yaw = 0; player.pitch = -0.42; startPlaying(); }]);
   if (BOOK) extra.push(['Caderno criativo', 'na mesinha', () => { player.x = -ROOM.W / 2 + 1.5; player.z = -ROOM.D / 2 + 1.5; player.yaw = Math.PI / 4; player.pitch = -0.45; startPlaying(); }]);
+  addRecMenu = () => { const b = document.createElement('button'); b.innerHTML = '<span>Bilhetes dos visitantes</span><span>na entrada</span>';
+    b.addEventListener('click', () => { const P = partLen(ROOM.W); player.x = -P / 2 + 1.35; player.z = PART_T / 2 + 1.9; player.yaw = 0.35; player.pitch = -0.12; startPlaying(); });
+    lista.insertBefore(b, lista.firstChild); };
   for (const [t, d, fn] of extra) { const b = document.createElement('button'); b.innerHTML = `<span>${t}</span><span>${d}</span>`; b.addEventListener('click', fn); lista.appendChild(b); }
   paintings.forEach((p, i) => {
     const b = document.createElement('button');
@@ -1507,7 +1740,7 @@ function loop(){
   if (isTouch) { $('keysDesk').classList.add('hidden'); $('keysTouch').classList.remove('hidden'); }
   placePlayerStart();
   $('loading').classList.add('hidden'); $('menu').classList.remove('hidden');
-  window.__museu = { ROOM, paintings, player, startPlaying, teleportTo, openViewer, openBook, openNote, closeNote, bookGo, flipCard, closeViewer, update, render: () => renderer.render(scene, camera) };
+  window.__museu = { REC, ROOM, paintings, player, startPlaying, teleportTo, openViewer, openBook, openNote, closeNote, bookGo, flipCard, closeViewer, update, render: () => renderer.render(scene, camera) };
   loop();
 })();
 </script>

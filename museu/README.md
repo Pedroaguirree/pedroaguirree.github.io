@@ -27,6 +27,14 @@ O caderno fica na mesinha do canto; quem clica nele vê a capa abrir e folheia a
 - `capa`, `guarda` (parte de dentro da capa) e `contracapa`
 - `paginas`: as páginas na ordem. Páginas duplas (um desenho que continua na página seguinte) ficam lado a lado quando a primeira tem número par.
 
+## Bilhetes dos visitantes
+
+Na entrada, à esquerda da parede "Museu do Pedro", fica uma mesinha com post-its: o visitante escreve um bilhete (até 280 caracteres), escolhe a cor, assina ou não, e ele fica colado na parede para todo mundo ver. Os bilhetes ficam guardados no Supabase (tabela `recados`); a ligação está em `recados` no `obras.js`.
+
+Para tirar um bilhete: Supabase → Table Editor → `recados` → apague a linha, ou mude `visivel` para `false` para só esconder.
+
+Os bilhetes funcionam no site do GitHub; na página do museu dentro do Claude a mesinha não aparece.
+
 ## Mensagem na entrada
 
 O texto da folha sobre o pilar, em frente à parede "Museu do Pedro", fica em `mensagem` no `obras.js`. Cada linha vira um parágrafo.
