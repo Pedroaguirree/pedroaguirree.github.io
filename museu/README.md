@@ -41,6 +41,16 @@ Os bilhetes funcionam no site do GitHub; na página do museu dentro do Claude a 
 
 Quando alguém abre uma obra para ver de perto, aparecem seis emojis (❤️ 😍 🔥 👏 😮 🥹) com a contagem de cada um. Cada pessoa pode dar cada emoji uma vez por obra e tocar de novo para desfazer. As reações ficam no Supabase (tabela `reacoes`) e precisam do `supabase-museu.sql` rodado uma vez no SQL Editor. Para ver quantas reações cada obra tem, abra a tabela `reacoes` no Table Editor; para zerar, apague as linhas.
 
+## Comentários
+
+Na tela de ver uma obra de perto há o botão **💬 Comentários**: abre um painel ao lado com os comentários de todo mundo sobre aquela obra (os mais novos primeiro) e um campo para escrever, com nome opcional. Quem escreveu pode apagar o próprio comentário. Os comentários ficam no Supabase (tabela `comentarios`) e precisam do `comentarios.sql` rodado uma vez no SQL Editor.
+
+Para moderar: Supabase → Table Editor → `comentarios` → apague a linha, ou mude `visivel` para `false` para só esconder.
+
+## Ranking (estrelinhas)
+
+As obras mais queridas ganham estrelinhas douradas bem pequenas logo acima da plaquinha (no mural, acima da obra). A pontuação é: cada reação vale 1 ponto e cada comentário vale 2. As 3 primeiras do ranking ganham até ★★★, da 4ª à 6ª até ★★ e da 7ª à 10ª ★, mas só se tiverem pontos suficientes (★★★ a partir de 6 pontos, ★★ a partir de 3). O ranking se atualiza sozinho.
+
 ## Vídeos do ateliê
 
 No canto entre os dois tucanos há uma tela num pedestal. Ela passa os vídeos sem som enquanto alguém está por perto; ao clicar, o vídeo abre grande, com som e controles. Para colocar vídeos:

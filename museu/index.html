@@ -166,6 +166,34 @@
   #reNote{font-size:12px;color:var(--muted)}
   @media (max-width:700px),(max-height:520px){ #reRow{gap:6px} .re{padding:4px 8px 4px 7px;font-size:12px;gap:4px} .re .em{font-size:17px} }
   .reFly{position:fixed;z-index:80;pointer-events:none;font-size:26px;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+  /* comments */
+  #vCom{width:auto;flex:none;padding:9px 14px;font-size:15px}
+  #vRank{color:#e8c252;font-size:13px;margin:2px 0 0;letter-spacing:.3px}
+  #cPanel{position:fixed;top:0;right:0;bottom:0;width:min(400px,100vw);z-index:70;display:flex;flex-direction:column;
+    background:#1b1714;border-left:1px solid var(--line);box-shadow:-20px 0 60px rgba(0,0,0,.45);
+    transform:translateX(105%);transition:transform .42s cubic-bezier(.2,.8,.2,1);visibility:hidden}
+  #cPanel.open{transform:none;visibility:visible}
+  .cHead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:20px 20px 14px;border-bottom:1px solid var(--line)}
+  .cHead h3{margin:0;font:700 19px Manrope,Karla,sans-serif;color:var(--ink)} #cSub{display:block;margin-top:3px;color:var(--muted);font-size:13px}
+  #cClose{all:unset;cursor:pointer;width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:50%;color:var(--muted);font-size:16px}
+  #cClose:hover{background:rgba(255,255,255,.08);color:var(--ink)}
+  #cList{flex:1;overflow:auto;padding:12px 20px;display:flex;flex-direction:column;gap:12px;overscroll-behavior:contain}
+  .cItem{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:11px 13px}
+  .cItem.mine{border-color:rgba(227,185,100,.35)}
+  .cTop{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:5px}
+  .cWho{font:600 14px Manrope,Karla,sans-serif;color:var(--ink)} .cWhen{font-size:12px;color:var(--muted);white-space:nowrap}
+  .cBody{font-size:15px;line-height:1.45;color:#e4dccf;white-space:pre-wrap;word-break:break-word}
+  .cDel{all:unset;cursor:pointer;font-size:12px;color:var(--muted);margin-top:6px;display:inline-block} .cDel:hover{color:#ffb3a6} .cDel.sure{color:#ff9a8a}
+  .cEmpty{color:var(--muted);font-size:15px;text-align:center;margin:30px 10px;line-height:1.5}
+  #cForm{border-top:1px solid var(--line);padding:14px 20px calc(16px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px}
+  #cText{resize:none;font:15px/1.4 Karla,system-ui,sans-serif;color:var(--ink);background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:6px;padding:10px 12px;
+    outline:none;-webkit-user-select:text;user-select:text} #cText:focus{border-color:rgba(227,185,100,.6)}
+  .cRow{display:flex;gap:10px}
+  #cName{flex:1;min-width:0;font:15px Karla,system-ui,sans-serif;color:var(--ink);background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:6px;padding:9px 11px;outline:none;
+    -webkit-user-select:text;user-select:text}
+  #cSend{width:auto;flex:none;padding:9px 16px;font-size:16px}
+  #cStatus{font-size:13px;color:var(--muted);min-height:16px} #cStatus.err{color:#ff9a8a}
+  @media (max-width:600px){ #cPanel{top:auto;height:82vh;width:100vw;border-left:0;border-top:1px solid var(--line);border-radius:14px 14px 0 0;transform:translateY(105%)} }
   /* atelier videos */
   #vid{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:16px}
   #vidBg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,#2c241e 0%,#100d0b 60%,#070605 100%);opacity:0;transition:opacity .4s}
@@ -333,11 +361,22 @@
       <p id="vMeta"></p>
       <p id="vDims"></p>
       <p class="desc" id="vDesc"></p>
+      <p id="vRank" class="hidden"></p>
     </div>
     <div id="vReact" class="hidden"><div id="reRow"></div><span id="reNote">Deixe sua reação</span></div>
-    <div class="vBtns"><button class="btn" id="vFlip">Ver verso</button><span id="vHint"></span></div>
+    <div class="vBtns"><button class="btn" id="vFlip">Ver verso</button><button class="btn ghost hidden" id="vCom">💬 Comentários</button><span id="vHint"></span></div>
   </div>
 </div>
+
+<aside id="cPanel" aria-label="Comentários">
+  <div class="cHead"><div><h3>Comentários</h3><span id="cSub"></span></div><button id="cClose" aria-label="Fechar comentários">✕</button></div>
+  <div id="cList"></div>
+  <form id="cForm" autocomplete="off">
+    <textarea id="cText" maxlength="500" rows="3" placeholder="Escreva um comentário sobre esta obra…"></textarea>
+    <div class="cRow"><input id="cName" maxlength="40" placeholder="Seu nome (opcional)" autocomplete="name"><button class="btn" id="cSend" type="submit">Publicar</button></div>
+    <div id="cStatus"></div>
+  </form>
+</aside>
 
 <div id="book" class="hidden">
   <div id="bBg"></div>
@@ -998,7 +1037,7 @@ function hangPainting(p, H){
       t.position.set(sx * (a.w / 2 - 0.004), a.h / 2 - 0.004, 0.0165); t.rotation.z = -sx * 0.72 + (sx * 0.08); g.add(t);
     }
     scene.add(g);
-    paintings.push({ art: a, group: g, wall: wl, cy, meshes: g.children.filter(m => m.userData.idx !== undefined) });
+    paintings.push({ art: a, group: g, wall: wl, cy, starAt: [0, a.h / 2 + fw + 0.024, 0.004], meshes: g.children.filter(m => m.userData.idx !== undefined) });
     return;
   }
   // picture light
@@ -1031,7 +1070,7 @@ function hangPainting(p, H){
     scene.add(g); soon.push({ art: a, group: g, meshes: [cm, plaque] }); return;
   }
   scene.add(g);
-  paintings.push({ art: a, group: g, wall: wl, cy, plaqueCanvas: pc, plaqueTex: ptex, meshes: g.children.filter(m => m.userData.idx !== undefined) });
+  paintings.push({ art: a, group: g, wall: wl, cy, plaqueCanvas: pc, plaqueTex: ptex, starAt: [plaque.position.x, plaque.position.y + 0.1375 / 2 + 0.021, 0.004], meshes: g.children.filter(m => m.userData.idx !== undefined) });
 }
 const ALU_EDGE = new THREE.MeshPhongMaterial({ color: 0xaeb3b8, specular: 0x999999, shininess: 80 });
 function brushedAluminium(c, w, h){
@@ -1566,6 +1605,7 @@ $('rReadClose').addEventListener('click', closeRec);
 $('rReadWrite').addEventListener('click', () => { Z.opened = 0; $('rec').classList.remove('show'); setTimeout(openRecWrite, 150); });
 $('rec').addEventListener('click', e => { if (e.target.id === 'rBg' || e.target.id === 'rec') closeRec(); });
 setInterval(() => { if (REC.on && state === 'playing' && !document.hidden) recLoad(); }, 60000);
+setInterval(() => { if (REC.on && state === 'playing' && !document.hidden) socialLoad(); }, 120000);
 
 /* ---------- Atelier videos (screen in the corner between the toucans) ---------- */
 const VID = { list: (CFG.videos || []).filter(v => v && v.arquivo), el: null, tex: null, mat: null, cur: 0, pos: null, open: false };
@@ -1792,18 +1832,153 @@ async function reaToggle(k, btn){
     if (mine) {
       c[k] = Math.max(0, before - 1); delete REA.mine[mk]; reaSave(); reaRender(a);
       if (mine.id != null) await recRpc('tirar_reacao', { p_id: String(mine.id), p_token: mine.token });
+      rankUpdate();
     } else {
       const token = [...crypto.getRandomValues(new Uint8Array(24))].map(b => b.toString(16).padStart(2, '0')).join('');
       const dono = await recHashToken(token);
       c[k] = before + 1; REA.mine[mk] = { id: null, token }; reaRender(a); reaBurst(btn, REA_EMOJIS.find(x => x[0] === k)[1]);
       const id = await recRpc('reagir', { p_obra: ob, p_emoji: k, p_dono: dono });
       if (REA.mine[mk]) { REA.mine[mk].id = Array.isArray(id) ? id[0] : id; reaSave(); }
+      rankUpdate();
     }
   } catch (e) {
     console.warn('reação', e); c[k] = before; if (mine) REA.mine[mk] = mine; else delete REA.mine[mk]; reaSave(); reaRender(a);
     $('reNote').textContent = 'Não consegui registrar agora. Tente de novo em instantes.';
   } finally { REA.busy = false; }
 }
+
+/* ---------- Comments on each work ---------- */
+const COM = { on: false, counts: {}, mine: {}, list: [], obra: '', busy: false, open: false, added: [], gone: new Set() };
+try { COM.mine = JSON.parse(localStorage.getItem('com-meus') || '{}') || {}; } catch {}
+const comSave = () => { try { localStorage.setItem('com-meus', JSON.stringify(COM.mine)); } catch {} };
+async function comSummary(){
+  if (!REC.url || !REC.key) return;
+  try {
+    const rows = await Promise.race([recRpc('comentarios_resumo', {}), new Promise((_, r) => setTimeout(() => r(new Error('timeout')), 10000))]);
+    const c = {}; for (const r of rows || []) c[r.obra] = Number(r.total) || 0; COM.counts = c; COM.on = true;
+  } catch (e) { console.warn('comentários indisponíveis', e); }
+}
+function comWhen(iso){
+  const d = new Date(iso), s = (Date.now() - d) / 1000;
+  if (!isFinite(s)) return '';
+  if (s < 60) return 'agora'; if (s < 3600) return `há ${Math.floor(s / 60)} min`; if (s < 86400) return `há ${Math.floor(s / 3600)} h`;
+  if (s < 86400 * 7) { const n = Math.floor(s / 86400); return n === 1 ? 'ontem' : `há ${n} dias`; }
+  return d.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+function comButton(a){
+  const b = $('vCom'); if (!COM.on || !a) { b.classList.add('hidden'); return; }
+  const n = COM.counts[obraKey(a)] || 0; b.textContent = n ? `💬 Comentários (${n})` : '💬 Comentar'; b.classList.remove('hidden');
+}
+function comRender(){
+  const L = $('cList'); L.innerHTML = '';
+  if (!COM.list.length) { const e = document.createElement('div'); e.className = 'cEmpty'; e.textContent = 'Ainda não há comentários. Conte o que você achou desta obra!'; L.appendChild(e); return; }
+  for (const c of COM.list) {
+    const it = document.createElement('div'); it.className = 'cItem' + (COM.mine[c.id] ? ' mine' : '');
+    const top = document.createElement('div'); top.className = 'cTop';
+    const who = document.createElement('span'); who.className = 'cWho'; who.textContent = c.nome || 'Visitante';
+    const when = document.createElement('span'); when.className = 'cWhen'; when.textContent = comWhen(c.criado_em);
+    top.append(who, when);
+    const body = document.createElement('div'); body.className = 'cBody'; body.textContent = c.texto;
+    it.append(top, body);
+    if (COM.mine[c.id]) { const del = document.createElement('button'); del.className = 'cDel'; del.textContent = 'apagar meu comentário'; del.addEventListener('click', () => comDelete(c, del)); it.appendChild(del); }
+    L.appendChild(it);
+  }
+}
+async function comOpen(){
+  const a = paintings[vIdx]?.art; if (!a || !COM.on) return;
+  if (COM.obra !== obraKey(a)) { COM.list = []; COM.added = []; COM.gone = new Set(); }
+  COM.obra = obraKey(a); COM.open = true;
+  $('cSub').textContent = a.titulo || 'Sem título'; $('cStatus').textContent = ''; $('cStatus').className = '';
+  try { const nm = localStorage.getItem('rec-nome'); if (nm && !$('cName').value) $('cName').value = nm; } catch {}
+  $('cList').innerHTML = '<div class="cEmpty">Carregando…</div>';
+  $('cPanel').classList.add('open');
+  if (!isTouch) setTimeout(() => $('cText').focus(), 350);
+  const ob = COM.obra;
+  try {
+    const rows = await recRpc('comentarios_de', { p_obra: ob });
+    if (COM.obra !== ob) return;
+    const ids = new Set((rows || []).map(r => r.id));
+    COM.list = [...COM.added.filter(c => !ids.has(c.id)), ...(rows || [])].filter(c => !COM.gone.has(c.id));   // keep what was posted/removed while loading
+    COM.counts[ob] = COM.list.length; comButton(a); comRender();
+  } catch (e) { console.warn('comentários', e); $('cList').innerHTML = '<div class="cEmpty">Não consegui carregar os comentários agora.</div>'; }
+}
+function comClose(){ COM.open = false; $('cPanel').classList.remove('open'); document.activeElement?.blur?.(); }
+async function comPost(e){
+  e?.preventDefault();
+  if (COM.busy) return;
+  const a = paintings[vIdx]?.art, st = $('cStatus'), texto = $('cText').value.trim(), nome = $('cName').value.trim().slice(0, 40);
+  if (!a) return;
+  if (!texto) { st.textContent = 'Escreva alguma coisa antes de publicar :)'; st.className = 'err'; return; }
+  let last = 0; try { last = +localStorage.getItem('com-last') || 0; } catch {}
+  const wait = Math.ceil((last + 20000 - Date.now()) / 1000);
+  if (wait > 0) { st.textContent = `Espere ${wait}s para comentar de novo.`; st.className = 'err'; return; }
+  COM.busy = true; $('cSend').disabled = true; st.textContent = 'Publicando…'; st.className = '';
+  try {
+    const token = [...crypto.getRandomValues(new Uint8Array(24))].map(b => b.toString(16).padStart(2, '0')).join('');
+    const out = await recRpc('comentar', { p_obra: obraKey(a), p_texto: texto.slice(0, 500), p_nome: nome, p_dono: await recHashToken(token) });
+    const c = Array.isArray(out) ? out[0] : out;
+    COM.mine[c.id] = token; comSave();
+    try { localStorage.setItem('com-last', String(Date.now())); if (nome) localStorage.setItem('rec-nome', nome); } catch {}
+    COM.list.unshift(c); COM.added.push(c); COM.counts[obraKey(a)] = (COM.counts[obraKey(a)] || 0) + 1;
+    $('cText').value = ''; st.textContent = 'Comentário publicado. Obrigado!';
+    comRender(); comButton(a); rankUpdate();
+    $('cList').scrollTop = 0; $('cList').firstChild?.animate([{ opacity: 0, transform: 'translateY(-8px)' }, { opacity: 1, transform: 'none' }], { duration: 400, easing: 'ease-out' });
+  } catch (err) { console.warn('comentar', err); st.textContent = 'Não consegui publicar agora. Tente de novo em instantes.'; st.className = 'err'; }
+  finally { COM.busy = false; $('cSend').disabled = false; }
+}
+async function comDelete(c, btn){
+  if (!btn.classList.contains('sure')) { btn.classList.add('sure'); btn.textContent = 'tem certeza? toque para apagar'; return; }
+  btn.disabled = true;
+  try {
+    const ok = await recRpc('apagar_comentario', { p_id: String(c.id), p_token: COM.mine[c.id] });
+    if (ok === false) throw new Error('not found');
+    delete COM.mine[c.id]; comSave();
+    COM.gone.add(c.id); COM.added = COM.added.filter(x => x.id !== c.id);
+    COM.list = COM.list.filter(x => x.id !== c.id); COM.counts[COM.obra] = Math.max(0, (COM.counts[COM.obra] || 1) - 1);
+    comRender(); comButton(paintings[vIdx]?.art); rankUpdate();
+  } catch (e) { console.warn('apagar comentário', e); btn.disabled = false; btn.textContent = 'não consegui apagar, tente de novo'; }
+}
+$('vCom').addEventListener('click', e => { e.stopPropagation(); COM.open ? comClose() : comOpen(); });
+$('cClose').addEventListener('click', comClose);
+$('cForm').addEventListener('submit', comPost);
+$('cText').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) comPost(e); });
+for (const ev of ['click', 'pointerdown', 'wheel', 'touchstart']) $('cPanel').addEventListener(ev, e => e.stopPropagation(), { passive: true });
+
+/* ---------- Ranking: tiny gold stars above the plaques of the visitors' favourites ---------- */
+const RANK = { stars: new Map() };
+function starTex(n){
+  return smoothTex(makeCanvas(96 * n, 96, (c, w, h) => {
+    for (let i = 0; i < n; i++) {
+      const cx = 48 + i * 96, cy = 50, R = 34, r = 14.5;
+      c.beginPath(); for (let k = 0; k < 10; k++) { const a = -Math.PI / 2 + k * Math.PI / 5, rr = k % 2 ? r : R; c.lineTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr); } c.closePath();
+      const g = c.createLinearGradient(0, cy - R, 0, cy + R); g.addColorStop(0, '#ffe58a'); g.addColorStop(1, '#d9a92e');
+      c.fillStyle = g; c.fill(); c.lineWidth = 3; c.strokeStyle = 'rgba(150,105,20,.55)'; c.stroke();
+    }
+  }));
+}
+function rankUpdate(){
+  const score = p => { const k = obraKey(p.art), r = REA.counts[k] || {}; return Object.values(r).reduce((s, n) => s + n, 0) + 2 * (COM.counts[k] || 0); };
+  const ranked = paintings.map((p, i) => ({ i, s: score(p) })).filter(x => x.s > 0).sort((x, y) => y.s - x.s);
+  const want = new Map();
+  ranked.forEach((x, pos) => {
+    const byRank = pos < 3 ? 3 : pos < 6 ? 2 : pos < 10 ? 1 : 0, byScore = x.s >= 6 ? 3 : x.s >= 3 ? 2 : 1;
+    const n = Math.min(byRank, byScore); if (n) want.set(x.i, { n, pos });
+  });
+  paintings.forEach((p, i) => {
+    const w = want.get(i), cur = RANK.stars.get(i);
+    p.rank = w || null;
+    if (cur && (!w || cur.n !== w.n)) { cur.mesh.parent?.remove(cur.mesh); cur.mesh.material.map.dispose(); cur.mesh.material.dispose(); cur.mesh.geometry.dispose(); RANK.stars.delete(i); }
+    if (w && (!cur || cur.n !== w.n) && p.starAt) {
+      const sz = 0.024, m = new THREE.Mesh(new THREE.PlaneGeometry(sz * w.n * 1.05, sz), new THREE.MeshBasicMaterial({ map: starTex(w.n), transparent: true, opacity: 0.92, depthWrite: false }));
+      m.position.set(...p.starAt); p.group.add(m); RANK.stars.set(i, { n: w.n, mesh: m });
+    }
+  });
+}
+function rankLine(i){
+  const r = paintings[i]?.rank, el = $('vRank'); if (!r) { el.classList.add('hidden'); return; }
+  el.textContent = '★'.repeat(r.n) + (r.pos === 0 ? ' · a favorita dos visitantes' : ' · uma das favoritas dos visitantes'); el.classList.remove('hidden');
+}
+async function socialLoad(){ await Promise.all([reaLoad(), comSummary()]); rankUpdate(); }
 
 /* ---------- Player & controls ---------- */
 const player = { x: 0, z: 0, yaw: 0, pitch: 0, vx: 0, vz: 0, bob: 0 };
@@ -1858,7 +2033,8 @@ function openViewer(idx){
   const v = $('viewer'); v.classList.remove('hidden', 'show');
   Z.s = 1; Z.x = Z.y = 0; applyZ(false);
   buildCard(a);
-  reaRender(a); if (REA.on && Date.now() - REA.at > 30000) reaLoad().then(() => { if (state === 'inspect' && paintings[vIdx]?.art === a) reaRender(a); });
+  reaRender(a); comButton(a); rankLine(idx); comClose();
+  if (REA.on && Date.now() - REA.at > 30000) socialLoad().then(() => { if (state === 'inspect' && paintings[vIdx]?.art === a) { reaRender(a); comButton(a); rankLine(idx); } });
   void v.offsetWidth; v.classList.add('show');
   Z.opened = performance.now();
   // zoom out of the wall: start where the painting is on screen, grow to the center
@@ -1871,6 +2047,7 @@ function openViewer(idx){
 }
 async function closeViewer(){
   if (performance.now() - Z.opened < 450) return;
+  comClose();
   const v = $('viewer'); if (!v.classList.contains('show')) return;
   const card = $('vCard').getBoundingClientRect();
   v.classList.remove('show');
@@ -2054,7 +2231,7 @@ document.addEventListener('pointerlockerror', () => { lockOK = false; showHint('
 addEventListener('keydown', e => {
   const tag = e.target?.tagName;
   if (tag === 'INPUT' || tag === 'TEXTAREA') {
-    if (e.key === 'Escape') e.target.blur();
+    if (e.key === 'Escape') { e.target.blur(); if (COM.open && e.target.closest('#cPanel')) comClose(); }
     return;
   }
   keys[e.code] = true;
@@ -2069,7 +2246,7 @@ addEventListener('keydown', e => {
     return;
   }
   if (state === 'inspect') {
-    if (e.code === 'Escape') { e.preventDefault(); closeViewer(); }
+    if (e.code === 'Escape') { e.preventDefault(); COM.open ? comClose() : closeViewer(); }
     else if (e.code === 'KeyV') flipCard();
     else if (e.key === '+' || e.key === '=') setZoom(Z.s * 1.6);
     else if (e.key === '-') setZoom(Z.s / 1.6);
@@ -2252,7 +2429,7 @@ function loop(){
   buildNote().then(() => { pickables.push(...noteMeshes); });
   buildVideoScreen();
   const recReady = REC.on ? recInit() : null;
-  const reaReady = REC.on ? reaLoad() : null;
+  const reaReady = REC.on ? socialLoad() : null;
   // menu list
   const lista = $('lista');
   const extra = [];
@@ -2271,7 +2448,7 @@ function loop(){
   placePlayerStart();
   if (recReady) { $('loadTxt').textContent = 'Colando os bilhetes…'; await Promise.race([Promise.all([recReady, reaReady]), new Promise(r => setTimeout(r, 6000))]); }
   $('loading').classList.add('hidden'); $('menu').classList.remove('hidden');
-  window.__museu = { REC, ROOM, MUS, VID, REA, openRecRead, openRecWrite, paintings, player, startPlaying, teleportTo, openViewer, openBook, openNote, closeNote, bookGo, flipCard, closeViewer, update, render: () => renderer.render(scene, camera) };
+  window.__museu = { REC, ROOM, MUS, VID, REA, COM, rankUpdate, openRecRead, openRecWrite, paintings, player, startPlaying, teleportTo, openViewer, openBook, openNote, closeNote, bookGo, flipCard, closeViewer, update, render: () => renderer.render(scene, camera) };
   loop();
 })();
 </script>
