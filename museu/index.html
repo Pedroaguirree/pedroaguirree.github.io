@@ -169,6 +169,7 @@
   #vInfo .desc{color:var(--ink);margin-top:8px;max-width:70ch}
   #vHint{color:var(--muted);font-size:14px;white-space:nowrap}
 
+
   /* Touch */
   #touch{position:fixed;inset:0;pointer-events:none}
   #joyBase{position:fixed;width:124px;height:124px;border-radius:50%;border:2px solid rgba(255,255,255,.35);
@@ -259,7 +260,7 @@
     <button id="zFit" title="Ver inteiro" aria-label="Ver inteiro" style="font-size:18px">⤢</button>
   </div>
   <div id="vInfo">
-    <div>
+    <div id="vStatic">
       <h2 id="vTitle"></h2>
       <p id="vMeta"></p>
       <p id="vDims"></p>
@@ -778,29 +779,38 @@ function hangPainting(p, H){
   // plaque
   const pc = a.soon ? makeCanvas(320, 200, (c, w, h) => {
     c.fillStyle = '#f5f1e8'; c.fillRect(0, 0, w, h); c.fillStyle = '#2a221c'; c.textAlign = 'center';
-    c.font = 'italic bold 56px Georgia, serif'; c.fillText('Em breve', w / 2, 108);
+    const txt = a.placa || 'Em breve'; let fs = 56; c.font = `italic bold ${fs}px Georgia, serif`;
+    while (c.measureText(txt).width > w - 30 && fs > 30) { fs -= 2; c.font = `italic bold ${fs}px Georgia, serif`; }
+    c.fillText(txt, w / 2, 108);
     c.fillStyle = '#9a7a3e'; c.fillRect(w / 2 - 50, 128, 100, 3);
-    c.font = '20px Georgia, serif'; c.fillStyle = '#5a4b40'; c.fillText('nova obra', w / 2, 162);
-  }) : makeCanvas(320, 200, (c, w, h) => {
-    c.fillStyle = '#f5f1e8'; c.fillRect(0, 0, w, h); c.fillStyle = '#2a221c'; c.font = 'bold 28px Georgia, serif';
-    wrapText(c, a.titulo || 'Sem título', 18, 42, w - 36, 32, 2);
-    c.font = '20px Georgia, serif'; c.fillStyle = '#5a4b40';
-    c.fillText([CFG.artista, a.ano].filter(Boolean).join(', '), 18, 120);
-    c.fillText(a.tecnica || '', 18, 148); c.fillText(dims(a) + (a.verso ? '  ·  tem verso' : ''), 18, 176);
-  });
+    c.font = '20px Georgia, serif'; c.fillStyle = '#5a4b40'; c.fillText(/constru/i.test(a.placa || '') ? 'em andamento' : 'nova obra', w / 2, 162);
+  }) : makeCanvas(320, 200, (c, w, h) => drawPlaque(c, w, h, a));
+  const ptex = smoothTex(pc);
   const plaque = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.1375, 0.01),
-    [edge, edge, edge, edge, new THREE.MeshBasicMaterial({ map: smoothTex(pc) }), edge]);
+    [edge, edge, edge, edge, new THREE.MeshBasicMaterial({ map: ptex }), edge]);
   if (a.soon) plaque.scale.set(1.35, 1.35, 1);
   plaque.position.set(a.w / 2 + fw + (a.soon ? 0.28 : 0.2), 1.3 - cy, 0.012); plaque.userData.idx = paintings.length; g.add(plaque);
   if (a.soon) {
     const cw = a.w + fw * 2 + 0.14, top = a.h / 2 + fw + 0.12;
     const cm = curtain(g, cw, top + a.h / 2 + fw + 0.1, top, soon.length * 31 + 7);
     for (const m of g.children) if (m.userData.idx !== undefined) m.userData.idx = undefined;
-    cm.userData.soon = true; plaque.userData.soon = true;
+    cm.userData.soon = plaque.userData.soon = a.placa || 'Em breve';
     scene.add(g); soon.push({ art: a, group: g, meshes: [cm, plaque] }); return;
   }
   scene.add(g);
-  paintings.push({ art: a, group: g, wall: wl, cy, meshes: g.children.filter(m => m.userData.idx !== undefined) });
+  paintings.push({ art: a, group: g, wall: wl, cy, plaqueCanvas: pc, plaqueTex: ptex, meshes: g.children.filter(m => m.userData.idx !== undefined) });
+}
+function drawPlaque(c, w, h, a){
+  c.clearRect(0, 0, w, h);
+  c.fillStyle = '#f5f1e8'; c.fillRect(0, 0, w, h); c.fillStyle = '#2a221c'; c.font = 'bold 28px Georgia, serif';
+  wrapText(c, a.titulo || 'Sem título', 18, 42, w - 36, 32, 2);
+  c.font = '20px Georgia, serif'; c.fillStyle = '#5a4b40';
+  c.fillText([CFG.artista, a.ano].filter(Boolean).join(', '), 18, 120);
+  c.fillText(a.tecnica || '', 18, 148); c.fillText(dims(a) + (a.verso ? '  ·  tem verso' : ''), 18, 176);
+}
+function redrawPlaque(i){
+  const p = paintings[i]; if (!p?.plaqueCanvas) return;
+  drawPlaque(p.plaqueCanvas.getContext('2d'), p.plaqueCanvas.width, p.plaqueCanvas.height, p.art); p.plaqueTex.needsUpdate = true;
 }
 function wrapText(c, text, x, y, maxW, lh, maxLines){
   const words = text.split(' '); let line = '', n = 0;
@@ -1086,7 +1096,7 @@ function openViewer(idx){
       { duration: 700, easing: 'cubic-bezier(.2,.75,.15,1)' });
   }
 }
-function closeViewer(){
+async function closeViewer(){
   if (performance.now() - Z.opened < 450) return;
   const v = $('viewer'); if (!v.classList.contains('show')) return;
   const card = $('vCard').getBoundingClientRect();
@@ -1210,13 +1220,13 @@ function frameInto(host, a, fp, px, src, isBack){
   if (!isBack && (mw || fp.st?.set !== 'pinho')) { const sheen = document.createElement('div'); sheen.className = 'sheen'; inner.appendChild(sheen); }
 }
 
-function teleportTo(idx){
+function teleportTo(idx){ placeAt(idx); startPlaying(); }
+function placeAt(idx){
   const p = paintings[idx], n = p.wall.n, gp = p.group.position;
   const dist = clamp(Math.max(p.art.w, p.art.h) * 1.6 + 0.55, 0.85, Math.min(ROOM.W, ROOM.D) - 1);
   player.x = clamp(gp.x + n[0] * dist, -ROOM.W / 2 + .5, ROOM.W / 2 - .5);
   player.z = clamp(gp.z + n[1] * dist, -ROOM.D / 2 + .5, ROOM.D / 2 - .5);
   player.yaw = Math.atan2(n[0], n[1]); player.pitch = Math.atan2(p.cy - 1.6, dist) * 0.8; player.vx = player.vz = 0;
-  startPlaying();
 }
 
 $('mStart').addEventListener('click', startPlaying);
@@ -1267,6 +1277,11 @@ document.addEventListener('pointerlockchange', () => {
 document.addEventListener('pointerlockerror', () => { lockOK = false; showHint('Arraste com o mouse para olhar em volta'); });
 
 addEventListener('keydown', e => {
+  const tag = e.target?.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA') {
+    if (e.key === 'Escape') e.target.blur();
+    return;
+  }
   keys[e.code] = true;
   if (state === 'note') { if (e.code === 'Escape' || e.code === 'KeyE' || e.code === 'Enter') { e.preventDefault(); closeNote(); } return; }
   if (state === 'book') {
@@ -1377,7 +1392,7 @@ function update(dt){
     $('cross').classList.toggle('on', on);
     $('tView').classList.toggle('on', on);
     const pr = $('prompt');
-    if (isSoon) { pr.textContent = 'Em breve: uma obra nova vai ficar aqui'; pr.classList.remove('hidden'); }
+    if (isSoon) { pr.textContent = /constru/i.test(ud.soon) ? 'Em construção: uma obra que ainda estou fazendo' : 'Em breve: uma obra nova vai ficar aqui'; pr.classList.remove('hidden'); }
     else if (isBook) { pr.innerHTML = `${isTouch ? '' : '<kbd>E</kbd>'}folhear o caderno criativo`; pr.classList.remove('hidden'); }
     else if (isNote) { pr.innerHTML = `${isTouch ? '' : '<kbd>E</kbd>'}ler a mensagem`; pr.classList.remove('hidden'); }
     else if (target >= 0) { pr.innerHTML = `${isTouch ? '' : '<kbd>E</kbd>'}ver de perto: ${escapeHtml(paintings[target].art.titulo || 'Sem título')}${paintings[target].art.verso ? ' (tem verso)' : ''}`; pr.classList.remove('hidden'); }
@@ -1411,9 +1426,10 @@ function loop(){
 (async () => {
   const arts = await loadArtworks();
   const soonArts = (CFG.em_breve || []).map((o, i) => ({ ...o, soon: true, titulo: 'Em breve', w: (+o.largura || 100) / 100, h: (+o.altura || 120) / 100, moldura: o.moldura || 'madeira' }));
+  const wallArts = arts.filter(a => a.parede !== 'meio'), midArts = [...soonArts, ...arts.filter(a => a.parede === 'meio')];
   let W = 14, D = 10.5, g1 = null, g2 = null;
   for (let n = 0; n < 300; n++) {
-    g1 = assign(arts, outerSegments(W, D)); g2 = assign(soonArts, partitionSegments(W));
+    g1 = assign(wallArts, outerSegments(W, D)); g2 = assign(midArts, partitionSegments(W));
     if (g1 && g2) break; W *= 1.04; D *= 1.03;
   }
   const placed = [...place(g1 || [], outerSegments(W, D)), ...place(g2 || [], partitionSegments(W))];

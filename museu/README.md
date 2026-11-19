@@ -31,9 +31,13 @@ O caderno fica na mesinha do canto; quem clica nele vê a capa abrir e folheia a
 
 O texto da folha sobre o pilar, em frente à parede "Museu do Pedro", fica em `mensagem` no `obras.js`. Cada linha vira um parágrafo.
 
+## Parede do meio
+
+Uma obra com `parede: "meio"` fica no lado de trás da parede do meio, junto das obras cobertas.
+
 ## Obras "Em breve"
 
-No fim do `obras.js` há a lista `em_breve`: quadros grandes cobertos por uma cortina branca, com a placa "Em breve", no lado de trás da parede do meio. Para revelar uma obra, apague uma linha de `em_breve` e adicione a obra normalmente na lista `obras`.
+No fim do `obras.js` há a lista `em_breve` (cada uma com `placa`, por exemplo "Em breve" ou "Em construção"): quadros grandes cobertos por uma cortina branca, com a placa "Em breve", no lado de trás da parede do meio. Para revelar uma obra, apague uma linha de `em_breve` e adicione a obra normalmente na lista `obras`.
 
 Dica: use fotos recortadas só na obra (sem a parede em volta), retas e bem iluminadas. Até uns 2000 px no lado maior já fica ótimo.
 
