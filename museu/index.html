@@ -7,7 +7,7 @@
 <link rel="icon" href="data:,">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&family=Karla:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Karla:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#14110f; --panel:rgba(22,18,15,.92); --ink:#f2ede4; --muted:#b7ab99;
@@ -17,10 +17,10 @@
   html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);overflow:hidden;
     font-family:Karla,system-ui,sans-serif;-webkit-user-select:none;user-select:none;touch-action:none}
   canvas#c{position:fixed;inset:0;width:100vw;height:100vh;display:block;
-    image-rendering:pixelated;image-rendering:crisp-edges;outline:none}
+    outline:none}
   #vignette{position:fixed;inset:0;pointer-events:none;
     background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.45) 100%)}
-  .px{font-family:"Pixelify Sans",monospace}
+  .px{font-family:"Playfair Display",Georgia,serif}
   .hidden{display:none!important}
 
   /* HUD */
@@ -32,7 +32,7 @@
   #prompt{position:fixed;left:50%;top:calc(50% + 28px);transform:translateX(-50%);
     background:rgba(20,17,15,.8);border:1px solid var(--line);padding:6px 12px;border-radius:3px;
     font-size:15px;white-space:nowrap;pointer-events:none}
-  #prompt kbd{font-family:"Pixelify Sans",monospace;background:var(--brass);color:#1a1410;padding:0 6px;border-radius:2px;margin-right:6px}
+  #prompt kbd{font-family:Karla,system-ui,sans-serif;background:var(--brass);color:#1a1410;padding:0 6px;border-radius:2px;margin-right:6px}
   #hint{position:fixed;left:16px;bottom:16px;font-size:14px;color:var(--muted);
     background:rgba(20,17,15,.7);padding:8px 12px;border-radius:3px;transition:opacity 1s;pointer-events:none}
 
@@ -43,17 +43,17 @@
     border:1px solid var(--line);border-radius:6px;padding:28px 28px 22px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
   .card h1{margin:0;font-size:40px;font-weight:600;color:var(--brass);letter-spacing:.5px;line-height:1.05}
   .card .sub{margin:6px 0 20px;color:var(--muted);font-size:16px}
-  .btn{font-family:"Pixelify Sans",monospace;font-size:20px;border:0;border-radius:3px;cursor:pointer;
+  .btn{font-family:Karla,system-ui,sans-serif;font-size:20px;border:0;border-radius:3px;cursor:pointer;
     background:var(--brass);color:#1a1410;padding:12px 18px;width:100%;
     box-shadow:0 4px 0 var(--brass-d);transition:transform .05s}
   .btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--brass-d)}
   .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);box-shadow:none;font-size:16px;padding:9px 12px}
   .keys{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:20px 0 6px;font-size:15px;color:var(--muted)}
-  .keys b{font-family:"Pixelify Sans",monospace;font-weight:400;color:var(--ink)}
+  .keys b{font-family:Karla,system-ui,sans-serif;font-weight:400;color:var(--ink)}
   .row{display:flex;align-items:center;gap:12px;margin-top:16px;font-size:15px;color:var(--muted)}
   .row input[type=range]{flex:1;accent-color:var(--brass)}
   details{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
-  summary{cursor:pointer;font-family:"Pixelify Sans",monospace;font-size:17px;color:var(--ink)}
+  summary{cursor:pointer;font-family:Karla,system-ui,sans-serif;font-size:17px;color:var(--ink)}
   #lista{display:flex;flex-direction:column;gap:6px;margin-top:10px}
   #lista button{all:unset;cursor:pointer;display:flex;justify-content:space-between;gap:10px;
     padding:8px 10px;border-radius:3px;background:rgba(255,255,255,.04);font-size:15px}
@@ -69,7 +69,7 @@
   #vZoom{position:absolute;right:22px;top:50%;transform:translateY(-60%);display:flex;flex-direction:column;align-items:center;gap:8px;
     background:rgba(22,18,15,.85);border:1px solid var(--line);border-radius:6px;padding:8px}
   #vZoom button{width:46px;height:46px;border:0;border-radius:4px;background:rgba(255,255,255,.06);color:var(--ink);
-    font-family:"Pixelify Sans",monospace;font-size:24px;cursor:pointer;line-height:1}
+    font-family:Karla,system-ui,sans-serif;font-size:24px;cursor:pointer;line-height:1}
   #vZoom button:hover{background:rgba(227,185,100,.22);color:var(--brass)}
   #vZoom button:disabled{opacity:.3;cursor:default;background:rgba(255,255,255,.06);color:var(--ink)}
   #zLvl{font-size:13px;color:var(--muted);min-width:46px;text-align:center}
@@ -81,14 +81,32 @@
 
   /* Touch */
   #touch{position:fixed;inset:0;pointer-events:none}
-  #joyBase{position:fixed;width:120px;height:120px;border-radius:50%;border:2px solid rgba(255,255,255,.25);
-    background:rgba(0,0,0,.15);transform:translate(-50%,-50%);display:none}
+  #joyBase{position:fixed;width:124px;height:124px;border-radius:50%;border:2px solid rgba(255,255,255,.35);
+    background:rgba(20,17,15,.28);transform:translate(-50%,-50%);transition:opacity .2s;opacity:.75;
+    left:calc(96px + env(safe-area-inset-left));top:calc(100% - 110px - env(safe-area-inset-bottom))}
+  #joyBase.active{opacity:1;transition:none}
+  #joyLbl{position:fixed;font-size:12px;color:rgba(255,255,255,.8);transform:translateX(-50%);pointer-events:none;
+    left:calc(96px + env(safe-area-inset-left));top:calc(100% - 38px - env(safe-area-inset-bottom));text-shadow:0 1px 2px #000}
+  #lookLbl{position:fixed;right:calc(24px + env(safe-area-inset-right));top:calc(100% - 150px - env(safe-area-inset-bottom));
+    font-size:12px;color:rgba(255,255,255,.8);pointer-events:none;text-shadow:0 1px 2px #000;transition:opacity 1s}
   #joyKnob{position:absolute;left:50%;top:50%;width:52px;height:52px;margin:-26px 0 0 -26px;border-radius:50%;background:rgba(227,185,100,.7)}
-  .tbtn{pointer-events:auto;position:fixed;font-family:"Pixelify Sans",monospace;border:0;border-radius:50%;
+  .tbtn{pointer-events:auto;position:fixed;font-family:Karla,system-ui,sans-serif;border:0;border-radius:50%;
     background:rgba(20,17,15,.7);color:var(--ink);border:1px solid var(--line)}
   #tMenu{top:max(14px,env(safe-area-inset-top));right:14px;width:46px;height:46px;font-size:20px}
-  #tView{right:24px;bottom:34px;width:78px;height:78px;font-size:17px;opacity:.35}
-  #tView.on{opacity:1;background:var(--brass);color:#1a1410}
+  #tView{right:calc(28px + env(safe-area-inset-right));bottom:calc(34px + env(safe-area-inset-bottom));width:84px;height:84px;font-size:17px;
+    opacity:0;transform:scale(.8);transition:opacity .15s,transform .15s;pointer-events:none}
+  #tView.on{opacity:1;transform:none;background:var(--brass);color:#1a1410;pointer-events:auto}
+  @media (pointer: coarse){
+    #prompt{top:auto;bottom:calc(215px + env(safe-area-inset-bottom));font-size:14px}
+    @media (orientation: landscape){ #prompt{bottom:calc(28px + env(safe-area-inset-bottom))} }
+    #hint{left:50%;transform:translateX(-50%);bottom:auto;top:calc(14px + env(safe-area-inset-top));text-align:center;max-width:80vw;white-space:normal}
+    .card{padding:22px 20px 18px} .card h1{font-size:32px}
+    #vStage{padding:70px 12px 12px}
+    #vZoom{top:calc(12px + env(safe-area-inset-top));right:12px;transform:none;flex-direction:row;padding:6px}
+    #vZoom button{width:44px;height:44px}
+    #vInfo{flex-direction:column;align-items:flex-start;gap:8px;padding:12px 16px calc(16px + env(safe-area-inset-bottom))}
+    #vInfo h2{font-size:21px}
+  }
 
   #loading{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:var(--bg)}
   #loading .bar{width:220px;height:8px;background:#2a231d;border-radius:2px;overflow:hidden}
@@ -105,6 +123,8 @@
 
 <div id="touch" class="hidden">
   <div id="joyBase"><div id="joyKnob"></div></div>
+  <div id="joyLbl">andar</div>
+  <div id="lookLbl">arraste aqui para olhar</div>
   <button class="tbtn" id="tMenu" aria-label="Menu">☰</button>
   <button class="tbtn" id="tView">VER</button>
 </div>
@@ -122,11 +142,11 @@
       <b>No quadro</b><span>+ e − para zoom, clique para voltar</span>
     </div>
     <div class="keys hidden" id="keysTouch">
-      <b>Lado esquerdo</b><span>arraste para andar</span>
-      <b>Lado direito</b><span>arraste para olhar</span>
-      <b>Toque na obra</b><span>ver de perto</span>
+      <b>Círculo</b><span>arraste para andar</span>
+      <b>Tela</b><span>arraste para olhar em volta</span>
+      <b>VER</b><span>aparece perto de uma obra</span>
+      <b>Dica</b><span>deite o celular para ver melhor</span>
     </div>
-    <div class="row"><span>Nítido</span><input type="range" id="mPixel" min="1" max="3" step="0.25"><span>Pixelado</span></div>
     <details>
       <summary>Ir direto para uma obra</summary>
       <div id="lista"></div>
@@ -174,31 +194,29 @@ $('mSub').textContent = CFG.subtitulo || '';
 
 /* ---------- Renderer ---------- */
 const canvas = $('c');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x15110e);
 const camera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 0.05, 100);
 camera.rotation.order = 'YXZ';
 
-let pixelSize = parseFloat(store.get('museu-pixel-v2')) || CFG.pixel || 1.25;
 function applySize(){
-  const ratio = pixelSize <= 1 ? Math.min(devicePixelRatio, 2) : 1 / pixelSize;
-  renderer.setPixelRatio(ratio);
+  renderer.setPixelRatio(Math.min(devicePixelRatio, isTouch ? 1.75 : 2));
   renderer.setSize(innerWidth, innerHeight, true);
   camera.aspect = innerWidth / innerHeight;
+  camera.fov = innerWidth < innerHeight ? 80 : 70;   // a bit wider when the phone is upright
   camera.updateProjectionMatrix();
 }
 addEventListener('resize', applySize);
+addEventListener('orientationchange', () => setTimeout(applySize, 200));
 applySize();
-$('mPixel').value = pixelSize;
-$('mPixel').addEventListener('input', e => { pixelSize = parseFloat(e.target.value); store.set('museu-pixel-v2', pixelSize); applySize(); });
 
 /* ---------- Pixel textures ---------- */
 function makeCanvas(w, h, draw){ const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); return c; }
 function pixelTex(c){
   const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace; t.magFilter = THREE.NearestFilter; t.minFilter = THREE.LinearMipmapLinearFilter;
+  t.colorSpace = THREE.SRGBColorSpace; t.minFilter = THREE.LinearMipmapLinearFilter; t.anisotropy = renderer.capabilities.getMaxAnisotropy();
   t.wrapS = t.wrapT = THREE.RepeatWrapping; return t;
 }
 function smoothTex(c){
@@ -547,15 +565,6 @@ function buildRoom(W, D, H){
   const iw = Math.min(P * 0.8, 4.4);
   const im = new THREE.Mesh(new THREE.PlaneGeometry(iw, iw * 420 / 1400), new THREE.MeshBasicMaterial({ map: smoothTex(intro), transparent: true }));
   im.position.set(0, 1.85, PART_T / 2 + 0.005); scene.add(im);
-  // Benches (along the long axis, at both ends of the middle wall)
-  const benchMat = new THREE.MeshLambertMaterial({ color: 0x5a3a22 }), legMat = new THREE.MeshLambertMaterial({ color: 0x222222 });
-  const bx = P / 2 + (W / 2 - P / 2) * 0.45;
-  for (const sx of [-1, 1]) {
-    const x = sx * bx, z = 0, bl = 1.7, bd = 0.45;
-    const seat = new THREE.Mesh(new THREE.BoxGeometry(bd, 0.08, bl), benchMat); seat.position.set(x, 0.44, z); scene.add(seat);
-    for (const s2 of [-1, 1]) { const leg = new THREE.Mesh(new THREE.BoxGeometry(bd - 0.06, 0.4, 0.06), legMat); leg.position.set(x, 0.2, z + s2 * (bl / 2 - 0.12)); scene.add(leg); }
-    colliders.push({ x0: x - bd / 2, x1: x + bd / 2, z0: z - bl / 2, z1: z + bl / 2 });
-  }
 }
 
 const CLOTH = new THREE.MeshLambertMaterial({ color: 0xf4f2ee, side: THREE.DoubleSide });
@@ -666,7 +675,7 @@ function startPlaying(){
   }
   canvas.focus();
   if (!startPlaying.once) { startPlaying.once = true;
-    showHint(isTouch ? 'Arraste à esquerda para andar, à direita para olhar' : (lockOK ? 'WASD para andar · mouse para olhar · E para ver uma obra' : 'WASD para andar · arraste o mouse para olhar · clique numa obra para ver'), 9000); }
+    showHint(isTouch ? 'Use o círculo para andar e arraste a tela para olhar. Chegue perto de uma obra e toque em VER.' : (lockOK ? 'WASD para andar · mouse para olhar · E para ver uma obra' : 'WASD para andar · arraste o mouse para olhar · clique numa obra para ver'), 9000); }
 }
 function openMenu(){
   state = 'menu'; $('menu').classList.remove('hidden'); $('cross').classList.add('hidden'); $('prompt').classList.add('hidden');
@@ -714,18 +723,25 @@ $('zIn').addEventListener('click', () => setZoom(Z.s * 1.6));
 $('zOut').addEventListener('click', () => setZoom(Z.s / 1.6));
 $('zFit').addEventListener('click', () => setZoom(1));
 vStage.addEventListener('wheel', e => { e.preventDefault(); setZoom(Z.s * (e.deltaY < 0 ? 1.18 : 1 / 1.18), false); }, { passive: false });
-let vDrag = null;
-vStage.addEventListener('pointerdown', e => { vDrag = { x: e.clientX, y: e.clientY, moved: 0, id: e.pointerId }; try { vStage.setPointerCapture(e.pointerId); } catch {} });
+let vDrag = null; const vPts = new Map(); let pinch = null;
+vStage.addEventListener('pointerdown', e => {
+  vPts.set(e.pointerId, { x: e.clientX, y: e.clientY }); try { vStage.setPointerCapture(e.pointerId); } catch {}
+  if (vPts.size === 2) { const [a, b] = [...vPts.values()]; pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), s: Z.s }; vDrag = null; }
+  else if (vPts.size === 1) vDrag = { x: e.clientX, y: e.clientY, moved: 0, id: e.pointerId };
+});
 vStage.addEventListener('pointermove', e => {
+  if (vPts.has(e.pointerId)) vPts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (pinch && vPts.size === 2) { const [a, b] = [...vPts.values()]; setZoom(pinch.s * Math.hypot(a.x - b.x, a.y - b.y) / pinch.d, false); return; }
   if (!vDrag || e.pointerId !== vDrag.id) return;
   const dx = e.clientX - vDrag.x, dy = e.clientY - vDrag.y; vDrag.x = e.clientX; vDrag.y = e.clientY; vDrag.moved += Math.abs(dx) + Math.abs(dy);
   if (Z.s > 1 && vDrag.moved > 4) { vStage.classList.add('dragging'); Z.x += dx; Z.y += dy; clampPan(); applyZ(false); }
 });
 vStage.addEventListener('pointerup', e => {
+  vPts.delete(e.pointerId); if (pinch) { if (vPts.size < 2) pinch = null; vDrag = null; return; }
   if (!vDrag || e.pointerId !== vDrag.id) return; const moved = vDrag.moved; vDrag = null; vStage.classList.remove('dragging');
   if (moved < 6) closeViewer();
 });
-vStage.addEventListener('pointercancel', () => { vDrag = null; vStage.classList.remove('dragging'); });
+vStage.addEventListener('pointercancel', e => { vPts.delete(e.pointerId); pinch = null; vDrag = null; vStage.classList.remove('dragging'); });
 
 document.addEventListener('pointerlockchange', () => {
   locked = document.pointerLockElement === canvas;
@@ -760,7 +776,7 @@ addEventListener('mousemove', e => {
 addEventListener('mouseup', e => {
   if (state !== 'playing' || isTouch) return;
   if (locked) { if (target >= 0) openViewer(target); }
-  else if (drag) { if (drag.moved < 6) { const hit = pick(e.clientX, e.clientY, 6); if (hit >= 0) openViewer(hit); else if (lockOK) startPlaying(); } drag = null; }
+  else if (drag) { if (drag.moved < 6) { const hit = pick(e.clientX, e.clientY, 4); if (hit >= 0) openViewer(hit); else if (lockOK) startPlaying(); } drag = null; }
 });
 function turn(dx, dy, s = 0.0022){ player.yaw -= dx * s; player.pitch = clamp(player.pitch - dy * s, -1.3, 1.3); }
 
@@ -770,25 +786,25 @@ canvas.addEventListener('touchstart', e => {
   for (const t of e.changedTouches) {
     if (t.clientX < innerWidth * 0.45 && joy.id === null) {
       joy.id = t.identifier; joy.ox = t.clientX; joy.oy = t.clientY; joy.x = joy.y = 0;
-      const jb = $('joyBase'); jb.style.display = 'block'; jb.style.left = t.clientX + 'px'; jb.style.top = t.clientY + 'px';
-    } else if (look.id === null) { look = { id: t.identifier, x: t.clientX, y: t.clientY, sx: t.clientX, sy: t.clientY, t: performance.now() }; }
+      const jb = $('joyBase'); jb.classList.add('active'); jb.style.left = t.clientX + 'px'; jb.style.top = t.clientY + 'px';
+    } else if (look.id === null) { look = { id: t.identifier, x: t.clientX, y: t.clientY, sx: t.clientX, sy: t.clientY, t: performance.now() }; $('lookLbl').style.opacity = 0; }
   }
 }, { passive: false });
 canvas.addEventListener('touchmove', e => {
   e.preventDefault();
   for (const t of e.changedTouches) {
     if (t.identifier === joy.id) {
-      let dx = t.clientX - joy.ox, dy = t.clientY - joy.oy; const d = Math.hypot(dx, dy), R = 55;
+      let dx = t.clientX - joy.ox, dy = t.clientY - joy.oy; const d = Math.hypot(dx, dy), R = 52;
       if (d > R) { dx *= R / d; dy *= R / d; } joy.x = dx / R; joy.y = dy / R;
       $('joyKnob').style.transform = `translate(${dx}px,${dy}px)`;
-    } else if (t.identifier === look.id) { turn(t.clientX - look.x, t.clientY - look.y, 0.005); look.x = t.clientX; look.y = t.clientY; }
+    } else if (t.identifier === look.id) { turn(t.clientX - look.x, t.clientY - look.y, 0.0055); look.x = t.clientX; look.y = t.clientY; }
   }
 }, { passive: false });
 const endTouch = e => {
   for (const t of e.changedTouches) {
-    if (t.identifier === joy.id) { joy.id = null; joy.x = joy.y = 0; $('joyBase').style.display = 'none'; $('joyKnob').style.transform = ''; }
+    if (t.identifier === joy.id) { joy.id = null; joy.x = joy.y = 0; const jb = $('joyBase'); jb.classList.remove('active'); jb.style.left = jb.style.top = ''; $('joyKnob').style.transform = ''; }
     else if (t.identifier === look.id) {
-      if (Math.hypot(t.clientX - look.sx, t.clientY - look.sy) < 10 && performance.now() - look.t < 350) { const hit = pick(t.clientX, t.clientY, 6); if (hit >= 0) openViewer(hit); }
+      if (Math.hypot(t.clientX - look.sx, t.clientY - look.sy) < 10 && performance.now() - look.t < 350) { const hit = pick(t.clientX, t.clientY, 4); if (hit >= 0) openViewer(hit); }
       look.id = null;
     }
   }
@@ -797,10 +813,12 @@ canvas.addEventListener('touchend', endTouch); canvas.addEventListener('touchcan
 
 // picking
 const ray = new THREE.Raycaster(); let pickables = [];
+const viewDist = i => 1.3 + Math.max(paintings[i].art.w, paintings[i].art.h) * 1.1;   // A5 ≈ 1,5 m · A2 ≈ 2 m
 function pick(cx, cy, far){
   const v = new THREE.Vector2((cx / innerWidth) * 2 - 1, -(cy / innerHeight) * 2 + 1);
   ray.setFromCamera(v, camera); ray.far = far;
-  const hit = ray.intersectObjects(pickables, false)[0]; return hit && hit.object.userData.idx !== undefined ? hit.object.userData.idx : -1;
+  const hit = ray.intersectObjects(pickables, false)[0]; const i = hit?.object.userData.idx;
+  return i !== undefined && hit.distance <= viewDist(i) ? i : -1;
 }
 
 let hintTimer;
@@ -823,14 +841,15 @@ function update(dt){
     move(player.vx * dt, player.vz * dt);
     const sp = Math.hypot(player.vx, player.vz); player.bob += dt * sp * 4.2;
     // what are we looking at?
-    ray.setFromCamera(center, camera); ray.far = 4.5;
-    const hit = ray.intersectObjects(pickables, false)[0]; const isSoon = !!hit?.object.userData.soon;
-    target = hit && !isSoon ? (hit.object.userData.idx ?? -1) : -1;
+    ray.setFromCamera(center, camera); ray.far = 4;
+    const hit = ray.intersectObjects(pickables, false)[0]; const isSoon = !!hit?.object.userData.soon && hit.distance < 3;
+    const hi = hit && !isSoon ? hit.object.userData.idx : undefined;
+    target = hi !== undefined && hit.distance <= viewDist(hi) ? hi : -1;
     $('cross').classList.toggle('on', target >= 0);
     $('tView').classList.toggle('on', target >= 0);
     const pr = $('prompt');
     if (isSoon) { pr.textContent = 'Em breve: uma obra nova vai ficar aqui'; pr.classList.remove('hidden'); }
-    else if (target >= 0 && !isTouch) { pr.innerHTML = `<kbd>E</kbd>ver de perto: ${escapeHtml(paintings[target].art.titulo || 'Sem título')}`; pr.classList.remove('hidden'); }
+    else if (target >= 0) { pr.innerHTML = `${isTouch ? '' : '<kbd>E</kbd>'}ver de perto: ${escapeHtml(paintings[target].art.titulo || 'Sem título')}`; pr.classList.remove('hidden'); }
     else pr.classList.add('hidden');
   } else {
     player.vx = player.vz = 0;

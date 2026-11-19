@@ -17,9 +17,6 @@ window.MUSEU = {
   subtitulo: "Desenhos e pinturas",
   artista: "Pedro",
 
-  // Tamanho do pixel: 1 = nítido, 3 = bem pixelado
-  pixel: 1.25,
-
   obras: [
     { arquivo: "obra01.jpg", titulo: "Tucano", ano: "", tecnica: "Pastel oleoso sobre papel", largura: 42, altura: 59.4, moldura: "madeira", descricao: "" }, // A2
     { arquivo: "obra02.jpg", titulo: "Sol na colina", ano: "", tecnica: "Pastel oleoso sobre papel", largura: 42, altura: 59.4, moldura: "madeira", descricao: "" }, // A2

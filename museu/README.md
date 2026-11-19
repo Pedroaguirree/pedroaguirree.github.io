@@ -47,6 +47,6 @@ e acesse `http://localhost:8000`.
 
 - **Computador:** WASD para andar (Shift para correr), mouse para olhar, **E** ou clique para ver uma obra de perto, **Esc** para o menu.
 - **Vendo de perto:** botões + e − ao lado (ou a rodinha do mouse) para dar zoom, arraste para mover, e clique no quadro para voltar ao museu.
-- **Celular:** arraste do lado esquerdo para andar, do lado direito para olhar, e toque numa obra para vê-la de perto.
+- **Celular:** use o círculo no canto esquerdo para andar e arraste a tela para olhar. Perto de uma obra aparece o botão **VER**. Vendo de perto, dá para usar os botões ou fazer pinça com dois dedos para dar zoom, e tocar no quadro para voltar.
 
 Feito com [three.js](https://threejs.org) (licença MIT, em `lib/`).
