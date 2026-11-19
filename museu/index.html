@@ -1379,7 +1379,7 @@ function hash(str){ let h = 2166136261; for (let i = 0; i < str.length; i++) { h
 function recSlots(){
   // spots on the entrance face of the middle wall: a cluster that grows from beside the little table
   const P = partLen(ROOM.W), S = 0.122, out = [];
-  const regions = [[-P / 2 + 0.16, -0.95, -P / 2 + 0.95, 0.86], [0.95, P / 2 - 0.16, P / 2 - 0.95, 1.22]];
+  const regions = [[-P / 2 + 0.16, -2.3, -P / 2 + 0.95, 0.86], [0.95, P / 2 - 0.16, P / 2 - 0.95, 1.22]];
   for (const [x0, x1, sx, ymin] of regions) {
     const pts = [];
     for (let y = ymin; y <= 2.06; y += S) for (let x = x0 + S / 2; x <= x1 - S / 2 + 1e-6; x += S) {
@@ -1425,13 +1425,14 @@ function recAdd(n, pop){
   const m = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ map: smoothTex(noteCanvas(n)), emissive: 0x2a2620 }));
   m.userData.rec = k; g.add(m); scene.add(g); REC.meshes.push(m); pickables.push(m);
   if (pop) { g.scale.setScalar(0.01); REC.pops.push({ g, t: 0 }); }
+  statsDirty();
 }
 function recRedraw(k, n){
   REC.list[k] = n; const m = REC.meshes[k]; if (!m) return;
   const old = m.material.map; m.material.map = smoothTex(noteCanvas(n)); m.material.needsUpdate = true; old?.dispose?.();
 }
 function recRemoveMesh(k){
-  const m = REC.meshes[k]; REC.list[k] = null; if (!m) return;
+  const m = REC.meshes[k]; REC.list[k] = null; statsDirty(); if (!m) return;
   const i = pickables.indexOf(m); if (i >= 0) pickables.splice(i, 1);
   const g = m.parent; REC.pops.push({ g, t: 0, out: true });
 }
@@ -1605,7 +1606,7 @@ $('rReadClose').addEventListener('click', closeRec);
 $('rReadWrite').addEventListener('click', () => { Z.opened = 0; $('rec').classList.remove('show'); setTimeout(openRecWrite, 150); });
 $('rec').addEventListener('click', e => { if (e.target.id === 'rBg' || e.target.id === 'rec') closeRec(); });
 setInterval(() => { if (REC.on && state === 'playing' && !document.hidden) recLoad(); }, 60000);
-setInterval(() => { if (REC.on && state === 'playing' && !document.hidden) socialLoad(); }, 120000);
+setInterval(() => { if (REC.on && state === 'playing' && !document.hidden) { socialLoad(); statsVisit(true); } }, 120000);
 
 /* ---------- Atelier videos (screen in the corner between the toucans) ---------- */
 const VID = { list: (CFG.videos || []).filter(v => v && v.arquivo), el: null, tex: null, mat: null, cur: 0, pos: null, open: false };
@@ -1839,7 +1840,7 @@ async function reaToggle(k, btn){
       c[k] = before + 1; REA.mine[mk] = { id: null, token }; reaRender(a); reaBurst(btn, REA_EMOJIS.find(x => x[0] === k)[1]);
       const id = await recRpc('reagir', { p_obra: ob, p_emoji: k, p_dono: dono });
       if (REA.mine[mk]) { REA.mine[mk].id = Array.isArray(id) ? id[0] : id; reaSave(); }
-      rankUpdate();
+      rankUpdate(); statsDirty();
     }
   } catch (e) {
     console.warn('reação', e); c[k] = before; if (mine) REA.mine[mk] = mine; else delete REA.mine[mk]; reaSave(); reaRender(a);
@@ -1921,7 +1922,7 @@ async function comPost(e){
     try { localStorage.setItem('com-last', String(Date.now())); if (nome) localStorage.setItem('rec-nome', nome); } catch {}
     COM.list.unshift(c); COM.added.push(c); COM.counts[obraKey(a)] = (COM.counts[obraKey(a)] || 0) + 1;
     $('cText').value = ''; st.textContent = 'Comentário publicado. Obrigado!';
-    comRender(); comButton(a); rankUpdate();
+    comRender(); comButton(a); rankUpdate(); statsDirty();
     $('cList').scrollTop = 0; $('cList').firstChild?.animate([{ opacity: 0, transform: 'translateY(-8px)' }, { opacity: 1, transform: 'none' }], { duration: 400, easing: 'ease-out' });
   } catch (err) { console.warn('comentar', err); st.textContent = 'Não consegui publicar agora. Tente de novo em instantes.'; st.className = 'err'; }
   finally { COM.busy = false; $('cSend').disabled = false; }
@@ -1978,7 +1979,93 @@ function rankLine(i){
   const r = paintings[i]?.rank, el = $('vRank'); if (!r) { el.classList.add('hidden'); return; }
   el.textContent = '★'.repeat(r.n) + (r.pos === 0 ? ' · a favorita dos visitantes' : ' · uma das favoritas dos visitantes'); el.classList.remove('hidden');
 }
-async function socialLoad(){ await Promise.all([reaLoad(), comSummary()]); rankUpdate(); }
+async function socialLoad(){ await Promise.all([reaLoad(), comSummary()]); rankUpdate(); statsDirty(); }
+
+/* ---------- "O museu em números": a panel on the entrance wall ---------- */
+const STATS = { visitas: null, visitantes: null, hoje: null, desde: null, mesh: null, canvas: null, tex: null, anim: -1, shown: false, tm: 0, pos: null };
+const hexId = n => [...crypto.getRandomValues(new Uint8Array(n))].map(b => b.toString(16).padStart(2, '0')).join('');
+async function statsVisit(onlyRead = false){
+  if (!REC.url || !REC.key) return;
+  let id = '', last = 0;
+  try { id = localStorage.getItem('museu-id') || ''; if (!/^[0-9a-f]{32}$/.test(id)) { id = hexId(16); localStorage.setItem('museu-id', id); } last = +localStorage.getItem('museu-visita') || 0; } catch { id = hexId(16); }
+  const fresh = !onlyRead && Date.now() - last > 30 * 60 * 1000;          // a visit counts once every 30 minutes per browser
+  try {
+    const r = await Promise.race([recRpc(fresh ? 'registrar_visita' : 'museu_estatisticas', fresh ? { p_visitante: id } : {}), new Promise((_, x) => setTimeout(() => x(new Error('timeout')), 10000))]);
+    const o = Array.isArray(r) ? r[0] : r;
+    if (fresh) try { localStorage.setItem('museu-visita', String(Date.now())); } catch {}
+    STATS.visitas = +o.visitas || 0; STATS.visitantes = +o.visitantes || 0; STATS.hoje = +o.hoje || 0; STATS.desde = o.desde || null;
+  } catch (e) { console.warn('visitas indisponíveis', e); }
+  statsDirty();
+}
+function statsTiles(){
+  const sum = o => Object.values(o || {}).reduce((s, v) => s + (typeof v === 'object' ? Object.values(v).reduce((a, b) => a + b, 0) : v), 0);
+  const fmt = d => { try { return new Date(d).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', year: 'numeric' }).replace(/ de /g, ' ').replace('.', ''); } catch { return ''; } };
+  const t = [];
+  if (STATS.visitas != null) t.push({ n: STATS.visitas, label: 'visitas', sub: STATS.desde ? 'desde ' + fmt(STATS.desde) : 'no total' });
+  if (STATS.visitantes != null) t.push({ n: STATS.visitantes, label: 'visitantes', sub: 'pessoas diferentes' });
+  if (STATS.hoje != null) t.push({ n: STATS.hoje, label: 'visitas hoje', sub: 'contando com você' });
+  t.push({ n: paintings.length, label: 'obras expostas', sub: soon.length ? `+${soon.length} a caminho` : 'nas paredes' });
+  if (REC.ready) t.push({ n: REC.list.filter(Boolean).length, label: 'bilhetes', sub: 'colados na parede' });
+  if (REA.on) t.push({ n: sum(REA.counts), label: 'reações', sub: 'nas obras' });
+  if (COM.on) t.push({ n: sum(COM.counts), label: 'comentários', sub: 'dos visitantes' });
+  if (BOOK?.paginas?.length) t.push({ n: BOOK.paginas.length, label: 'páginas', sub: 'no caderno criativo' });
+  return t.slice(0, 8);
+}
+function statsDraw(k = 1){
+  if (!STATS.canvas) return;
+  const c = STATS.canvas.getContext('2d'), w = STATS.canvas.width, h = STATS.canvas.height;
+  let g = c.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#26201b'); g.addColorStop(1, '#161210'); c.fillStyle = g; c.fillRect(0, 0, w, h);
+  g = c.createRadialGradient(w / 2, h * 0.35, 20, w / 2, h * 0.35, w * 0.7); g.addColorStop(0, 'rgba(227,185,100,.07)'); g.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = g; c.fillRect(0, 0, w, h);
+  c.strokeStyle = 'rgba(227,185,100,.55)'; c.lineWidth = 3; c.strokeRect(34, 34, w - 68, h - 68);
+  c.strokeStyle = 'rgba(227,185,100,.18)'; c.lineWidth = 1.5; c.strokeRect(46, 46, w - 92, h - 92);
+  c.textAlign = 'center'; c.textBaseline = 'alphabetic';
+  c.fillStyle = '#e3b964'; c.font = '700 44px Manrope, "Helvetica Neue", Arial, sans-serif'; c.letterSpacing = '14px'; c.fillText('O MUSEU EM NÚMEROS', w / 2 + 7, 128); c.letterSpacing = '0px';
+  c.globalAlpha = 0.75; drawOrnament(c, w / 2, 172, 0.55); c.globalAlpha = 1;
+  const T = statsTiles(), cols = T.length > 6 ? 4 : T.length > 4 ? 3 : Math.max(1, T.length), rows = Math.ceil(T.length / cols);
+  const x0 = 90, x1 = w - 90, y0 = 225, y1 = h - 175, cw = (x1 - x0) / cols, ch = (y1 - y0) / Math.max(1, rows);
+  const ease = 1 - Math.pow(1 - Math.min(1, Math.max(0, k)), 3);
+  T.forEach((t, i) => {
+    const cx = x0 + cw * (i % cols) + cw / 2, cy = y0 + ch * Math.floor(i / cols), u = Math.min(ch, 290), mid = cy + ch / 2;
+    const n = Math.round(t.n * ease);
+    c.fillStyle = '#f4ede1'; c.font = `800 ${Math.round(u * 0.42)}px Manrope, "Helvetica Neue", Arial, sans-serif`; c.fillText(n.toLocaleString('pt-BR'), cx, mid);
+    c.fillStyle = '#d9c9ac'; c.font = `700 ${Math.round(u * 0.115)}px Manrope, "Helvetica Neue", Arial, sans-serif`; c.letterSpacing = '5px'; c.fillText(t.label.toUpperCase(), cx + 2.5, mid + u * 0.18); c.letterSpacing = '0px';
+    c.fillStyle = '#8f826f'; c.font = `500 ${Math.round(u * 0.1)}px Manrope, "Helvetica Neue", Arial, sans-serif`; c.fillText(t.sub, cx, mid + u * 0.32);
+    c.strokeStyle = 'rgba(227,185,100,.16)'; c.lineWidth = 2;
+    if (i % cols) { c.beginPath(); c.moveTo(cx - cw / 2, mid - u * 0.32); c.lineTo(cx - cw / 2, mid + u * 0.36); c.stroke(); }
+  });
+  if (rows > 1) { c.strokeStyle = 'rgba(227,185,100,.16)'; c.beginPath(); c.moveTo(x0 + 30, y0 + ch); c.lineTo(x1 - 30, y0 + ch); c.stroke(); }
+  // the visitors' favourite
+  const fav = paintings.find(p => p.rank?.pos === 0);
+  c.strokeStyle = 'rgba(227,185,100,.3)'; c.lineWidth = 2; c.beginPath(); c.moveTo(w * 0.2, h - 150); c.lineTo(w * 0.8, h - 150); c.stroke();
+  const line = fav ? `A favorita dos visitantes: ${fav.art.titulo}` : 'Reaja e comente nas obras: as favoritas ganham estrelas';
+  c.font = '600 40px Manrope, "Helvetica Neue", Arial, sans-serif'; let fs = 40; while (c.measureText(line).width > w * 0.78 && fs > 26) { fs -= 2; c.font = `600 ${fs}px Manrope, "Helvetica Neue", Arial, sans-serif`; }
+  const lw = c.measureText(line).width;
+  if (fav) { // little gold star before the title
+    const sx = w / 2 - lw / 2 - 34, sy = h - 96 - fs * 0.32, R = fs * 0.42, r = R * 0.43;
+    c.beginPath(); for (let q = 0; q < 10; q++) { const a = -Math.PI / 2 + q * Math.PI / 5, rr = q % 2 ? r : R; c.lineTo(sx + Math.cos(a) * rr, sy + Math.sin(a) * rr); } c.closePath(); c.fillStyle = '#e8c252'; c.fill();
+  }
+  c.fillStyle = fav ? '#efe5d3' : '#a89a84'; c.fillText(line, w / 2 + (fav ? 14 : 0), h - 96);
+  STATS.tex.needsUpdate = true;
+}
+function statsDirty(){ clearTimeout(STATS.tm); STATS.tm = setTimeout(() => { if (STATS.anim < 0 || STATS.anim >= 1) statsDraw(STATS.shown ? 1 : 0.0001); }, 150); }
+function buildStatsPanel(){
+  const W = 1.2, H = 0.7, x = -1.6, y = 1.55;
+  STATS.canvas = document.createElement('canvas'); STATS.canvas.width = 1800; STATS.canvas.height = Math.round(1800 * H / W);
+  STATS.tex = smoothTex(STATS.canvas);
+  const g = new THREE.Group(); g.position.set(x, y, PART_T / 2); scene.add(g);
+  const edge = new THREE.MeshStandardMaterial({ color: 0x8a6b35, metalness: .7, roughness: .4 });
+  const face = new THREE.MeshLambertMaterial({ map: STATS.tex, emissive: 0xffffff, emissiveMap: STATS.tex, emissiveIntensity: 0.32 });
+  const board = new THREE.Mesh(new THREE.BoxGeometry(W, H, 0.025), [edge, edge, edge, edge, face, edge]); board.position.z = 0.0125 + 0.003; g.add(board);
+  const sh = new THREE.Mesh(new THREE.PlaneGeometry(W + 0.12, H + 0.12), new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, opacity: 0.45, depthWrite: false }));
+  sh.position.set(0.012, -0.016, 0.002); g.add(sh);
+  STATS.pos = { x, z: PART_T / 2 };
+  statsDraw(0.0001);
+}
+function statsTick(dt){
+  if (!STATS.canvas) return;
+  if (!STATS.shown && state === 'playing' && Math.hypot(player.x - STATS.pos.x, player.z - STATS.pos.z) < 5.5) { STATS.shown = true; STATS.anim = 0; }
+  if (STATS.anim >= 0 && STATS.anim < 1) { STATS.anim = Math.min(1, STATS.anim + dt / 1.8); STATS.f = (STATS.f || 0) + 1; if (STATS.f % 2 === 0 || STATS.anim >= 1) statsDraw(STATS.anim); }
+}
 
 /* ---------- Player & controls ---------- */
 const player = { x: 0, z: 0, yaw: 0, pitch: 0, vx: 0, vz: 0, bob: 0 };
@@ -2332,7 +2419,7 @@ function update(dt){
     if (p.out) { p.t += dt / 0.3; p.g.scale.setScalar(Math.max(0.01, 1 - p.t)); if (p.t >= 1) { scene.remove(p.g); p.g.traverse(o => { o.geometry?.dispose(); if (o.material?.map && o.material.map !== shadowTex) o.material.map.dispose(); o.material?.dispose?.(); }); REC.pops.splice(i, 1); } continue; }
     p.t += dt / 0.45; const t = Math.min(1, p.t), e = 1 + 2.2 * Math.pow(t - 1, 3) + 1.2 * Math.pow(t - 1, 2);
     p.g.scale.setScalar(Math.max(0.01, e)); if (t >= 1) { p.g.scale.setScalar(1); REC.pops.splice(i, 1); } }
-  vidTick(); if (update.st !== state) { update.st = state; $('musBtn').classList.toggle('hidden', state !== 'playing'); }
+  statsTick(dt); vidTick(); if (update.st !== state) { update.st = state; $('musBtn').classList.toggle('hidden', state !== 'playing'); }
   if (state === 'playing') {
     let fx = 0, fz = 0;
     if (keys.KeyW || keys.ArrowUp) fz += 1; if (keys.KeyS || keys.ArrowDown) fz -= 1;
@@ -2414,6 +2501,7 @@ function loop(){
   buildRoom(W, D, H);
   try { await document.fonts.load('40px Caveat'); } catch {}
   buildCraft();
+  buildStatsPanel();
   for (const p of placed) hangPainting(p, H);
   buildBookTable();
   if (muralArts.length) {
@@ -2430,6 +2518,7 @@ function loop(){
   buildVideoScreen();
   const recReady = REC.on ? recInit() : null;
   const reaReady = REC.on ? socialLoad() : null;
+  const visReady = REC.on ? statsVisit() : null;
   // menu list
   const lista = $('lista');
   const extra = [];
@@ -2446,9 +2535,10 @@ function loop(){
   });
   if (isTouch) { $('keysDesk').classList.add('hidden'); $('keysTouch').classList.remove('hidden'); }
   placePlayerStart();
-  if (recReady) { $('loadTxt').textContent = 'Colando os bilhetes…'; await Promise.race([Promise.all([recReady, reaReady]), new Promise(r => setTimeout(r, 6000))]); }
+  if (recReady) { $('loadTxt').textContent = 'Colando os bilhetes…'; await Promise.race([Promise.all([recReady, reaReady, visReady]), new Promise(r => setTimeout(r, 6000))]); }
+  statsDirty();
   $('loading').classList.add('hidden'); $('menu').classList.remove('hidden');
-  window.__museu = { REC, ROOM, MUS, VID, REA, COM, rankUpdate, openRecRead, openRecWrite, paintings, player, startPlaying, teleportTo, openViewer, openBook, openNote, closeNote, bookGo, flipCard, closeViewer, update, render: () => renderer.render(scene, camera) };
+  window.__museu = { REC, ROOM, MUS, VID, REA, COM, STATS, rankUpdate, openRecRead, openRecWrite, paintings, player, startPlaying, teleportTo, openViewer, openBook, openNote, closeNote, bookGo, flipCard, closeViewer, update, render: () => renderer.render(scene, camera) };
   loop();
 })();
 </script>

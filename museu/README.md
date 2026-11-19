@@ -51,6 +51,10 @@ Para moderar: Supabase → Table Editor → `comentarios` → apague a linha, ou
 
 As obras mais queridas ganham estrelinhas douradas bem pequenas logo acima da plaquinha (no mural, acima da obra). A pontuação é: cada reação vale 1 ponto e cada comentário vale 2. As 3 primeiras do ranking ganham até ★★★, da 4ª à 6ª até ★★ e da 7ª à 10ª ★, mas só se tiverem pontos suficientes (★★★ a partir de 6 pontos, ★★ a partir de 3). O ranking se atualiza sozinho.
 
+## O museu em números
+
+Na parede de entrada, entre os bilhetes e o pilar, há um painel com: visitas no total, visitantes diferentes, visitas hoje, obras expostas (e quantas estão a caminho), bilhetes, reações, comentários, páginas do caderno e a obra favorita dos visitantes. Os números sobem numa animação quando a pessoa se aproxima. Uma visita conta uma vez a cada 30 minutos por navegador. O contador de visitas precisa do `visitas.sql` rodado uma vez no Supabase → SQL Editor (sem ele, o painel mostra só os outros números). Para zerar as visitas, apague as linhas da tabela `visitas`.
+
 ## Vídeos do ateliê
 
 No canto entre os dois tucanos há uma tela num pedestal. Ela passa os vídeos sem som enquanto alguém está por perto; ao clicar, o vídeo abre grande, com som e controles. Para colocar vídeos:
