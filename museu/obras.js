@@ -22,6 +22,16 @@ window.MUSEU = {
   subtitulo: "Desenhos e pinturas",
   artista: "Pedro",
 
+  // Música de fundo: deixe "" para a música calminha gerada pelo próprio museu,
+  // ou coloque o nome de um arquivo seu (ex.: "musica.mp3") na pasta do museu.
+  musica: "",
+
+  // Vídeos do ateliê: a tela fica no canto entre os dois tucanos.
+  // Coloque os arquivos na pasta "videos/" (MP4) e liste aqui, na ordem em que devem passar.
+  videos: [
+    // { arquivo: "timelapse-tucano.mp4", titulo: "Timelapse: Tucano na copa", descricao: "Do esboço ao final em 2 minutos." },
+  ],
+
   obras: [
     { arquivo: "obra01.jpg", titulo: "Tucano ao sol", ano: "18/06/2026", tecnica: "Pastel oleoso sobre papel", largura: 42, altura: 59.4, moldura: "clara", descricao: "" },
     { arquivo: "obra02.jpg", titulo: "Sol na colina", ano: "25/07/2026", tecnica: "Pastel oleoso sobre papel", largura: 42, altura: 59.4, moldura: "nogueira_passe", descricao: "Feito com referencia de uma pintura menor" },

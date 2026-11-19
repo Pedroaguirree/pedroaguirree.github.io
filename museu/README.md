@@ -1,7 +1,5 @@
 # Museu do Pedro
 
-**No ar:** https://pedroaguirree.github.io/museu/
-
 Um museu 3D em primeira pessoa, com visual pixelado, para visitar meus desenhos e pinturas em tamanho real direto no navegador.
 
 ## Como adicionar uma obra
@@ -35,9 +33,32 @@ Na entrada, à esquerda da parede "Museu do Pedro", fica uma mesinha com post-it
 
 Para tirar um bilhete: Supabase → Table Editor → `recados` → apague a linha, ou mude `visivel` para `false` para só esconder.
 
-Quem escreve um bilhete pode editar ou remover o próprio bilhete depois: é só clicar nele no museu (vale no mesmo navegador/celular onde ele foi escrito). Isso precisa do código do arquivo `recados-editar.sql` rodado uma vez no Supabase → SQL Editor. Sem ele, os bilhetes continuam funcionando, só sem esses botões.
+Quem escreve um bilhete pode editar ou remover o próprio bilhete depois: é só clicar nele no museu (vale no mesmo navegador/celular onde ele foi escrito). Isso precisa do código do arquivo `supabase-museu.sql` rodado uma vez no Supabase → SQL Editor. Sem ele, os bilhetes continuam funcionando, só sem esses botões.
 
 Os bilhetes funcionam no site do GitHub; na página do museu dentro do Claude a mesinha não aparece.
+
+## Reações com emoji
+
+Quando alguém abre uma obra para ver de perto, aparecem seis emojis (❤️ 😍 🔥 👏 😮 🥹) com a contagem de cada um. Cada pessoa pode dar cada emoji uma vez por obra e tocar de novo para desfazer. As reações ficam no Supabase (tabela `reacoes`) e precisam do `supabase-museu.sql` rodado uma vez no SQL Editor. Para ver quantas reações cada obra tem, abra a tabela `reacoes` no Table Editor; para zerar, apague as linhas.
+
+## Vídeos do ateliê
+
+No canto entre os dois tucanos há uma tela num pedestal. Ela passa os vídeos sem som enquanto alguém está por perto; ao clicar, o vídeo abre grande, com som e controles. Para colocar vídeos:
+
+1. Coloque os arquivos na pasta `videos/` (MP4, de preferência até 1080p e até uns 50 MB cada).
+2. Liste-os em `videos` no `obras.js`, na ordem em que devem passar:
+
+```js
+videos: [
+  { arquivo: "timelapse-tucano.mp4", titulo: "Timelapse: Tucano na copa", descricao: "Do esboço ao final." },
+],
+```
+
+Sem nenhum vídeo na lista, a tela mostra "Vídeos do ateliê · em breve".
+
+## Música de fundo
+
+Ao entrar no museu toca uma música calma, gerada pelo próprio site (nunca se repete igual). O visitante liga e desliga pelo botão de alto-falante no canto, pela tecla **M** ou no menu. Ela abaixa sozinha enquanto um vídeo está tocando. Para usar uma música sua, coloque o arquivo na pasta do museu e escreva o nome em `musica` no `obras.js` (ex.: `musica: "musica.mp3"`).
 
 ## Mensagem na entrada
 
@@ -64,6 +85,8 @@ Dica: use fotos recortadas só na obra (sem a parede em volta), retas e bem ilum
 3. Vá em **Settings → Pages**. Em *Branch*, escolha `main` e a pasta `/ (root)`, e clique em **Save**.
 4. Em 1 ou 2 minutos o museu fica online em `https://SEU-USUARIO.github.io/museu/`.
 
+**No ar:** https://pedroaguirree.github.io/museu/
+
 Para atualizar depois, basta subir as novas fotos e o `obras.js` editado da mesma forma.
 
 ## Testar no computador
@@ -78,7 +101,7 @@ e acesse `http://localhost:8000`.
 
 ## Controles
 
-- **Computador:** WASD para andar (Shift para correr), mouse para olhar, **E** ou clique para ver uma obra de perto, **Esc** para o menu.
+- **Computador:** WASD para andar (Shift para correr), mouse para olhar, **E** ou clique para ver uma obra de perto, **M** para ligar/desligar a música, **Esc** para o menu.
 - **Vendo de perto:** botões + e − ao lado (ou a rodinha do mouse) para dar zoom, arraste para mover, e clique no quadro para voltar ao museu.
 - **Celular:** use o círculo no canto esquerdo para andar e arraste a tela para olhar. Perto de uma obra aparece o botão **VER**. Vendo de perto, dá para usar os botões ou fazer pinça com dois dedos para dar zoom, e tocar no quadro para voltar.
 
