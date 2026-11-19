@@ -1,7 +1,11 @@
 // Loads the sculpted bust (busto.bin) and builds a bronze mesh.
 import * as THREE from '../lib/three.module.min.js';
 export async function loadBust(url){
-  const buf = await (await fetch(url)).arrayBuffer(); const dv = new DataView(buf);
+  let buf;
+  if (url.endsWith('.json')) { const j = await (await fetch(url)).json(); const bin = atob(j.dados); const u = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); buf = u.buffer; }
+  else buf = await (await fetch(url)).arrayBuffer();
+  const dv = new DataView(buf);
   const nV = dv.getUint32(4, true), nI = dv.getUint32(8, true), isz = dv.getUint32(12, true);
   const lo = [0, 1, 2].map(i => dv.getFloat32(16 + i * 4, true)), hi = [0, 1, 2].map(i => dv.getFloat32(28 + i * 4, true));
   let o = 40;
