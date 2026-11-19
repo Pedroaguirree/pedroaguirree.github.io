@@ -18,11 +18,18 @@ Um museu 3D em primeira pessoa, com visual pixelado, para visitar meus desenhos 
 
 ## Verso de uma obra
 
-Se uma obra tem algo escrito atrás, coloque `frente: "foto-da-frente.jpg"` e `verso: "foto-do-verso.jpg"` na linha dela. Na tela de ver de perto aparece o botão **Ver verso**, que vira o quadro.
+Se uma obra tem algo escrito atrás, coloque `verso: "foto-do-verso.jpg"` na linha dela. Na tela de ver de perto aparece o botão **Ver verso**, que vira o quadro.
 
-## Caderno de esboços
+## Caderno criativo
 
-As páginas ficam na pasta `caderno/` e a lista está em `caderno` no fim do `obras.js` (capa + páginas na ordem). O caderno fica na mesinha do canto, e quem clica nele folheia as páginas.
+O caderno fica na mesinha do canto; quem clica nele vê a capa abrir e folheia as páginas. Os arquivos ficam na pasta `caderno/` e a lista está em `caderno` no `obras.js`:
+
+- `capa`, `guarda` (parte de dentro da capa) e `contracapa`
+- `paginas`: as páginas na ordem. Páginas duplas (um desenho que continua na página seguinte) ficam lado a lado quando a primeira tem número par.
+
+## Mensagem na entrada
+
+O texto da folha sobre o pilar, em frente à parede "Museu do Pedro", fica em `mensagem` no `obras.js`. Cada linha vira um parágrafo.
 
 ## Obras "Em breve"
 

@@ -12,7 +12,7 @@
                     "preta_passe" (preta fina com passe-partout), "mel" (madeira cor de mel), "madeira" (madeira escura),
                     "caixa" (moldura flutuante para tela), "pinho" (madeira clara simples),
                     "vitoriana" (dourada) ou "nenhuma"
-       - verso / frente (opcional): foto do verso e da frente com moldura -> aparece o botão "Ver verso"
+       - verso (opcional): foto do verso -> aparece o botão "Ver verso", que vira o quadro
   As obras são distribuídas sozinhas pelas paredes, na ordem desta lista,
   e a sala cresce automaticamente para caber todo mundo.
 */
@@ -32,7 +32,7 @@ window.MUSEU = {
     { arquivo: "obra26.jpg", titulo: "Lagoa", ano: "", tecnica: "Acrílica sobre tela", largura: 16, altura: 16, moldura: "caixa", descricao: "" }, // tela 16x16
     { arquivo: "obra27.jpg", titulo: "Pergunta", ano: "", tecnica: "Pastel oleoso e caneta sobre papel", largura: 42, altura: 59.4, moldura: "nogueira_passe", descricao: "" }, // A2
     { arquivo: "obra28.jpg", titulo: "Síntese", ano: "2026", tecnica: "Acrílica sobre papel, moldura de pinho", largura: 10, altura: 15, moldura: "pinho",
-      frente: "obra28_frente.jpg", verso: "obra28_verso.jpg",
+      verso: "obra28_verso.jpg",
       descricao: "Antes de virar quadro, cada cor passou por aqui. Não são restos, são memórias. Esta é a obra que se pintou sozinha, enquanto eu pintava as outras. É a síntese de tudo que um dia eu pintei." }, // 10x15, com verso
     { arquivo: "obra05.jpg", titulo: "Flores amarelas", ano: "", tecnica: "Pastel oleoso sobre papel", largura: 21, altura: 29.7, moldura: "clara", descricao: "" }, // A4
     { arquivo: "obra06.jpg", titulo: "Pôr do sol", ano: "", tecnica: "Pastel oleoso sobre papel", largura: 21, altura: 29.7, moldura: "mel", descricao: "" }, // A4
@@ -54,12 +54,20 @@ window.MUSEU = {
     { arquivo: "obra22.jpg", titulo: "Rostos no céu", ano: "", tecnica: "Aquarela e nanquim sobre papel (marcador de página)", largura: 5, altura: 15, moldura: "preta_passe", descricao: "" }, // marcador ~5x15
   ],
 
-  // Caderno de esboços na mesinha do canto (fotos na pasta "caderno/")
+  // Caderno criativo na mesinha do canto (arquivos na pasta "caderno/")
   caderno: {
-    capa: "capa.jpg",
-    paginas: ["p01.jpg","p02.jpg","p03.jpg","p04.jpg","p05.jpg","p06.jpg","p07.jpg","p08.jpg","p09.jpg",
-              "p10.jpg","p11.jpg","p12.jpg","p13.jpg","p14.jpg","p15.jpg","p16.jpg","p17.jpg"],
+    capa: "capa-v2.jpg",
+    guarda: "guarda-v2.jpg",
+    contracapa: "contracapa-v2.jpg",
+    paginas: ["pag01.jpg","pag02.jpg","pag03.jpg","pag04.jpg","pag05.jpg","pag06.jpg","pag07.jpg",
+              "pag08.jpg","pag09.jpg","pag10.jpg","pag11.jpg","pag12.jpg","pag13.jpg","pag14.jpg"],
   },
+
+  // Mensagem na folha sobre o pilar, em frente à parede "Museu do Pedro".
+  // Cada linha vira um parágrafo.
+  mensagem: `Aqui estão alguns desenhos/pinturas que fiz ao longo desse ano de 2026, tem sido um processo criativo muito interessante de descobrir, agradeço a você que tirou um tempo para acessar esse "museu" e entrar um pouco dentro da minha cabeça.
+A maioria das obras aqui eu nunca postei...
+Fique a vontade para explorar como quiser e deixar seu feedback nas obras que mais gostou :)`,
 
   // Obras grandes cobertas por cortina branca, com placa "Em breve".
   // Ficam no lado de trás da parede do meio. Tamanho em cm.

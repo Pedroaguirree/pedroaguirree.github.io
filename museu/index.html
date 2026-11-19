@@ -7,7 +7,7 @@
 <link rel="icon" href="data:,">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Karla:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Karla:wght@400;600;700&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#14110f; --panel:rgba(22,18,15,.92); --ink:#f2ede4; --muted:#b7ab99;
@@ -112,9 +112,30 @@
   .side::after{content:"";position:absolute;inset:0;pointer-events:none;
     background:linear-gradient(to right,rgba(0,0,0,.28),rgba(0,0,0,.06) 6%,transparent 14%,transparent 94%,rgba(0,0,0,.06))}
   .side.back::after{background:linear-gradient(to left,rgba(0,0,0,.28),rgba(0,0,0,.06) 6%,transparent 14%,transparent 94%,rgba(0,0,0,.06))}
-  .side.cov{box-shadow:inset 0 0 0 1px rgba(0,0,0,.25)}
-  .side.cov::after{background:linear-gradient(to right,rgba(0,0,0,.35),rgba(255,255,255,.06) 3%,transparent 8%)}
-  .side.cov.back::after{background:linear-gradient(to left,rgba(0,0,0,.35),rgba(255,255,255,.06) 3%,transparent 8%)}
+  .side.cov{inset:-1.8% -2.6% -1.8% 0;border-radius:0 11px 11px 0;background-size:cover!important;
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.35),inset -2px 0 0 rgba(255,255,255,.06),0 2px 5px rgba(0,0,0,.35)}
+  .side.cov.back{border-radius:11px 0 0 11px}
+  .side.cov::after{background:linear-gradient(to right,rgba(0,0,0,.45),rgba(255,255,255,.07) 2.5%,transparent 7%)}
+  .side.cov.back::after{background:linear-gradient(to left,rgba(0,0,0,.45),rgba(255,255,255,.07) 2.5%,transparent 7%)}
+  .side.end::after{background:linear-gradient(to right,rgba(0,0,0,.3),rgba(0,0,0,.05) 6%,transparent 14%)}
+  .side.end.back::after{background:linear-gradient(to left,rgba(0,0,0,.3),rgba(0,0,0,.05) 6%,transparent 14%)}
+  .side:not(.cov){box-shadow:1px 1px 0 #ebe4d4,2px 2px 0 #d3c9b4,3px 3px 0 #ece5d6,4px 4px 0 #cfc5af,5px 5px 0 #e4ddcc,6px 5px 2px rgba(0,0,0,.25)}
+  .side.back:not(.cov){box-shadow:-1px 1px 0 #ebe4d4,-2px 2px 0 #d3c9b4,-3px 3px 0 #ece5d6,-4px 4px 0 #cfc5af,-5px 5px 0 #e4ddcc,-6px 5px 2px rgba(0,0,0,.25)}
+  #bRibbon{position:absolute;left:calc(50% + 14px);top:calc(100% - 4px);width:10px;height:64px;z-index:60;pointer-events:none;
+    background:linear-gradient(90deg,#5f1d1f,#8b2b2c 45%,#6a2123);clip-path:polygon(0 0,100% 0,100% 100%,50% 84%,0 100%);
+    box-shadow:0 2px 3px rgba(0,0,0,.4);transition:left .9s cubic-bezier(.45,.05,.25,1)}
+  /* artist's note */
+  #note{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px}
+  #nBg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,#3b3027 0%,#17120f 60%,#0a0807 100%);opacity:0;transition:opacity .4s}
+  #note.show #nBg{opacity:1}
+  #nCard{position:relative;width:min(640px,92vw);max-height:88vh;overflow:auto;padding:clamp(28px,6vw,64px) clamp(26px,6vw,70px);
+    background:#f7f2e7;color:#2c241d;border-radius:3px;transform:rotate(-.6deg);
+    box-shadow:0 30px 80px rgba(0,0,0,.6),0 6px 16px rgba(0,0,0,.4),inset 0 0 80px rgba(160,130,90,.14);
+    font-family:Caveat,"Segoe Script","Bradley Hand",cursive;font-weight:500;font-size:clamp(18px,min(3.6vw,4.3vh),31px);line-height:1.38}
+  #nCard p{margin:0 0 .6em}
+  #nCard .sig{margin-top:.9em;text-align:right;font-size:.9em;color:#6b5a48}
+  #nClose{position:absolute;right:max(18px,env(safe-area-inset-right));bottom:max(18px,env(safe-area-inset-bottom));width:auto;padding:10px 18px}
+  #nHint{position:absolute;left:0;right:0;bottom:max(24px,env(safe-area-inset-bottom));text-align:center;color:var(--muted);font-size:14px;pointer-events:none}
   #bShadow{position:absolute;left:0;right:0;bottom:-26px;height:40px;background:radial-gradient(ellipse at center,rgba(0,0,0,.55),transparent 70%);transform:translateZ(-2px)}
   .bNav{position:absolute;top:50%;transform:translateY(-50%);width:54px;height:54px;border-radius:50%;border:1px solid var(--line);
     background:rgba(20,17,15,.75);color:var(--ink);font-size:30px;line-height:1;cursor:pointer;z-index:5}
@@ -229,7 +250,7 @@
   <div id="vBg"></div>
   <div id="vStage"><div id="vPan"><div id="vIntro"><div id="vCard">
     <div class="vFace vFront" id="vFront"></div>
-    <div class="vFace vBack"><img id="vBack" alt="Verso da obra" draggable="false"></div>
+    <div class="vFace vBack" id="vBack"></div>
   </div></div></div></div>
   <div id="vZoom" aria-label="Zoom">
     <button id="zIn" title="Aproximar" aria-label="Aproximar">+</button>
@@ -250,11 +271,17 @@
 
 <div id="book" class="hidden">
   <div id="bBg"></div>
-  <div id="bStage"><div id="bBook"><div id="bShadow"></div></div>
+  <div id="bStage"><div id="bBook"><div id="bShadow"></div><div id="bRibbon"></div></div>
     <button class="bNav" id="bPrev" aria-label="Página anterior">‹</button>
     <button class="bNav" id="bNext" aria-label="Próxima página">›</button>
   </div>
-  <div id="bBar"><div><h2>Caderno de esboços</h2><span id="bCount"></span></div><button class="btn ghost" id="bClose">Fechar</button></div>
+  <div id="bBar"><div><h2>Caderno criativo</h2><span id="bCount"></span></div><button class="btn ghost" id="bClose">Fechar</button></div>
+</div>
+
+<div id="note" class="hidden">
+  <div id="nBg"></div>
+  <div id="nCard" role="dialog" aria-label="Mensagem do artista"></div>
+  <span id="nHint"></span>
 </div>
 
 <div id="loading"><div class="px" id="loadTxt">Pendurando os quadros…</div><div class="bar"><i id="loadBar"></i></div></div>
@@ -262,7 +289,6 @@
 <script src="obras.js"></script>
 <script type="module">
 import * as THREE from './lib/three.module.min.js';
-import { loadBust, bronzeMaterial } from './js/busto.js';
 
 const CFG = window.MUSEU || { obras: [] };
 const $ = id => document.getElementById(id);
@@ -567,10 +593,8 @@ async function loadArtworks(){
     }
     if (!h) h = w * 1.25;
     if (!img) { img = placeholderArt(i, w, h); src = img.toDataURL('image/jpeg', .9); }
-    let frenteImg = null;
-    if (o.frente) { try { frenteImg = await loadImage('obras/' + o.frente); } catch {} }
     if (o.verso) { const vi = new Image(); vi.src = 'obras/' + o.verso; }
-    out[i] = { ...o, i, w, h, img, src, frenteImg };
+    out[i] = { ...o, i, w, h, img, src };
     tick();
   }));
   return out;
@@ -793,10 +817,11 @@ const BOOK = CFG.caderno || null; let bCur = 0, bLeaves = [], bBusy = false;
 function bookSides(){
   // [front, back] for each leaf: cover, page pairs, back cover
   const pg = (BOOK?.paginas || []).map(f => 'caderno/' + f);
-  const inside = 'linear-gradient(135deg,#e2583c,#c94a31)';
-  const leaves = [[{ img: 'caderno/' + BOOK.capa, cov: 1 }, { bg: inside, cov: 1 }]];
-  for (let i = 0; i < pg.length; i += 2) leaves.push([{ img: pg[i] }, pg[i + 1] ? { img: pg[i + 1] } : { bg: '#efe9dc' }]);
-  leaves.push([{ bg: inside, cov: 1 }, { bg: 'linear-gradient(135deg,#2f5a3a,#24472d)', cov: 1 }]);
+  const guarda = BOOK.guarda ? { img: 'caderno/' + BOOK.guarda, cov: 1, end: 1 } : { bg: '#dfe6de', cov: 1, end: 1 };
+  const back = BOOK.contracapa ? { img: 'caderno/' + BOOK.contracapa, cov: 1 } : { bg: '#22483a', cov: 1 };
+  const leaves = [[{ img: 'caderno/' + BOOK.capa, cov: 1 }, guarda]];
+  for (let i = 0; i < pg.length; i += 2) leaves.push([{ img: pg[i] }, pg[i + 1] ? { img: pg[i + 1] } : { bg: '#f3eee4' }]);
+  leaves.push([guarda, back]);
   return leaves;
 }
 function bookSize(){
@@ -811,9 +836,11 @@ function layoutBook(){
   const shift = bCur === 0 ? -pw / 2 : bCur === n ? pw / 2 : 0;
   bk.style.transform = `translateX(${shift}px)`;
   $('bPrev').disabled = bCur === 0; $('bNext').disabled = bCur === n;
+  // page block thickness on each side, and the ribbon following the open spread
+  $('bRibbon').style.left = bCur === 0 ? `calc(50% + ${pw * 0.62}px)` : bCur === n ? `calc(50% - ${pw * 0.66}px)` : 'calc(50% + 14px)';
   const total = (BOOK.paginas || []).length;
-  $('bCount').textContent = bCur === 0 ? 'Capa · toque para abrir' : bCur === n ? 'Contracapa' :
-    (bCur === 1 ? `Página 1 de ${total}` : `Páginas ${2 * bCur - 2}–${Math.min(2 * bCur - 1, total)} de ${total}`);
+  $('bCount').textContent = bCur === 0 ? 'Capa' : bCur === n ? 'Contracapa' :
+    (bCur === 1 ? `Página 1 de ${total}` : 2 * bCur - 1 > total ? `Página ${2 * bCur - 2} de ${total}` : `Páginas ${2 * bCur - 2}–${2 * bCur - 1} de ${total}`);
 }
 function zLeaves(flipping = -1){
   const n = bLeaves.length;
@@ -835,7 +862,7 @@ function openBook(){
     for (const [f, b] of bookSides()) {
       const leaf = document.createElement('div'); leaf.className = 'leaf';
       for (const [side, cls] of [[f, 'side'], [b, 'side back']]) {
-        const el = document.createElement('div'); el.className = cls + (side.cov ? ' cov' : '');
+        const el = document.createElement('div'); el.className = cls + (side.cov ? ' cov' : '') + (side.end ? ' end' : '');
         el.style.background = side.img ? `#efe9dc url(${side.img}) center/100% 100% no-repeat` : side.bg;
         leaf.appendChild(el);
       }
@@ -866,8 +893,8 @@ addEventListener('resize', () => { if (state === 'book') layoutBook(); });
   });
 }
 
-/* ---------- Table with the sketchbook, bust on a pillar ---------- */
-const bookMeshes = [], bustProxy = [];
+/* ---------- Table with the sketchbook ---------- */
+const bookMeshes = [];
 function buildBookTable(){
   if (!BOOK) return;
   const x = -ROOM.W / 2 + 0.62, z = -ROOM.D / 2 + 0.62, S = FRAME_SETS.nogueira;
@@ -880,13 +907,13 @@ function buildBookTable(){
   // the notebook (slightly enlarged so it reads from a distance)
   const cover = new THREE.TextureLoader().load('caderno/' + BOOK.capa); cover.colorSpace = THREE.SRGBColorSpace; cover.anisotropy = 8;
   const pagesEdge = smoothTex(makeCanvas(64, 8, (c, w, h) => { c.fillStyle = '#efe8d8'; c.fillRect(0, 0, w, h); c.fillStyle = 'rgba(120,100,80,.25)'; for (let y = 1; y < h; y += 2) c.fillRect(0, y, w, 1); }));
-  const green = new THREE.MeshLambertMaterial({ color: 0x2c5234 }), paper = new THREE.MeshLambertMaterial({ map: pagesEdge });
+  const green = new THREE.MeshLambertMaterial({ color: 0x22483a }), paper = new THREE.MeshLambertMaterial({ map: pagesEdge });
   const bw = 0.13, bh = 0.2, bt = 0.018;
   const book = new THREE.Mesh(new THREE.BoxGeometry(bw, bt, bh), [paper, green, new THREE.MeshLambertMaterial({ map: cover }), green, paper, paper]);
   book.position.set(0.02, 0.778 + bt / 2, 0.03); book.rotation.y = 0.5; g.add(book);
   // little tent card
   const card = makeCanvas(360, 200, (c, w, h) => { c.fillStyle = '#f6f2e9'; c.fillRect(0, 0, w, h); c.fillStyle = '#2a221c'; c.textAlign = 'center';
-    c.font = 'italic bold 40px Georgia, serif'; c.fillText('Caderno de esboços', w / 2, 88); c.fillStyle = '#9a7a3e'; c.fillRect(w / 2 - 40, 108, 80, 3);
+    c.font = 'italic bold 42px Georgia, serif'; c.fillText('Caderno criativo', w / 2, 88); c.fillStyle = '#9a7a3e'; c.fillRect(w / 2 - 40, 108, 80, 3);
     c.font = '26px Georgia, serif'; c.fillStyle = '#5a4b40'; c.fillText(isTouch ? 'toque para folhear' : 'clique para folhear', w / 2, 152); });
   const cm = new THREE.Mesh(new THREE.PlaneGeometry(0.15, 0.083), new THREE.MeshBasicMaterial({ map: smoothTex(card), side: THREE.DoubleSide }));
   cm.position.set(-0.13, 0.82, 0.14); cm.rotation.set(-0.35, 0.78, 0, 'YXZ'); g.add(cm);
@@ -898,7 +925,34 @@ const marbleTex = smoothTex(makeCanvas(256, 512, (c, w, h) => {
   for (let k = 0; k < 14; k++) { c.strokeStyle = `rgba(${120 + r() * 40},${115 + r() * 30},${105 + r() * 30},${0.12 + r() * 0.2})`; c.lineWidth = 0.6 + r() * 2.2;
     c.beginPath(); let x = r() * w, y = 0; c.moveTo(x, y); while (y < h) { x += (r() - .5) * 26; y += 10 + r() * 22; c.lineTo(x, y); } c.stroke(); }
 }));
-async function buildBust(){
+const NOTE = CFG.mensagem || '';
+const noteMeshes = [];
+function noteParas(){ return NOTE.split(/\n\s*\n|\n/).map(t => t.trim()).filter(Boolean); }
+async function noteTexture(){
+  try { await document.fonts.load('64px Caveat'); } catch {}
+  const W = 1240, H = 1754, paras = noteParas();
+  return smoothTex(makeCanvas(W, H, (c) => {
+    const r = rng(5); c.fillStyle = '#f7f2e6'; c.fillRect(0, 0, W, H);
+    const img = c.getImageData(0, 0, W, H), d = img.data;
+    for (let i = 0; i < d.length; i += 4) { const n = (r() - .5) * 10; d[i] += n; d[i + 1] += n; d[i + 2] += n * 0.8; }
+    c.putImageData(img, 0, 0);
+    const g = c.createRadialGradient(W / 2, H / 2, H * .2, W / 2, H / 2, H * .75); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(120,90,50,.12)');
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+    c.fillStyle = '#2b231c'; c.textBaseline = 'alphabetic';
+    let size = 72, lines;
+    const layout = () => {
+      c.font = `500 ${size}px Caveat, "Segoe Script", cursive`; const out = [];
+      for (const p of paras) { let line = '';
+        for (const w of p.split(' ')) { const t = line ? line + ' ' + w : w; if (c.measureText(t).width > W - 260 && line) { out.push(line); line = w; } else line = t; }
+        out.push(line); out.push(''); }
+      out.pop(); return out;
+    };
+    lines = layout(); while (lines.length * size * 1.32 > H - 300 && size > 40) { size -= 3; lines = layout(); }
+    let y = (H - lines.length * size * 1.32) / 2 + size;
+    for (const ln of lines) { c.save(); c.translate(130 + (r() - .5) * 6, y); c.rotate((r() - .5) * 0.008); c.fillText(ln, 0, 0); c.restore(); y += size * 1.32; }
+  }));
+}
+async function buildNote(){
   const zc = PART_T / 2 + 0.9, ped = new THREE.Group(); ped.position.set(0, 0, zc); scene.add(ped);
   const stone = new THREE.MeshLambertMaterial({ map: marbleTex }), stone2 = new THREE.MeshLambertMaterial({ map: marbleTex, color: 0xd8d2c6 });
   const base = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.1, 0.56), stone2); base.position.y = 0.05; ped.add(base);
@@ -906,23 +960,72 @@ async function buildBust(){
   const shaft = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.86, 0.4), stone); shaft.position.y = 0.58; ped.add(shaft);
   const cap1 = new THREE.Mesh(new THREE.BoxGeometry(0.47, 0.04, 0.47), stone); cap1.position.y = 1.03; ped.add(cap1);
   const cap2 = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.06, 0.52), stone2); cap2.position.y = 1.08; ped.add(cap2);
-  const socle = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.17, 0.07, 40), new THREE.MeshStandardMaterial({ color: 0x1a1612, roughness: .35, metalness: .2 }));
-  socle.position.y = 1.145; ped.add(socle);
+  colliders.push({ x0: -0.28, x1: 0.28, z0: zc - 0.28, z1: zc + 0.28 });
+  // the stand: a walnut lectern tilted toward the visitor
+  const W = FRAME_SETS.nogueira, brass = new THREE.MeshStandardMaterial({ color: 0xb08d4a, metalness: .85, roughness: .35 });
+  const tilt = 0.62, desk = new THREE.Group(); desk.position.set(0, 1.215, 0.01); desk.rotation.x = tilt; ped.add(desk);
+  const board = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.022, 0.34), W.outer); desk.add(board);
+  const lip = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.03, 0.014), W.lip); lip.position.set(0, 0.02, 0.163); desk.add(lip);
+  const wedge = new THREE.Shape([new THREE.Vector2(-0.125, 0), new THREE.Vector2(0.105, 0), new THREE.Vector2(-0.125, 0.165)]);
+  const wg = new THREE.ExtrudeGeometry(wedge, { depth: 0.3, bevelEnabled: false }); wg.rotateY(-Math.PI / 2); wg.translate(0.15, 0, 0);
+  const sup = new THREE.Mesh(wg, W.inner); sup.position.set(0, 1.11, 0.01); ped.add(sup);
+  // the sheet
+  const sheetMat = new THREE.MeshLambertMaterial({ color: 0xffffff, emissive: 0x2a2620 });
+  const sheet = new THREE.Mesh(new THREE.PlaneGeometry(0.21, 0.297), sheetMat);
+  sheet.rotation.x = -Math.PI / 2; sheet.position.set(0, 0.0118, -0.005); desk.add(sheet);
+  noteTexture().then(t => { sheetMat.map = t; sheetMat.emissiveMap = t; sheetMat.needsUpdate = true; });
+  const shadowSheet = new THREE.Mesh(new THREE.PlaneGeometry(0.225, 0.31), new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, opacity: .35, depthWrite: false }));
+  shadowSheet.rotation.x = -Math.PI / 2; shadowSheet.position.set(0.004, 0.0113, 0); desk.add(shadowSheet);
+  // brass gooseneck lamp rising from behind, shining on the sheet
+  ped.updateMatrixWorld(true);
+  const target = new THREE.Vector3(); sheet.getWorldPosition(target);
+  const P = (x, y, z) => new THREE.Vector3(x, y, z);
+  const curve = new THREE.CatmullRomCurve3([P(0.17, 1.2, -0.13), P(0.18, 1.42, -0.17), P(0.14, 1.6, -0.12), P(0.07, 1.64, -0.04), P(0.03, 1.6, 0.0)]);
+  const neck = new THREE.Mesh(new THREE.TubeGeometry(curve, 40, 0.007, 8, false), brass); ped.add(neck);
+  const headPos = curve.getPoint(1);
+  const shade = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.04, 0.07, 24, 1, true), new THREE.MeshStandardMaterial({ color: 0xb08d4a, metalness: .85, roughness: .35, side: THREE.DoubleSide }));
+  shade.position.copy(headPos); ped.add(shade);
+  const lookAt = ped.worldToLocal(target.clone());
+  const dir = lookAt.clone().sub(headPos).normalize();
+  shade.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), dir);
+  const bulb = new THREE.Mesh(new THREE.CircleGeometry(0.034, 24), new THREE.MeshBasicMaterial({ color: 0xfff3d6 }));
+  bulb.position.copy(headPos).addScaledVector(dir, 0.033); bulb.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), dir.clone().negate()); ped.add(bulb);
+  // soft visible beam
+  const len = headPos.distanceTo(lookAt);
+  const beamTex = smoothTex(makeCanvas(8, 128, (c, w, h) => { const g = c.createLinearGradient(0, 0, 0, h); g.addColorStop(0, 'rgba(255,236,200,0)'); g.addColorStop(1, 'rgba(255,236,200,1)'); c.fillStyle = g; c.fillRect(0, 0, w, h); }));
+  const beam = new THREE.Mesh(new THREE.ConeGeometry(0.17, len, 32, 1, true),
+    new THREE.MeshBasicMaterial({ map: beamTex, transparent: true, opacity: 0.07, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+  beam.position.copy(headPos).addScaledVector(dir, len / 2); beam.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().negate()); ped.add(beam);
+  const spot = new THREE.SpotLight(0xfff0d6, 0.55, 1.6, 0.5, 0.7, 0);
+  spot.position.copy(headPos); ped.add(spot); spot.target = sheet;
+  const glow = new THREE.PointLight(0xffe6c0, 0.12, 0.8, 1.6); glow.position.copy(headPos); ped.add(glow);
+  // a small plate on the pillar
   const pc = makeCanvas(400, 110, (c, w, h) => { const gr = c.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#d9b15c'); gr.addColorStop(.5, '#b48a3a'); gr.addColorStop(1, '#8a6626');
-    c.fillStyle = gr; c.fillRect(0, 0, w, h); c.fillStyle = '#3a2a10'; c.textAlign = 'center'; c.font = 'bold 40px Georgia, serif'; c.fillText(CFG.artista || 'Pedro', w / 2, 52);
-    c.font = 'italic 24px Georgia, serif'; c.fillText('autorretrato em bronze', w / 2, 88); });
+    c.fillStyle = gr; c.fillRect(0, 0, w, h); c.fillStyle = '#3a2a10'; c.textAlign = 'center'; c.font = 'bold 38px Georgia, serif'; c.fillText('Bem-vindo', w / 2, 52);
+    c.font = 'italic 24px Georgia, serif'; c.fillText('uma mensagem do artista', w / 2, 88); });
   const plate = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.066, 0.006), [stone, stone, stone, stone, new THREE.MeshStandardMaterial({ map: smoothTex(pc), metalness: .6, roughness: .4 }), stone]);
   plate.position.set(0, 0.8, 0.203); ped.add(plate);
-  colliders.push({ x0: -0.28, x1: 0.28, z0: zc - 0.28, z1: zc + 0.28 });
-  const proxy = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.26, 1.75, 12), new THREE.MeshBasicMaterial({ visible: false }));
-  proxy.position.y = 0.88; proxy.userData.bust = true; ped.add(proxy); bustProxy.push(proxy);
-  const spot = new THREE.SpotLight(0xfff0d8, 3.2, 5, 0.45, 0.7, 1.5); spot.position.set(0.9, 2.9, zc + 1.3); spot.target = ped; scene.add(spot);
-  try {
-    const pm = new THREE.PMREMGenerator(renderer); const env = pm.fromScene(scene, 0.035, 0.1, 30).texture;
-    const geo = await loadBust('busto.json');
-    const bust = new THREE.Mesh(geo, bronzeMaterial(env)); bust.position.y = 1.18; ped.add(bust);
-  } catch (e) { console.warn('busto', e); }
+  for (const m of [sheet, board, lip, shade, plate]) { m.userData.note = true; noteMeshes.push(m); }
 }
+function openNote(){
+  if (!NOTE) return;
+  state = 'note'; if (locked) document.exitPointerLock();
+  $('hint').classList.add('hidden'); $('cross').classList.add('hidden'); $('prompt').classList.add('hidden'); $('touch').classList.add('hidden');
+  const card = $('nCard'); card.innerHTML = '';
+  for (const t of noteParas()) { const p = document.createElement('p'); p.textContent = t; card.appendChild(p); }
+  $('nHint').textContent = isTouch ? 'Toque fora da folha para voltar' : 'Clique fora da folha ou aperte Esc para voltar';
+  const v = $('note'); v.classList.remove('hidden', 'show'); void v.offsetWidth; v.classList.add('show');
+  card.animate([{ transform: 'translateY(60px) rotateX(38deg) scale(.55) rotate(-.6deg)', opacity: 0 }, { transform: 'rotate(-.6deg)', opacity: 1 }],
+    { duration: 650, easing: 'cubic-bezier(.2,.8,.2,1)' });
+  Z.opened = performance.now();
+}
+function closeNote(){
+  if (performance.now() - Z.opened < 350) return;
+  $('note').classList.remove('show');
+  const an = $('nCard').animate([{ opacity: 1 }, { transform: 'translateY(40px) scale(.7) rotate(-.6deg)', opacity: 0 }], { duration: 300, easing: 'ease-in', fill: 'forwards' });
+  let done = false; const fin = () => { if (done) return; done = true; an.cancel(); startPlaying(); }; an.onfinish = fin; setTimeout(fin, 450);
+}
+$('note').addEventListener('click', e => { if (!e.target.closest('#nCard')) closeNote(); });
 
 /* ---------- Player & controls ---------- */
 const player = { x: 0, z: 0, yaw: 0, pitch: 0, vx: 0, vz: 0, bob: 0 };
@@ -933,7 +1036,7 @@ let target = -1;
 function placePlayerStart(){ player.x = 0; player.z = ROOM.D / 2 - 1.8; player.yaw = 0; player.pitch = 0; }
 
 function startPlaying(){
-  $('menu').classList.add('hidden'); $('viewer').classList.add('hidden'); $('viewer').classList.remove('show'); $('book').classList.add('hidden'); $('book').classList.remove('show'); state = 'playing';
+  $('menu').classList.add('hidden'); $('viewer').classList.add('hidden'); $('viewer').classList.remove('show'); $('book').classList.add('hidden'); $('book').classList.remove('show'); $('note').classList.add('hidden'); $('note').classList.remove('show'); state = 'playing';
   $('cross').classList.remove('hidden'); if (isTouch) $('touch').classList.remove('hidden');
   if (lockOK) {
     try { const pr = canvas.requestPointerLock(); if (pr && pr.catch) pr.catch(() => {}); } catch {}
@@ -958,6 +1061,7 @@ function paintingScreenRect(idx){
 }
 function openViewer(idx){
   if (idx === -2) return openBook();
+  if (idx === -3) return openNote();
   if (idx < 0) return;
   vIdx = idx; const a = paintings[idx].art; state = 'inspect';
   if (locked) document.exitPointerLock();
@@ -1014,16 +1118,17 @@ const cssWood = {};
 function cssWoodTex(set){
   if (cssWood[set]) return cssWood[set];
   const base = { nogueira: [62, 38, 23], carvalho: [212, 178, 130], mel: [170, 112, 58], pinho: [228, 202, 156], preta: [26, 24, 22] }[set] || [90, 60, 40];
-  const grainK = set === 'pinho' ? .5 : set === 'preta' ? .05 : .32;
+  const grainK = { pinho: .15, carvalho: .2, preta: .05 }[set] ?? .3, freq = { pinho: .2, carvalho: .32 }[set] ?? .6;
   const draw = (w, h, vertical) => makeCanvas(w, h, (g) => {
     const r = rng(set.length * 17 + (vertical ? 3 : 0)), img = g.createImageData(w, h), d = img.data;
     const ph = r() * 9, ph2 = r() * 9;
     for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
       const u = vertical ? y : x, v = vertical ? x : y;
       const A = 2 * Math.PI / (vertical ? h : w);           // periodic along the bar, so tiles join seamlessly
-      const ring = Math.sin(v * 0.75 + Math.sin(u * A + ph) * 2.2 + Math.sin(u * A * 4 + ph2) * 0.6);
-      const fine = Math.sin(v * 2.3 + Math.sin(u * A * 3) * 1.4) * 0.5;
-      const k = 1 + (ring * 0.5 + 0.5) * -grainK * (ring > .6 ? 1.6 : 1) + fine * 0.03 + (r() - .5) * 0.05;
+      const ring = Math.sin(v * freq + Math.sin(u * A + ph) * 2.6 + Math.sin(u * A * 3 + ph2) * 0.9);
+      const fine = Math.sin(v * 2.1 + Math.sin(u * A * 2) * 1.2) * 0.5;
+      const late = Math.max(0, ring - 0.82) * 5;                 // thin darker latewood lines
+      const k = 1 - (ring * 0.5 + 0.5) * grainK - late * grainK * 0.5 + fine * 0.025 + (r() - .5) * 0.04;
       const i = (y * w + x) * 4; d[i] = base[0] * k; d[i + 1] = base[1] * k; d[i + 2] = base[2] * k; d[i + 3] = 255;
     }
     g.putImageData(img, 0, 0);
@@ -1038,27 +1143,25 @@ const PROFILES = {
   thin: 'rgba(255,255,255,.3) 0%,rgba(0,0,0,.1) 30%,rgba(255,255,255,.12) 62%,rgba(0,0,0,.6) 100%',
 };
 function buildCard(a){
-  const front = $('vFront'); front.innerHTML = '';
   const st = $('vStage'), cs = getComputedStyle(st);
   const availW = st.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
   const availH = st.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
-  let outW, outH, fp = null;
-  if (a.frenteImg) { outH = a.h + 0.05; outW = outH * a.frenteImg.naturalWidth / a.frenteImg.naturalHeight; }
-  else {
-    fp = STYLES[a.moldura] ? { ...frameParts(a) } : { st: null, mat: 0, gap: 0, fw: 0, total: 0 };
-    if (fp.st) { fp.fw = Math.max(fp.fw, Math.min(a.w, a.h) * 0.08, 0.026); fp.total = fp.mat + fp.gap + fp.fw; }   // a bit fuller up close
-    outW = a.w + 2 * fp.total; outH = a.h + 2 * fp.total;
-  }
+  const fp = STYLES[a.moldura] ? { ...frameParts(a) } : { st: null, mat: 0, gap: 0, fw: 0, total: 0 };
+  if (fp.st) { fp.fw = Math.max(fp.fw, Math.min(a.w, a.h) * 0.08, 0.026); fp.total = fp.mat + fp.gap + fp.fw; }   // a bit fuller up close
+  const outW = a.w + 2 * fp.total, outH = a.h + 2 * fp.total;
   const px = Math.min(availW / outW, availH / outH) * 0.94;
-  const W = Math.round(outW * px), H = Math.round(outH * px);
-  const card = $('vCard'); card.style.width = W + 'px'; card.style.height = H + 'px';
-  $('vBack').src = a.verso ? 'obras/' + a.verso : '';
-  if (a.frenteImg) { const im = new Image(); im.src = a.frenteImg.src; im.className = 'vPhoto'; im.draggable = false; front.appendChild(im); return; }
-  const fr = document.createElement('div'); fr.className = 'fr'; front.appendChild(fr);
+  const card = $('vCard'); card.style.width = Math.round(outW * px) + 'px'; card.style.height = Math.round(outH * px) + 'px';
+  frameInto($('vFront'), a, fp, px, a.src, false);
+  if (a.verso) frameInto($('vBack'), a, { ...fp, mat: 0, total: fp.fw + fp.gap }, px, 'obras/' + a.verso, true);
+  else $('vBack').innerHTML = '';
+}
+function frameInto(host, a, fp, px, src, isBack){
+  host.innerHTML = '';
+  const fr = document.createElement('div'); fr.className = 'fr'; host.appendChild(fr);
   const fw = Math.round(fp.fw * px); fr.style.setProperty('--fw', fw + 'px');
   if (fw > 0) {
     const set = fp.st.set, tex = cssWoodTex(set);
-    const prof = set === 'pinho' ? PROFILES.flat : (fp.st.frame[2] < 0.03 ? PROFILES.thin : PROFILES.moulded);
+    const prof = isBack ? PROFILES.flat : set === 'pinho' ? PROFILES.flat : (fp.st.frame[2] < 0.03 ? PROFILES.thin : PROFILES.moulded);
     fr.style.setProperty('--prof', prof);
     const bsz = set === 'pinho' ? 520 : 380;
     for (const k of ['t', 'b', 'l', 'r']) {
@@ -1067,11 +1170,11 @@ function buildCard(a){
       bar.style[horiz ? 'height' : 'width'] = fw + 'px';
       bar.style.backgroundImage = `url(${horiz ? tex.h : tex.v})`;
       bar.style.backgroundSize = horiz ? `${bsz}px ${Math.max(fw, 48)}px` : `${Math.max(fw, 48)}px ${bsz}px`;
-      bar.style.backgroundPosition = { t: '0 0', b: '-140px 0', l: '0 -90px', r: '0 -230px' }[k];
+      bar.style.backgroundPosition = { t: '0 0', b: '-140px 0', l: '0 -90px', r: '0 -230px' }[isBack ? { t: 'b', b: 't', l: 'r', r: 'l' }[k] : k];
       fr.appendChild(bar);
     }
   }
-  if (fw > 0) {   // fillet: thin bevelled lip on the inside edge of the moulding
+  if (fw > 0 && !isBack) {   // fillet: thin bevelled lip on the inside edge of the moulding
     const lipC = { carvalho: ['#e8cf9a', '#c9a46a', '#8f6c3c'], nogueira: ['#d9bb7a', '#a8875a', '#6e5430'], preta: ['#c8ad6e', '#8f7743', '#5a4a26'],
                    mel: ['#5a3d24', '#3a2616', '#1f140b'], pinho: ['#f2e2c4', '#d9c39c', '#a8916a'] }[fp.st.set] || ['#ccc', '#999', '#666'];
     const L = Math.max(2, Math.round(fw * 0.14)), lip = document.createElement('div');
@@ -1081,7 +1184,7 @@ function buildCard(a){
   }
   const inner = document.createElement('div'); inner.className = 'inner';
   Object.assign(inner.style, { left: fw + 'px', top: fw + 'px', right: fw + 'px', bottom: fw + 'px' });
-  inner.style.boxShadow = 'inset 0 3px 7px rgba(0,0,0,.45), inset 2px 0 5px rgba(0,0,0,.25)';
+  inner.style.boxShadow = isBack ? 'inset 0 0 0 1px rgba(0,0,0,.4), inset 0 2px 5px rgba(0,0,0,.35)' : 'inset 0 3px 7px rgba(0,0,0,.45), inset 2px 0 5px rgba(0,0,0,.25)';
   fr.appendChild(inner);
   const mw = Math.round(fp.mat * px), gw = Math.round(fp.gap * px);
   if (mw) {
@@ -1100,13 +1203,11 @@ function buildCard(a){
     op.style.left = op.style.top = op.style.right = op.style.bottom = (off - bev) + 'px';
   }
   if (gw) op.style.boxShadow = '0 4px 10px rgba(0,0,0,.6), 0 0 0 1px rgba(0,0,0,.4)';
-  const img = new Image(); img.src = a.src; img.draggable = false; op.appendChild(img);
-  const sh = document.createElement('style');
-  op.style.setProperty('--sh', mw ? 'inset 1px 2px 5px rgba(0,0,0,.35)' : 'inset 0 0 0 1px rgba(255,255,255,.04)');
+  const img = new Image(); img.src = src; img.draggable = false; img.alt = isBack ? 'Verso da obra' : (a.titulo || ''); op.appendChild(img);
   inner.appendChild(op);
   const s2 = document.createElement('div'); s2.style.cssText = 'position:absolute;inset:0;pointer-events:none;box-shadow:' + (mw ? 'inset 1px 2px 5px rgba(0,0,0,.35)' : 'none');
   op.appendChild(s2);
-  if (mw || fp.st.set !== 'pinho') { const sheen = document.createElement('div'); sheen.className = 'sheen'; inner.appendChild(sheen); }
+  if (!isBack && (mw || fp.st?.set !== 'pinho')) { const sheen = document.createElement('div'); sheen.className = 'sheen'; inner.appendChild(sheen); }
 }
 
 function teleportTo(idx){
@@ -1120,7 +1221,7 @@ function teleportTo(idx){
 
 $('mStart').addEventListener('click', startPlaying);
 $('tMenu').addEventListener('click', openMenu);
-$('tView').addEventListener('click', () => { if (target >= 0 || target === -2) openViewer(target); });
+$('tView').addEventListener('click', () => { if (target >= 0 || target <= -2) openViewer(target); });
 
 /* viewer zoom: buttons, wheel, drag to pan; a click on the picture goes back to the museum */
 const Z = { s: 1, x: 0, y: 0, opened: 0 }; const vPan = $('vPan'), vStage = $('vStage');
@@ -1167,6 +1268,7 @@ document.addEventListener('pointerlockerror', () => { lockOK = false; showHint('
 
 addEventListener('keydown', e => {
   keys[e.code] = true;
+  if (state === 'note') { if (e.code === 'Escape' || e.code === 'KeyE' || e.code === 'Enter') { e.preventDefault(); closeNote(); } return; }
   if (state === 'book') {
     if (e.code === 'ArrowRight' || e.code === 'KeyD' || e.code === 'Space') { e.preventDefault(); bookGo(1); }
     else if (e.code === 'ArrowLeft' || e.code === 'KeyA') bookGo(-1);
@@ -1181,7 +1283,7 @@ addEventListener('keydown', e => {
     return;
   }
   if (state === 'playing') {
-    if ((e.code === 'KeyE' || e.code === 'Enter') && (target >= 0 || target === -2)) openViewer(target);
+    if ((e.code === 'KeyE' || e.code === 'Enter') && (target >= 0 || target <= -2)) openViewer(target);
     if (e.code === 'Escape' && !locked) openMenu();
   } else if (state === 'menu' && e.code === 'Enter' && document.activeElement?.tagName !== 'BUTTON') startPlaying();
 });
@@ -1198,7 +1300,7 @@ addEventListener('mousemove', e => {
 });
 addEventListener('mouseup', e => {
   if (state !== 'playing' || isTouch) return;
-  if (locked) { if (target >= 0 || target === -2) openViewer(target); }
+  if (locked) { if (target >= 0 || target <= -2) openViewer(target); }
   else if (drag) { if (drag.moved < 6) { const hit = pick(e.clientX, e.clientY, 4); if (hit >= 0) openViewer(hit); else if (lockOK) startPlaying(); } drag = null; }
 });
 function turn(dx, dy, s = 0.0022){ player.yaw -= dx * s; player.pitch = clamp(player.pitch - dy * s, -1.3, 1.3); }
@@ -1241,6 +1343,7 @@ function pick(cx, cy, far){
   const v = new THREE.Vector2((cx / innerWidth) * 2 - 1, -(cy / innerHeight) * 2 + 1);
   ray.setFromCamera(v, camera); ray.far = far;
   const hit = ray.intersectObjects(pickables, false)[0]; if (hit?.object.userData.book && hit.distance < 3) return -2;
+  if (hit?.object.userData.note && hit.distance < 3) return -3;
   const i = hit?.object.userData.idx;
   return i !== undefined && hit.distance <= viewDist(i) ? i : -1;
 }
@@ -1267,16 +1370,16 @@ function update(dt){
     // what are we looking at?
     ray.setFromCamera(center, camera); ray.far = 4;
     const hit = ray.intersectObjects(pickables, false)[0]; const ud = hit?.object.userData || {};
-    const isSoon = !!ud.soon && hit.distance < 3, isBust = !!ud.bust && hit.distance < 3.5, isBook = !!ud.book && hit.distance < 2.6;
+    const isSoon = !!ud.soon && hit.distance < 3, isNote = !!ud.note && hit.distance < 2.4, isBook = !!ud.book && hit.distance < 2.6;
     const hi = hit && !isSoon ? ud.idx : undefined;
-    target = isBook ? -2 : (hi !== undefined && hit.distance <= viewDist(hi) ? hi : -1);
-    const on = target >= 0 || target === -2;
+    target = isBook ? -2 : isNote ? -3 : (hi !== undefined && hit.distance <= viewDist(hi) ? hi : -1);
+    const on = target >= 0 || target <= -2;
     $('cross').classList.toggle('on', on);
     $('tView').classList.toggle('on', on);
     const pr = $('prompt');
     if (isSoon) { pr.textContent = 'Em breve: uma obra nova vai ficar aqui'; pr.classList.remove('hidden'); }
-    else if (isBook) { pr.innerHTML = `${isTouch ? '' : '<kbd>E</kbd>'}folhear o caderno de esboços`; pr.classList.remove('hidden'); }
-    else if (isBust) { pr.textContent = `${CFG.artista || 'Pedro'} · autorretrato em bronze`; pr.classList.remove('hidden'); }
+    else if (isBook) { pr.innerHTML = `${isTouch ? '' : '<kbd>E</kbd>'}folhear o caderno criativo`; pr.classList.remove('hidden'); }
+    else if (isNote) { pr.innerHTML = `${isTouch ? '' : '<kbd>E</kbd>'}ler a mensagem`; pr.classList.remove('hidden'); }
     else if (target >= 0) { pr.innerHTML = `${isTouch ? '' : '<kbd>E</kbd>'}ver de perto: ${escapeHtml(paintings[target].art.titulo || 'Sem título')}${paintings[target].art.verso ? ' (tem verso)' : ''}`; pr.classList.remove('hidden'); }
     else pr.classList.add('hidden');
   } else {
@@ -1321,12 +1424,12 @@ function loop(){
   for (const p of placed) hangPainting(p, H);
   buildBookTable();
   pickables = [...paintings.flatMap(p => p.meshes), ...soon.flatMap(p => p.meshes), ...occluders, ...bookMeshes];
-  buildBust().then(() => { pickables.push(...bustProxy); });
+  buildNote().then(() => { pickables.push(...noteMeshes); });
   // menu list
   const lista = $('lista');
   const extra = [];
-  if (BOOK) extra.push(['Caderno de esboços', 'na mesinha', () => { player.x = -ROOM.W / 2 + 1.5; player.z = -ROOM.D / 2 + 1.5; player.yaw = Math.PI / 4; player.pitch = -0.45; startPlaying(); }]);
-  extra.push(['Autorretrato em bronze', 'busto', () => { player.x = 0; player.z = PART_T / 2 + 2.3; player.yaw = 0; player.pitch = -0.08; startPlaying(); }]);
+  if (NOTE) extra.push(['Mensagem do artista', 'no pilar', () => { player.x = 0; player.z = PART_T / 2 + 0.9 + 1.05; player.yaw = 0; player.pitch = -0.42; startPlaying(); }]);
+  if (BOOK) extra.push(['Caderno criativo', 'na mesinha', () => { player.x = -ROOM.W / 2 + 1.5; player.z = -ROOM.D / 2 + 1.5; player.yaw = Math.PI / 4; player.pitch = -0.45; startPlaying(); }]);
   for (const [t, d, fn] of extra) { const b = document.createElement('button'); b.innerHTML = `<span>${t}</span><span>${d}</span>`; b.addEventListener('click', fn); lista.appendChild(b); }
   paintings.forEach((p, i) => {
     const b = document.createElement('button');
@@ -1336,7 +1439,7 @@ function loop(){
   if (isTouch) { $('keysDesk').classList.add('hidden'); $('keysTouch').classList.remove('hidden'); }
   placePlayerStart();
   $('loading').classList.add('hidden'); $('menu').classList.remove('hidden');
-  window.__museu = { ROOM, paintings, player, startPlaying, teleportTo, openViewer, openBook, bookGo, flipCard, closeViewer, update, render: () => renderer.render(scene, camera) };
+  window.__museu = { ROOM, paintings, player, startPlaying, teleportTo, openViewer, openBook, openNote, closeNote, bookGo, flipCard, closeViewer, update, render: () => renderer.render(scene, camera) };
   loop();
 })();
 </script>
