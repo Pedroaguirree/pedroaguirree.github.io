@@ -70,6 +70,7 @@ window.MUSEU = {
     { arquivo: "obra34.jpg", titulo: "Um sonho que tive (II)", ano: "", tecnica: "Pastel oleoso sobre papel", largura: 29.7, altura: 21, moldura: "fina", parede: "mural", pos: [128, 151], descricao: "" },
     { arquivo: "obra31.jpg", titulo: "Nuvem sobre o lago", ano: "", tecnica: "Aquarela e nanquim sobre papel", largura: 14, altura: 9.7, moldura: "fita", parede: "mural", pos: [180, 129], giro: 2, descricao: "" },
     { arquivo: "obra36.jpg", titulo: "Pera", ano: "", tecnica: "Acrílica sobre papel", largura: 14.8, altura: 21, moldura: "mel", parede: "mural", pos: [252, 179], descricao: "" },
+    { arquivo: "obra38.jpg", titulo: "Cenoura", ano: "", tecnica: "Acrílica sobre tela", largura: 15, altura: 30, moldura: "caixa", parede: "mural", pos: [293, 162], descricao: "Feito com espátula." },
     { arquivo: "obra37.jpg", titulo: "Vasos de flores", ano: "", tecnica: "Acrílica e pastel oleoso sobre papel", largura: 21, altura: 12.7, moldura: "madeira", parede: "mural", pos: [255, 145], descricao: "" },
   ],
 
