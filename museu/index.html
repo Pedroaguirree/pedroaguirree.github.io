@@ -1281,7 +1281,7 @@ async function recLoad(){
 async function recInit(){
   // only show the table where the database can actually be reached (not inside Claude's preview, which blocks outside hosts)
   let rows;
-  try { rows = await Promise.race([recFetch(), new Promise((_, r) => setTimeout(() => r(new Error('timeout')), 12000))]); }
+  try { rows = await (REC.first || recFetch()); }
   catch (e) { console.warn('recados indisponíveis', e); REC.on = false; return; }
   try { await document.fonts.load('40px Caveat'); } catch {}
   REC.slots = recSlots(); buildRecTable(); REC.ready = true;
@@ -1920,6 +1920,9 @@ function loop(){
 
 /* ---------- Boot ---------- */
 (async () => {
+  // ask for the visitors' notes right away, while the pictures load, so the table is there before the menu shows
+  REC.first = REC.on ? Promise.race([recFetch(), new Promise((_, r) => setTimeout(() => r(new Error('timeout')), 12000))]) : null;
+  REC.first?.catch(() => {});
   const arts = await loadArtworks();
   const soonArts = (CFG.em_breve || []).map((o, i) => ({ ...o, soon: true, titulo: 'Em breve', w: (+o.largura || 100) / 100, h: (+o.altura || 120) / 100, moldura: o.moldura || 'madeira' }));
   const muralArts = arts.filter(a => a.parede === 'mural' && Array.isArray(a.pos));
@@ -1953,7 +1956,7 @@ function loop(){
   }
   pickables = [...paintings.flatMap(p => p.meshes), ...soon.flatMap(p => p.meshes), ...occluders, ...bookMeshes];
   buildNote().then(() => { pickables.push(...noteMeshes); });
-  if (REC.on) recInit();
+  const recReady = REC.on ? recInit() : null;
   // menu list
   const lista = $('lista');
   const extra = [];
@@ -1970,6 +1973,7 @@ function loop(){
   });
   if (isTouch) { $('keysDesk').classList.add('hidden'); $('keysTouch').classList.remove('hidden'); }
   placePlayerStart();
+  if (recReady) { $('loadTxt').textContent = 'Colando os bilhetes…'; await Promise.race([recReady, new Promise(r => setTimeout(r, 6000))]); }
   $('loading').classList.add('hidden'); $('menu').classList.remove('hidden');
   window.__museu = { REC, ROOM, openRecRead, openRecWrite, paintings, player, startPlaying, teleportTo, openViewer, openBook, openNote, closeNote, bookGo, flipCard, closeViewer, update, render: () => renderer.render(scene, camera) };
   loop();
