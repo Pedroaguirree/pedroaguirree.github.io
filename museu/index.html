@@ -497,6 +497,7 @@ const STYLES = {
   mel:            { set: 'mel',      frame: [0.12, 0.032, 0.058] },
   caixa:          { set: 'carvalho', frame: [0.05, 0.016, 0.022], gap: 0.01 },
   pinho:          { set: 'pinho',    frame: [0.25, 0.022, 0.03] },
+  fina:           { set: 'preta',    frame: [0.06, 0.012, 0.02] },
 };
 const sz = (a, [k, lo, hi]) => clamp(Math.min(a.w, a.h) * k, lo, hi);
 function frameParts(a){
@@ -604,6 +605,7 @@ async function loadArtworks(){
 /* ---------- Layout: distribute along walls, grow room until it fits ---------- */
 const MARGIN = 1.05, MIN_SPACE = 0.65, DOOR_W = 1.8, PART_T = 0.24, PART_H = 3.0;
 const partLen = W => clamp(W * 0.5, 5, 9);
+const MURAL_T0 = 0.35; let MURAL_END = 0;   // the mural starts near the north-west corner
 function outerSegments(W, D){
   const walls = [
     { o: [-W/2, -D/2], u: [1, 0],  n: [0, 1],  len: W }, // fundo (norte)
@@ -615,7 +617,7 @@ function outerSegments(W, D){
   walls.forEach((wl, k) => {
     if (k === 2) { const a = W / 2 - DOOR_W / 2 - 0.6, b = W / 2 + DOOR_W / 2 + 0.6;
       segs.push({ wall: wl, a: MARGIN, b: a }, { wall: wl, a: b, b: W - MARGIN }); }
-    else segs.push({ wall: wl, a: MARGIN, b: wl.len - MARGIN });
+    else segs.push({ wall: wl, a: k === 0 && MURAL_END ? Math.max(MARGIN, MURAL_END + 0.6) : MARGIN, b: wl.len - MARGIN });
   });
   return segs.filter(s => s.b - s.a > 0.3);
 }
@@ -651,7 +653,7 @@ function place(groups, segs){
   });
   return placed;
 }
-function frameW(a){ const m = a.moldura || 'madeira'; if (m === 'nenhuma') return 0;
+function frameW(a){ const m = a.moldura || 'madeira'; if (m === 'nenhuma' || m === 'fita') return 0;
   if (m === 'vitoriana') return clamp(Math.min(a.w, a.h) * 0.2, 0.05, 0.12);
   if (STYLES[m]) return frameParts(a).total;
   return clamp(Math.min(a.w, a.h) * 0.06, 0.03, 0.08); }
@@ -738,24 +740,50 @@ function curtain(g, cw, ch, topY, seed){
   return m;
 }
 const soon = [];
+const TAPE_MAT = new THREE.MeshLambertMaterial({ map: smoothTex(makeCanvas(64, 24, (c, w, h) => {
+  c.fillStyle = 'rgba(236,226,204,.88)'; c.fillRect(0, 0, w, h);
+  c.fillStyle = 'rgba(255,255,255,.18)'; for (let x = 0; x < w; x += 6) c.fillRect(x, 0, 2, h);
+  c.clearRect(0, 0, 2, h); c.clearRect(w - 2, 0, 2, h);
+  for (let y = 0; y < h; y += 3) { c.clearRect(0, y, 1 + (y * 7 % 3), 1); c.clearRect(w - 1 - (y * 5 % 3), y, 3, 1); }   // torn ends
+})), transparent: true, depthWrite: false });
+async function buildMuralText(northWall){
+  const M = CFG.mural; if (!M?.texto) return;
+  try { await document.fonts.load('80px Caveat'); } catch {}
+  const W = 1300, H = 420;
+  const cv = makeCanvas(W, H, (c) => {
+    c.strokeStyle = c.fillStyle = 'rgba(48,40,34,.88)'; c.lineCap = 'round'; c.lineJoin = 'round';
+    c.font = `500 112px Caveat, "Segoe Script", cursive`; c.textBaseline = 'middle';
+    c.save(); c.translate(440, 205); c.rotate(-0.04); c.fillText(M.texto, 0, 0); c.restore();
+    c.lineWidth = 9; c.beginPath(); c.moveTo(410, 232); c.bezierCurveTo(300, 292, 160, 270, 46, 196); c.stroke();     // hand-drawn arrow
+    c.beginPath(); c.moveTo(46, 196); c.lineTo(112, 186); c.moveTo(46, 196); c.lineTo(84, 250); c.stroke();
+  });
+  const w = 0.88, h = w * H / W;
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshLambertMaterial({ map: smoothTex(cv), transparent: true, depthWrite: false }));
+  const t = MURAL_T0 + (M.pos[0] / 100) + w / 2 - 0.035;     // pos = where the arrow tip is
+  m.position.set(northWall.o[0] + t, M.pos[1] / 100, northWall.o[1] + 0.006); scene.add(m);
+}
 function hangPainting(p, H){
   const a = p.art, fw = frameW(a), wl = p.wall;
-  const cy = Math.max(1.55, a.h / 2 + fw + 0.45);
+  const cy = a.pos ? a.pos[1] / 100 : Math.max(1.55, a.h / 2 + fw + 0.45);
   const g = new THREE.Group();
   g.position.set(wl.o[0] + wl.u[0] * p.t, cy, wl.o[1] + wl.u[1] * p.t);
   g.rotation.y = Math.atan2(wl.n[0], wl.n[1]);
+  if (a.giro) g.rotateZ(a.giro * Math.PI / 180);
   // soft light pool + shadow behind
+  if (!a.pos) {
   const glow = new THREE.Mesh(new THREE.PlaneGeometry(a.w + 1.4, a.h + 1.6),
     new THREE.MeshBasicMaterial({ map: glowTex, transparent: true, opacity: 0.22, blending: THREE.AdditiveBlending, depthWrite: false }));
   glow.position.set(0, 0.25, 0.004); g.add(glow);
+  }
   const sh = new THREE.Mesh(new THREE.PlaneGeometry((a.w + fw * 2) * 1.12, (a.h + fw * 2) * 1.12),
     new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, opacity: 0.35, depthWrite: false }));
   sh.position.set(0.01, -0.03, 0.008); g.add(sh);
+  if (a.moldura === 'fita') { sh.scale.set(0.97, 0.97, 1); sh.position.set(0.004, -0.007, 0.008); sh.material.opacity = 0.28; }
   // canvas/paper
   const edge = new THREE.MeshLambertMaterial({ color: 0xe8e2d6 });
   let face = edge;
   if (!a.soon) { const tex = smoothTex(a.img); tex.minFilter = THREE.LinearMipmapLinearFilter; face = new THREE.MeshBasicMaterial({ map: tex, color: 0xf2f2f2 }); }
-  const depth = fw ? 0.02 : 0.035;
+  const depth = a.moldura === 'fita' ? 0.003 : fw ? 0.02 : 0.035;
   const art = new THREE.Mesh(new THREE.BoxGeometry(a.w, a.h, depth), [edge, edge, edge, edge, face, edge]);
   art.position.z = 0.012 + depth / 2; art.userData.idx = paintings.length; g.add(art);
   // frame
@@ -768,6 +796,15 @@ function hangPainting(p, H){
     for (const [w, h, x, y] of [[W2, fw, 0, a.h / 2 + fw / 2], [W2, fw, 0, -a.h / 2 - fw / 2], [fw, a.h, a.w / 2 + fw / 2, 0], [fw, a.h, -a.w / 2 - fw / 2, 0]]) {
       const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, fd), fm); b.position.set(x, y, 0.01 + fd / 2); b.userData.idx = paintings.length; g.add(b);
     }
+  }
+  if (a.pos) {   // mural piece: no lamp or plaque of its own
+    if (a.moldura === 'fita') for (const sx of [-1, 1]) {
+      const t = new THREE.Mesh(new THREE.PlaneGeometry(0.055, 0.018), TAPE_MAT);
+      t.position.set(sx * (a.w / 2 - 0.004), a.h / 2 - 0.004, 0.0165); t.rotation.z = -sx * 0.72 + (sx * 0.08); g.add(t);
+    }
+    scene.add(g);
+    paintings.push({ art: a, group: g, wall: wl, cy, meshes: g.children.filter(m => m.userData.idx !== undefined) });
+    return;
   }
   // picture light
   const brass = new THREE.MeshLambertMaterial({ color: 0x9a7a3e });
@@ -1226,7 +1263,9 @@ function placeAt(idx){
   const dist = clamp(Math.max(p.art.w, p.art.h) * 1.6 + 0.55, 0.85, Math.min(ROOM.W, ROOM.D) - 1);
   player.x = clamp(gp.x + n[0] * dist, -ROOM.W / 2 + .5, ROOM.W / 2 - .5);
   player.z = clamp(gp.z + n[1] * dist, -ROOM.D / 2 + .5, ROOM.D / 2 - .5);
-  player.yaw = Math.atan2(n[0], n[1]); player.pitch = Math.atan2(p.cy - 1.6, dist) * 0.8; player.vx = player.vz = 0;
+  move(0, 0);                                        // furniture may nudge us: then turn to face the piece
+  const dx = gp.x - player.x, dz = gp.z - player.z, hd = Math.hypot(dx, dz) || dist;
+  player.yaw = Math.atan2(-dx, -dz); player.pitch = Math.atan2(p.cy - 1.6, hd); player.vx = player.vz = 0;
 }
 
 $('mStart').addEventListener('click', startPlaying);
@@ -1426,19 +1465,32 @@ function loop(){
 (async () => {
   const arts = await loadArtworks();
   const soonArts = (CFG.em_breve || []).map((o, i) => ({ ...o, soon: true, titulo: 'Em breve', w: (+o.largura || 100) / 100, h: (+o.altura || 120) / 100, moldura: o.moldura || 'madeira' }));
-  const wallArts = arts.filter(a => a.parede !== 'meio'), midArts = [...soonArts, ...arts.filter(a => a.parede === 'meio')];
+  const muralArts = arts.filter(a => a.parede === 'mural' && Array.isArray(a.pos));
+  MURAL_END = muralArts.length ? MURAL_T0 + Math.max(...muralArts.map(a => a.pos[0] / 100 + need(a) / 2)) : 0;
+  const wallArts = arts.filter(a => a.parede !== 'meio' && !muralArts.includes(a)), midArts = [...soonArts, ...arts.filter(a => a.parede === 'meio')];
   let W = 14, D = 10.5, g1 = null, g2 = null;
   for (let n = 0; n < 300; n++) {
     g1 = assign(wallArts, outerSegments(W, D)); g2 = assign(midArts, partitionSegments(W));
     if (g1 && g2) break; W *= 1.04; D *= 1.03;
   }
-  const placed = [...place(g1 || [], outerSegments(W, D)), ...place(g2 || [], partitionSegments(W))];
+  const northWall = outerSegments(W, D)[0].wall;
+  const placed = [...place(g1 || [], outerSegments(W, D)), ...place(g2 || [], partitionSegments(W)),
+                  ...muralArts.map(a => ({ art: a, wall: northWall, t: MURAL_T0 + a.pos[0] / 100 }))];
   const tallest = Math.max(0, ...placed.map(p => Math.max(1.55, p.art.h / 2 + 0.5) + p.art.h / 2));
   const H = Math.max(3.8, tallest + 1.1);
   ROOM = { W, D, H };
   buildRoom(W, D, H);
   for (const p of placed) hangPainting(p, H);
   buildBookTable();
+  if (muralArts.length) {
+    buildMuralText(northWall);
+    const x0 = northWall.o[0] + MURAL_T0, x1 = northWall.o[0] + MURAL_END, zc = northWall.o[1];
+    const glow = new THREE.Mesh(new THREE.PlaneGeometry(x1 - x0 + 0.9, 1.5),
+      new THREE.MeshBasicMaterial({ map: glowTex, transparent: true, opacity: 0.12, blending: THREE.AdditiveBlending, depthWrite: false }));
+    glow.position.set((x0 + x1) / 2, 1.8, zc + 0.004); scene.add(glow);
+    const spot = new THREE.SpotLight(0xfff0d8, 0.8, 6, 0.6, 0.8, 1.2);
+    spot.position.set((x0 + x1) / 2, H - 0.2, zc + 1.6); spot.target.position.set((x0 + x1) / 2, 1.6, zc); scene.add(spot, spot.target);
+  }
   pickables = [...paintings.flatMap(p => p.meshes), ...soon.flatMap(p => p.meshes), ...occluders, ...bookMeshes];
   buildNote().then(() => { pickables.push(...noteMeshes); });
   // menu list

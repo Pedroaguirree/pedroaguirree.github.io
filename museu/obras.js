@@ -10,7 +10,8 @@
          (se souber só a largura, deixe altura: 0 que ela é calculada pela proporção da foto)
        - moldura:   "clara" (carvalho claro com passe-partout branco), "nogueira_passe" (madeira escura com passe-partout creme),
                     "preta_passe" (preta fina com passe-partout), "mel" (madeira cor de mel), "madeira" (madeira escura),
-                    "caixa" (moldura flutuante para tela), "pinho" (madeira clara simples),
+                    "caixa" (moldura flutuante para tela), "pinho" (madeira clara simples), "fina" (preta fina),
+                    "fita" (sem moldura, presa com fita),
                     "vitoriana" (dourada) ou "nenhuma"
        - verso (opcional): foto do verso -> aparece o botão "Ver verso", que vira o quadro
   As obras são distribuídas sozinhas pelas paredes, na ordem desta lista,
@@ -51,7 +52,19 @@ window.MUSEU = {
     { arquivo: "obra20.jpg", titulo: "Perfil", ano: "", tecnica: "Pastel oleoso sobre papel", largura: 21, altura: 14.8, moldura: "madeira", descricao: "Pedro's Art" },
     { arquivo: "obra22.jpg", titulo: "Rostos ao céu", ano: "", tecnica: "Aquarela e nanquim sobre papel (marcador de página)", largura: 5, altura: 15, moldura: "preta_passe", descricao: "" },
     { arquivo: "obra29.jpg", titulo: "Deserto ensolarado", ano: "", tecnica: "Caneta sobre papel (caderno criativo)", largura: 9, altura: 14, moldura: "clara", parede: "meio", descricao: "" },
+    // Mural ao lado da mesinha: pos = [centímetros a partir do começo do mural, altura do centro em cm]; giro = inclinação em graus
+    { arquivo: "obra35.jpg", titulo: "Céu em degradê", ano: "", tecnica: "Pastel oleoso sobre papel", largura: 21, altura: 29.7, moldura: "clara", parede: "mural", pos: [40, 158], descricao: "" },
+    { arquivo: "obra30.jpg", titulo: "Abelha e flor", ano: "", tecnica: "Aquarela e nanquim sobre papel", largura: 10.2, altura: 14, moldura: "fita", parede: "mural", pos: [80, 183], giro: -3, descricao: "" },
+    { arquivo: "obra32.jpg", titulo: "Três árvores", ano: "", tecnica: "Aquarela e nanquim sobre papel", largura: 10, altura: 14, moldura: "fita", parede: "mural", pos: [83, 145], giro: 2.5, descricao: "" },
+    { arquivo: "obra33.jpg", titulo: "Um sonho que tive (I)", ano: "", tecnica: "Pastel oleoso sobre papel", largura: 29.7, altura: 21, moldura: "fina", parede: "mural", pos: [128, 180], descricao: "" },
+    { arquivo: "obra34.jpg", titulo: "Um sonho que tive (II)", ano: "", tecnica: "Pastel oleoso sobre papel", largura: 29.7, altura: 21, moldura: "fina", parede: "mural", pos: [128, 151], descricao: "" },
+    { arquivo: "obra31.jpg", titulo: "Nuvem sobre o lago", ano: "", tecnica: "Aquarela e nanquim sobre papel", largura: 14, altura: 9.7, moldura: "fita", parede: "mural", pos: [180, 129], giro: 2, descricao: "" },
+    { arquivo: "obra36.jpg", titulo: "Pera", ano: "", tecnica: "Acrílica sobre papel", largura: 14.8, altura: 21, moldura: "mel", parede: "mural", pos: [252, 179], descricao: "" },
+    { arquivo: "obra37.jpg", titulo: "Vasos de flores", ano: "", tecnica: "Acrílica e pastel oleoso sobre papel", largura: 21, altura: 12.7, moldura: "madeira", parede: "mural", pos: [255, 145], descricao: "" },
   ],
+
+  // Frase escrita na parede do mural, com a seta apontando para a esquerda (pos = ponta da seta, em cm)
+  mural: { texto: "um sonho que tive", pos: [147, 166] },
 
   // Caderno criativo na mesinha do canto (arquivos na pasta "caderno/")
   caderno: {

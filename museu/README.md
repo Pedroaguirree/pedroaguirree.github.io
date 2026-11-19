@@ -31,6 +31,10 @@ O caderno fica na mesinha do canto; quem clica nele vê a capa abrir e folheia a
 
 O texto da folha sobre o pilar, em frente à parede "Museu do Pedro", fica em `mensagem` no `obras.js`. Cada linha vira um parágrafo.
 
+## Mural
+
+As obras com `parede: "mural"` formam o mural ao lado da mesinha do caderno. Cada uma tem `pos: [x, y]` em centímetros (x a partir do começo do mural, y = altura do centro) e, se quiser, `giro` (inclinação em graus). `moldura: "fita"` deixa a folha presa com fita. A frase escrita na parede fica em `mural` no `obras.js`.
+
 ## Parede do meio
 
 Uma obra com `parede: "meio"` fica no lado de trás da parede do meio, junto das obras cobertas.
