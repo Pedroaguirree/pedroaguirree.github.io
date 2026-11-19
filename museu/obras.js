@@ -10,7 +10,9 @@
          (se souber só a largura, deixe altura: 0 que ela é calculada pela proporção da foto)
        - moldura:   "clara" (carvalho claro com passe-partout branco), "nogueira_passe" (madeira escura com passe-partout creme),
                     "preta_passe" (preta fina com passe-partout), "mel" (madeira cor de mel), "madeira" (madeira escura),
-                    "caixa" (moldura flutuante para tela), "vitoriana" (dourada) ou "nenhuma"
+                    "caixa" (moldura flutuante para tela), "pinho" (madeira clara simples),
+                    "vitoriana" (dourada) ou "nenhuma"
+       - verso / frente (opcional): foto do verso e da frente com moldura -> aparece o botão "Ver verso"
   As obras são distribuídas sozinhas pelas paredes, na ordem desta lista,
   e a sala cresce automaticamente para caber todo mundo.
 */
@@ -28,6 +30,10 @@ window.MUSEU = {
     { arquivo: "obra24.jpg", titulo: "Árvore na colina", ano: "", tecnica: "Acrílica sobre tela", largura: 40, altura: 0, moldura: "caixa", descricao: "" }, // tela 40 de largura, altura pela foto
     { arquivo: "obra25.jpg", titulo: "Gato de rabo comprido", ano: "", tecnica: "Acrílica sobre tela", largura: 30, altura: 30, moldura: "caixa", descricao: "" }, // tela 30x30
     { arquivo: "obra26.jpg", titulo: "Lagoa", ano: "", tecnica: "Acrílica sobre tela", largura: 16, altura: 16, moldura: "caixa", descricao: "" }, // tela 16x16
+    { arquivo: "obra27.jpg", titulo: "Pergunta", ano: "", tecnica: "Pastel oleoso e caneta sobre papel", largura: 42, altura: 59.4, moldura: "nogueira_passe", descricao: "" }, // A2
+    { arquivo: "obra28.jpg", titulo: "Síntese", ano: "2026", tecnica: "Acrílica sobre papel, moldura de pinho", largura: 10, altura: 15, moldura: "pinho",
+      frente: "obra28_frente.jpg", verso: "obra28_verso.jpg",
+      descricao: "Antes de virar quadro, cada cor passou por aqui. Não são restos, são memórias. Esta é a obra que se pintou sozinha, enquanto eu pintava as outras. É a síntese de tudo que um dia eu pintei." }, // 10x15, com verso
     { arquivo: "obra05.jpg", titulo: "Flores amarelas", ano: "", tecnica: "Pastel oleoso sobre papel", largura: 21, altura: 29.7, moldura: "clara", descricao: "" }, // A4
     { arquivo: "obra06.jpg", titulo: "Pôr do sol", ano: "", tecnica: "Pastel oleoso sobre papel", largura: 21, altura: 29.7, moldura: "mel", descricao: "" }, // A4
     { arquivo: "obra07.jpg", titulo: "Peixe com cigarro", ano: "", tecnica: "Pastel oleoso sobre papel", largura: 29.7, altura: 21, moldura: "nogueira_passe", descricao: "" }, // A4
@@ -47,6 +53,13 @@ window.MUSEU = {
     { arquivo: "obra20.jpg", titulo: "Rosto vermelho", ano: "", tecnica: "Pastel oleoso sobre papel", largura: 21, altura: 14.8, moldura: "madeira", descricao: "" }, // A5
     { arquivo: "obra22.jpg", titulo: "Rostos no céu", ano: "", tecnica: "Aquarela e nanquim sobre papel (marcador de página)", largura: 5, altura: 15, moldura: "preta_passe", descricao: "" }, // marcador ~5x15
   ],
+
+  // Caderno de esboços na mesinha do canto (fotos na pasta "caderno/")
+  caderno: {
+    capa: "capa.jpg",
+    paginas: ["p01.jpg","p02.jpg","p03.jpg","p04.jpg","p05.jpg","p06.jpg","p07.jpg","p08.jpg","p09.jpg",
+              "p10.jpg","p11.jpg","p12.jpg","p13.jpg","p14.jpg","p15.jpg","p16.jpg","p17.jpg"],
+  },
 
   // Obras grandes cobertas por cortina branca, com placa "Em breve".
   // Ficam no lado de trás da parede do meio. Tamanho em cm.

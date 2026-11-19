@@ -61,11 +61,80 @@
   #lista span:last-child{color:var(--muted);white-space:nowrap}
 
   /* Viewer */
-  #viewer{position:fixed;inset:0;background:rgba(8,7,6,.94);display:flex;flex-direction:column}
+  #viewer{position:fixed;inset:0;display:flex;flex-direction:column}
+  #vBg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 42%,#3a2f26 0%,#1a1512 55%,#0b0908 100%);opacity:0;transition:opacity .45s}
+  #viewer.show #vBg{opacity:1}
   #vStage{flex:1;min-height:0;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;
-    padding:28px 96px 28px 28px;cursor:pointer;touch-action:none}
+    padding:28px 96px 28px 28px;cursor:pointer;touch-action:none;perspective:1800px}
   #vStage.zoomed{cursor:grab} #vStage.dragging{cursor:grabbing}
-  #vImg{max-width:100%;max-height:100%;object-fit:contain;box-shadow:0 10px 40px rgba(0,0,0,.6);transform-origin:center center;will-change:transform;-webkit-user-drag:none}
+  #vPan,#vIntro{transform-style:preserve-3d;will-change:transform}
+  #vCard{position:relative;transform-style:preserve-3d}
+  .vFace{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+  .vBack{transform:rotateY(180deg);box-shadow:0 24px 60px rgba(0,0,0,.6),0 4px 12px rgba(0,0,0,.4)}
+  .vBack img,.vPhoto{width:100%;height:100%;display:block;-webkit-user-drag:none;user-select:none}
+  .vPhoto{box-shadow:0 24px 60px rgba(0,0,0,.6),0 4px 12px rgba(0,0,0,.4)}
+  /* realistic frame */
+  .fr{position:absolute;inset:0;box-shadow:0 26px 60px rgba(0,0,0,.62),0 5px 14px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.1);border-radius:2px}
+  .fr .bar{position:absolute;background-repeat:repeat}
+  .fr .bar::after{content:"";position:absolute;inset:0}
+  .fr .t{left:0;top:0;width:100%;clip-path:polygon(0 0,100% 0,calc(100% - var(--fw)) 100%,var(--fw) 100%)}
+  .fr .b{left:0;bottom:0;width:100%;clip-path:polygon(var(--fw) 0,calc(100% - var(--fw)) 0,100% 100%,0 100%)}
+  .fr .l{left:0;top:0;height:100%;clip-path:polygon(0 0,100% var(--fw),100% calc(100% - var(--fw)),0 100%)}
+  .fr .r{right:0;top:0;height:100%;clip-path:polygon(0 var(--fw),100% 0,100% 100%,0 calc(100% - var(--fw)))}
+  .fr .t::after{background:linear-gradient(to bottom,var(--prof))}
+  .fr .b::after{background:linear-gradient(to top,var(--prof)),linear-gradient(rgba(0,0,0,.16),rgba(0,0,0,.16))}
+  .fr .l::after{background:linear-gradient(to right,var(--prof)),linear-gradient(rgba(255,255,255,.05),rgba(255,255,255,.05))}
+  .fr .r::after{background:linear-gradient(to left,var(--prof)),linear-gradient(rgba(0,0,0,.1),rgba(0,0,0,.1))}
+  .fr .inner{position:absolute;overflow:hidden}
+  .fr .mat{position:absolute;inset:0;background-size:220px}
+  .fr .open{position:absolute;box-sizing:border-box}
+  .fr .open img{position:absolute;inset:0;width:100%;height:100%;display:block;-webkit-user-drag:none}
+  .fr .open::after{content:"";position:absolute;inset:0;pointer-events:none}
+  .fr .sheen{position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(118deg,transparent 30%,rgba(255,255,255,.07) 41%,rgba(255,255,255,.015) 47%,transparent 55%,transparent 70%,rgba(255,255,255,.035) 76%,transparent 82%)}
+  #vFlip{width:auto;flex:none;padding:10px 16px;font-size:16px}
+  .vBtns{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  #vInfo{position:relative;transition:transform .45s cubic-bezier(.2,.8,.2,1),opacity .45s;transform:translateY(30px);opacity:0}
+  #viewer.show #vInfo{transform:none;opacity:1}
+  #viewer.show #vZoom{opacity:1} #vZoom{opacity:0;transition:opacity .45s .15s}
+  /* sketchbook */
+  #book{position:fixed;inset:0;display:flex;flex-direction:column}
+  #bBg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,#3b3027 0%,#17120f 60%,#0a0807 100%);opacity:0;transition:opacity .4s}
+  #book.show #bBg{opacity:1}
+  #bStage{position:relative;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;perspective:2400px;touch-action:none}
+  #bBook{position:relative;transform-style:preserve-3d;transition:transform .9s cubic-bezier(.45,.05,.25,1),opacity .4s}
+  .leaf{position:absolute;left:50%;top:0;height:100%;transform-origin:0 50%;transform-style:preserve-3d;
+    transition:transform 1s cubic-bezier(.45,.05,.25,1)}
+  .leaf.flipped{transform:rotateY(-180deg)}
+  .side{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background-size:100% 100%;background-color:#efe9dc;
+    border-radius:0 7px 7px 0;overflow:hidden}
+  .side.back{transform:rotateY(180deg);border-radius:7px 0 0 7px}
+  .side::after{content:"";position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(to right,rgba(0,0,0,.28),rgba(0,0,0,.06) 6%,transparent 14%,transparent 94%,rgba(0,0,0,.06))}
+  .side.back::after{background:linear-gradient(to left,rgba(0,0,0,.28),rgba(0,0,0,.06) 6%,transparent 14%,transparent 94%,rgba(0,0,0,.06))}
+  .side.cov{box-shadow:inset 0 0 0 1px rgba(0,0,0,.25)}
+  .side.cov::after{background:linear-gradient(to right,rgba(0,0,0,.35),rgba(255,255,255,.06) 3%,transparent 8%)}
+  .side.cov.back::after{background:linear-gradient(to left,rgba(0,0,0,.35),rgba(255,255,255,.06) 3%,transparent 8%)}
+  #bShadow{position:absolute;left:0;right:0;bottom:-26px;height:40px;background:radial-gradient(ellipse at center,rgba(0,0,0,.55),transparent 70%);transform:translateZ(-2px)}
+  .bNav{position:absolute;top:50%;transform:translateY(-50%);width:54px;height:54px;border-radius:50%;border:1px solid var(--line);
+    background:rgba(20,17,15,.75);color:var(--ink);font-size:30px;line-height:1;cursor:pointer;z-index:5}
+  .bNav:disabled{opacity:.25;cursor:default}
+  #bPrev{left:18px} #bNext{right:18px}
+  #bBar{position:relative;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:14px 24px calc(18px + env(safe-area-inset-bottom));
+    border-top:1px solid var(--line);opacity:0;transition:opacity .4s .2s}
+  #book.show #bBar{opacity:1}
+  #bBar h2{margin:0;font-family:"Playfair Display",Georgia,serif;font-size:22px;color:var(--brass)}
+  #bCount{color:var(--muted);font-size:14px}
+  #bClose{width:auto;flex:none;padding:9px 16px}
+  @media (max-height: 520px) and (orientation: landscape){
+    #viewer{flex-direction:row}
+    #vStage{padding:14px 12px 14px 14px !important}
+    #vInfo{width:min(40%,340px);flex:none;flex-direction:column;justify-content:center;align-items:flex-start;gap:10px;overflow:auto;
+      border-top:0;border-left:1px solid var(--line);padding:14px 16px calc(14px + env(safe-area-inset-bottom)) !important}
+    #vInfo h2{font-size:19px} #vInfo p{font-size:13px} #vInfo .desc{font-size:13px}
+    #vZoom{top:auto !important;bottom:12px;left:12px;right:auto !important;flex-direction:row}
+    #bBar{padding:6px 16px 8px !important}
+  }
   #vZoom{position:absolute;right:22px;top:50%;transform:translateY(-60%);display:flex;flex-direction:column;align-items:center;gap:8px;
     background:rgba(22,18,15,.85);border:1px solid var(--line);border-radius:6px;padding:8px}
   #vZoom button{width:46px;height:46px;border:0;border-radius:4px;background:rgba(255,255,255,.06);color:var(--ink);
@@ -102,6 +171,8 @@
     #hint{left:50%;transform:translateX(-50%);bottom:auto;top:calc(14px + env(safe-area-inset-top));text-align:center;max-width:80vw;white-space:normal}
     .card{padding:22px 20px 18px} .card h1{font-size:32px}
     #vStage{padding:70px 12px 12px}
+    .bNav{width:44px;height:44px;font-size:24px;top:auto;bottom:10px;transform:none} #bPrev{left:12px} #bNext{right:12px}
+    #bBar{padding:10px 16px calc(12px + env(safe-area-inset-bottom))} #bBar h2{font-size:18px}
     #vZoom{top:calc(12px + env(safe-area-inset-top));right:12px;transform:none;flex-direction:row;padding:6px}
     #vZoom button{width:44px;height:44px}
     #vInfo{flex-direction:column;align-items:flex-start;gap:8px;padding:12px 16px calc(16px + env(safe-area-inset-bottom))}
@@ -155,7 +226,11 @@
 </div>
 
 <div id="viewer" class="hidden">
-  <div id="vStage"><img id="vImg" alt="" draggable="false"></div>
+  <div id="vBg"></div>
+  <div id="vStage"><div id="vPan"><div id="vIntro"><div id="vCard">
+    <div class="vFace vFront" id="vFront"></div>
+    <div class="vFace vBack"><img id="vBack" alt="Verso da obra" draggable="false"></div>
+  </div></div></div></div>
   <div id="vZoom" aria-label="Zoom">
     <button id="zIn" title="Aproximar" aria-label="Aproximar">+</button>
     <span id="zLvl">100%</span>
@@ -169,8 +244,17 @@
       <p id="vDims"></p>
       <p class="desc" id="vDesc"></p>
     </div>
-    <span id="vHint"></span>
+    <div class="vBtns"><button class="btn" id="vFlip">Ver verso</button><span id="vHint"></span></div>
   </div>
+</div>
+
+<div id="book" class="hidden">
+  <div id="bBg"></div>
+  <div id="bStage"><div id="bBook"><div id="bShadow"></div></div>
+    <button class="bNav" id="bPrev" aria-label="Página anterior">‹</button>
+    <button class="bNav" id="bNext" aria-label="Próxima página">›</button>
+  </div>
+  <div id="bBar"><div><h2>Caderno de esboços</h2><span id="bCount"></span></div><button class="btn ghost" id="bClose">Fechar</button></div>
 </div>
 
 <div id="loading"><div class="px" id="loadTxt">Pendurando os quadros…</div><div class="bar"><i id="loadBar"></i></div></div>
@@ -178,6 +262,7 @@
 <script src="obras.js"></script>
 <script type="module">
 import * as THREE from './lib/three.module.min.js';
+import { loadBust, bronzeMaterial } from './js/busto.js';
 
 const CFG = window.MUSEU || { obras: [] };
 const $ = id => document.getElementById(id);
@@ -361,12 +446,14 @@ const WOODS = {
   nogueira: woodCanvas([58, 36, 22], 21),     // dark walnut
   carvalho: woodCanvas([214, 182, 136], 7, .28), // light oak
   mel:      woodCanvas([168, 112, 58], 13),   // honey
+  pinho:    woodCanvas([226, 200, 152], 31, .45), // pine, strong grain
 };
 const phong = (map, color = 0xffffff, shininess = 28) => new THREE.MeshPhongMaterial({ map, color, specular: 0x2a1a10, shininess });
 const FRAME_SETS = {
   nogueira: { outer: phong(WOODS.nogueira), inner: phong(WOODS.nogueira, 0xc9a98a), lip: phong(WOODS.nogueira, 0x8a6a50, 40) },
   carvalho: { outer: phong(WOODS.carvalho), inner: phong(WOODS.carvalho, 0xf0e4d4), lip: phong(WOODS.carvalho, 0xd9c6ae, 40) },
   mel:      { outer: phong(WOODS.mel), inner: phong(WOODS.mel, 0xe8d2b8), lip: phong(WOODS.mel, 0xb89270, 40) },
+  pinho:    { outer: phong(WOODS.pinho, 0xffffff, 12), inner: phong(WOODS.pinho, 0xf4ead8, 12), lip: phong(WOODS.pinho, 0xe6d6bc, 12) },
   preta:    { outer: new THREE.MeshPhongMaterial({ color: 0x1a1816, specular: 0x333333, shininess: 60 }),
               inner: new THREE.MeshPhongMaterial({ color: 0x232120, specular: 0x333333, shininess: 60 }),
               lip:   new THREE.MeshPhongMaterial({ color: 0x0f0e0d, specular: 0x222222, shininess: 60 }) },
@@ -382,6 +469,7 @@ const STYLES = {
   preta_passe:    { set: 'preta',    frame: [0.05, 0.016, 0.026], mat: 'branco', matW: [0.2, 0.03, 0.08] },
   mel:            { set: 'mel',      frame: [0.12, 0.032, 0.058] },
   caixa:          { set: 'carvalho', frame: [0.05, 0.016, 0.022], gap: 0.01 },
+  pinho:          { set: 'pinho',    frame: [0.25, 0.022, 0.03] },
 };
 const sz = (a, [k, lo, hi]) => clamp(Math.min(a.w, a.h) * k, lo, hi);
 function frameParts(a){
@@ -479,14 +567,17 @@ async function loadArtworks(){
     }
     if (!h) h = w * 1.25;
     if (!img) { img = placeholderArt(i, w, h); src = img.toDataURL('image/jpeg', .9); }
-    out[i] = { ...o, i, w, h, img, src };
+    let frenteImg = null;
+    if (o.frente) { try { frenteImg = await loadImage('obras/' + o.frente); } catch {} }
+    if (o.verso) { const vi = new Image(); vi.src = 'obras/' + o.verso; }
+    out[i] = { ...o, i, w, h, img, src, frenteImg };
     tick();
   }));
   return out;
 }
 
 /* ---------- Layout: distribute along walls, grow room until it fits ---------- */
-const MARGIN = 0.7, MIN_SPACE = 0.65, DOOR_W = 1.8, PART_T = 0.24, PART_H = 3.0;
+const MARGIN = 1.05, MIN_SPACE = 0.65, DOOR_W = 1.8, PART_T = 0.24, PART_H = 3.0;
 const partLen = W => clamp(W * 0.5, 5, 9);
 function outerSegments(W, D){
   const walls = [
@@ -599,9 +690,9 @@ function buildRoom(W, D, H){
     g.fillStyle = '#9a7a3e'; g.fillRect(w / 2 - 160, 222, 320, 5);
     g.font = 'italic 64px Georgia, serif'; g.fillStyle = '#6d5a4b'; g.fillText(CFG.subtitulo || '', w / 2, 320);
   });
-  const iw = Math.min(P * 0.8, 4.4);
+  const iw = Math.min(P * 0.7, 3.4);
   const im = new THREE.Mesh(new THREE.PlaneGeometry(iw, iw * 420 / 1400), new THREE.MeshBasicMaterial({ map: smoothTex(intro), transparent: true }));
-  im.position.set(0, 1.85, PART_T / 2 + 0.005); scene.add(im);
+  im.position.set(0, 2.42, PART_T / 2 + 0.005); scene.add(im);
 }
 
 const CLOTH = new THREE.MeshLambertMaterial({ color: 0xf4f2ee, side: THREE.DoubleSide });
@@ -671,7 +762,7 @@ function hangPainting(p, H){
     wrapText(c, a.titulo || 'Sem título', 18, 42, w - 36, 32, 2);
     c.font = '20px Georgia, serif'; c.fillStyle = '#5a4b40';
     c.fillText([CFG.artista, a.ano].filter(Boolean).join(', '), 18, 120);
-    c.fillText(a.tecnica || '', 18, 148); c.fillText(dims(a), 18, 176);
+    c.fillText(a.tecnica || '', 18, 148); c.fillText(dims(a) + (a.verso ? '  ·  tem verso' : ''), 18, 176);
   });
   const plaque = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.1375, 0.01),
     [edge, edge, edge, edge, new THREE.MeshBasicMaterial({ map: smoothTex(pc) }), edge]);
@@ -696,6 +787,143 @@ function wrapText(c, text, x, y, maxW, lh, maxLines){
 const fmt = v => (Math.round(v * 1000) / 10).toString().replace('.', ',');
 const dims = a => `${fmt(a.w)} × ${fmt(a.h)} cm`;
 
+
+/* ---------- Sketchbook overlay ---------- */
+const BOOK = CFG.caderno || null; let bCur = 0, bLeaves = [], bBusy = false;
+function bookSides(){
+  // [front, back] for each leaf: cover, page pairs, back cover
+  const pg = (BOOK?.paginas || []).map(f => 'caderno/' + f);
+  const inside = 'linear-gradient(135deg,#e2583c,#c94a31)';
+  const leaves = [[{ img: 'caderno/' + BOOK.capa, cov: 1 }, { bg: inside, cov: 1 }]];
+  for (let i = 0; i < pg.length; i += 2) leaves.push([{ img: pg[i] }, pg[i + 1] ? { img: pg[i + 1] } : { bg: '#efe9dc' }]);
+  leaves.push([{ bg: inside, cov: 1 }, { bg: 'linear-gradient(135deg,#2f5a3a,#24472d)', cov: 1 }]);
+  return leaves;
+}
+function bookSize(){
+  const st = $('bStage'); const ph = Math.min(st.clientHeight * 0.86, (st.clientWidth - (isTouch ? 24 : 150)) / 2 * 1.555), pw = ph / 1.555;
+  return { pw, ph };
+}
+function layoutBook(){
+  const { pw, ph } = bookSize(), bk = $('bBook');
+  bk.style.width = (pw * 2) + 'px'; bk.style.height = ph + 'px';
+  bLeaves.forEach(l => { l.style.width = pw + 'px'; });
+  const n = bLeaves.length;
+  const shift = bCur === 0 ? -pw / 2 : bCur === n ? pw / 2 : 0;
+  bk.style.transform = `translateX(${shift}px)`;
+  $('bPrev').disabled = bCur === 0; $('bNext').disabled = bCur === n;
+  const total = (BOOK.paginas || []).length;
+  $('bCount').textContent = bCur === 0 ? 'Capa · toque para abrir' : bCur === n ? 'Contracapa' :
+    (bCur === 1 ? `Página 1 de ${total}` : `Páginas ${2 * bCur - 2}–${Math.min(2 * bCur - 1, total)} de ${total}`);
+}
+function zLeaves(flipping = -1){
+  const n = bLeaves.length;
+  bLeaves.forEach((l, i) => { l.style.zIndex = i === flipping ? n + 2 : (i < bCur ? i + 1 : n - i + 1); });
+}
+function bookGo(d){
+  const n = bLeaves.length, next = clamp(bCur + d, 0, n); if (next === bCur || bBusy) return;
+  const i = d > 0 ? bCur : bCur - 1; bBusy = true;
+  zLeaves(i); bLeaves[i].classList.toggle('flipped', d > 0);
+  bCur = next; layoutBook();
+  setTimeout(() => { zLeaves(); bBusy = false; }, 1000);
+}
+function openBook(){
+  if (!BOOK) return;
+  state = 'book'; if (locked) document.exitPointerLock();
+  $('hint').classList.add('hidden'); $('cross').classList.add('hidden'); $('prompt').classList.add('hidden'); $('touch').classList.add('hidden');
+  const bk = $('bBook');
+  if (!bLeaves.length) {
+    for (const [f, b] of bookSides()) {
+      const leaf = document.createElement('div'); leaf.className = 'leaf';
+      for (const [side, cls] of [[f, 'side'], [b, 'side back']]) {
+        const el = document.createElement('div'); el.className = cls + (side.cov ? ' cov' : '');
+        el.style.background = side.img ? `#efe9dc url(${side.img}) center/100% 100% no-repeat` : side.bg;
+        leaf.appendChild(el);
+      }
+      bk.appendChild(leaf); bLeaves.push(leaf);
+    }
+  }
+  bLeaves.forEach(l => l.classList.remove('flipped')); bCur = 0; zLeaves();
+  const v = $('book'); v.classList.remove('hidden', 'show'); layoutBook(); void v.offsetWidth; v.classList.add('show');
+  bk.animate([{ transform: `${bk.style.transform} translateY(40px) rotateX(35deg) scale(.55)`, opacity: 0 }, { transform: bk.style.transform, opacity: 1 }],
+    { duration: 650, easing: 'cubic-bezier(.2,.8,.2,1)' });
+  setTimeout(() => { if (state === 'book' && bCur === 0) bookGo(1); }, 800);   // the cover opens by itself
+}
+function closeBook(){ $('book').classList.remove('show'); setTimeout(startPlaying, 250); }
+$('bNext').addEventListener('click', () => bookGo(1));
+$('bPrev').addEventListener('click', () => bookGo(-1));
+$('bClose').addEventListener('click', closeBook);
+addEventListener('resize', () => { if (state === 'book') layoutBook(); });
+{ let sx = null, sy = 0;
+  $('bStage').addEventListener('pointerdown', e => { if (e.target.closest('.bNav')) return; sx = e.clientX; sy = e.clientY; });
+  $('bStage').addEventListener('pointerup', e => {
+    if (sx === null) return; const dx = e.clientX - sx, dy = e.clientY - sy; sx = null;
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) return bookGo(dx < 0 ? 1 : -1);
+    if (Math.abs(dx) < 8 && Math.abs(dy) < 8) {
+      const r = $('bBook').getBoundingClientRect();
+      if (e.clientX < r.left - 20 || e.clientX > r.right + 20 || e.clientY < r.top - 20 || e.clientY > r.bottom + 20) return closeBook();
+      bookGo(e.clientX > r.left + r.width / 2 ? 1 : -1);
+    }
+  });
+}
+
+/* ---------- Table with the sketchbook, bust on a pillar ---------- */
+const bookMeshes = [], bustProxy = [];
+function buildBookTable(){
+  if (!BOOK) return;
+  const x = -ROOM.W / 2 + 0.62, z = -ROOM.D / 2 + 0.62, S = FRAME_SETS.nogueira;
+  const g = new THREE.Group(); g.position.set(x, 0, z); scene.add(g);
+  const top = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.035, 48), S.outer); top.position.y = 0.76; g.add(top);
+  const edge = new THREE.Mesh(new THREE.CylinderGeometry(0.345, 0.335, 0.012, 48), S.lip); edge.position.y = 0.737; g.add(edge);
+  const col = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.045, 0.72, 20), S.outer); col.position.y = 0.38; g.add(col);
+  const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.22, 0.04, 36), S.inner); foot.position.y = 0.02; g.add(foot);
+  colliders.push({ x0: x - 0.34, x1: x + 0.34, z0: z - 0.34, z1: z + 0.34 });
+  // the notebook (slightly enlarged so it reads from a distance)
+  const cover = new THREE.TextureLoader().load('caderno/' + BOOK.capa); cover.colorSpace = THREE.SRGBColorSpace; cover.anisotropy = 8;
+  const pagesEdge = smoothTex(makeCanvas(64, 8, (c, w, h) => { c.fillStyle = '#efe8d8'; c.fillRect(0, 0, w, h); c.fillStyle = 'rgba(120,100,80,.25)'; for (let y = 1; y < h; y += 2) c.fillRect(0, y, w, 1); }));
+  const green = new THREE.MeshLambertMaterial({ color: 0x2c5234 }), paper = new THREE.MeshLambertMaterial({ map: pagesEdge });
+  const bw = 0.13, bh = 0.2, bt = 0.018;
+  const book = new THREE.Mesh(new THREE.BoxGeometry(bw, bt, bh), [paper, green, new THREE.MeshLambertMaterial({ map: cover }), green, paper, paper]);
+  book.position.set(0.02, 0.778 + bt / 2, 0.03); book.rotation.y = 0.5; g.add(book);
+  // little tent card
+  const card = makeCanvas(360, 200, (c, w, h) => { c.fillStyle = '#f6f2e9'; c.fillRect(0, 0, w, h); c.fillStyle = '#2a221c'; c.textAlign = 'center';
+    c.font = 'italic bold 40px Georgia, serif'; c.fillText('Caderno de esboços', w / 2, 88); c.fillStyle = '#9a7a3e'; c.fillRect(w / 2 - 40, 108, 80, 3);
+    c.font = '26px Georgia, serif'; c.fillStyle = '#5a4b40'; c.fillText(isTouch ? 'toque para folhear' : 'clique para folhear', w / 2, 152); });
+  const cm = new THREE.Mesh(new THREE.PlaneGeometry(0.15, 0.083), new THREE.MeshBasicMaterial({ map: smoothTex(card), side: THREE.DoubleSide }));
+  cm.position.set(-0.13, 0.82, 0.14); cm.rotation.set(-0.35, 0.78, 0, 'YXZ'); g.add(cm);
+  const lamp = new THREE.PointLight(0xffe9c8, 1.4, 3.2, 1.6); lamp.position.set(0.3, 1.9, 0.3); g.add(lamp);
+  for (const m of [top, book, cm, col]) { m.userData.book = true; bookMeshes.push(m); }
+}
+const marbleTex = smoothTex(makeCanvas(256, 512, (c, w, h) => {
+  const r = rng(77); c.fillStyle = '#e9e5dc'; c.fillRect(0, 0, w, h);
+  for (let k = 0; k < 14; k++) { c.strokeStyle = `rgba(${120 + r() * 40},${115 + r() * 30},${105 + r() * 30},${0.12 + r() * 0.2})`; c.lineWidth = 0.6 + r() * 2.2;
+    c.beginPath(); let x = r() * w, y = 0; c.moveTo(x, y); while (y < h) { x += (r() - .5) * 26; y += 10 + r() * 22; c.lineTo(x, y); } c.stroke(); }
+}));
+async function buildBust(){
+  const zc = PART_T / 2 + 0.9, ped = new THREE.Group(); ped.position.set(0, 0, zc); scene.add(ped);
+  const stone = new THREE.MeshLambertMaterial({ map: marbleTex }), stone2 = new THREE.MeshLambertMaterial({ map: marbleTex, color: 0xd8d2c6 });
+  const base = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.1, 0.56), stone2); base.position.y = 0.05; ped.add(base);
+  const plinth = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.05, 0.5), stone); plinth.position.y = 0.125; ped.add(plinth);
+  const shaft = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.86, 0.4), stone); shaft.position.y = 0.58; ped.add(shaft);
+  const cap1 = new THREE.Mesh(new THREE.BoxGeometry(0.47, 0.04, 0.47), stone); cap1.position.y = 1.03; ped.add(cap1);
+  const cap2 = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.06, 0.52), stone2); cap2.position.y = 1.08; ped.add(cap2);
+  const socle = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.17, 0.07, 40), new THREE.MeshStandardMaterial({ color: 0x1a1612, roughness: .35, metalness: .2 }));
+  socle.position.y = 1.145; ped.add(socle);
+  const pc = makeCanvas(400, 110, (c, w, h) => { const gr = c.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#d9b15c'); gr.addColorStop(.5, '#b48a3a'); gr.addColorStop(1, '#8a6626');
+    c.fillStyle = gr; c.fillRect(0, 0, w, h); c.fillStyle = '#3a2a10'; c.textAlign = 'center'; c.font = 'bold 40px Georgia, serif'; c.fillText(CFG.artista || 'Pedro', w / 2, 52);
+    c.font = 'italic 24px Georgia, serif'; c.fillText('autorretrato em bronze', w / 2, 88); });
+  const plate = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.066, 0.006), [stone, stone, stone, stone, new THREE.MeshStandardMaterial({ map: smoothTex(pc), metalness: .6, roughness: .4 }), stone]);
+  plate.position.set(0, 0.8, 0.203); ped.add(plate);
+  colliders.push({ x0: -0.28, x1: 0.28, z0: zc - 0.28, z1: zc + 0.28 });
+  const proxy = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.26, 1.75, 12), new THREE.MeshBasicMaterial({ visible: false }));
+  proxy.position.y = 0.88; proxy.userData.bust = true; ped.add(proxy); bustProxy.push(proxy);
+  const spot = new THREE.SpotLight(0xfff0d8, 3.2, 5, 0.45, 0.7, 1.5); spot.position.set(0.9, 2.9, zc + 1.3); spot.target = ped; scene.add(spot);
+  try {
+    const pm = new THREE.PMREMGenerator(renderer); const env = pm.fromScene(scene, 0.035, 0.1, 30).texture;
+    const geo = await loadBust('busto.bin');
+    const bust = new THREE.Mesh(geo, bronzeMaterial(env)); bust.position.y = 1.18; ped.add(bust);
+  } catch (e) { console.warn('busto', e); }
+}
+
 /* ---------- Player & controls ---------- */
 const player = { x: 0, z: 0, yaw: 0, pitch: 0, vx: 0, vz: 0, bob: 0 };
 const keys = {}; let state = 'menu'; let locked = false; let lockOK = !isTouch && 'requestPointerLock' in canvas;
@@ -705,7 +933,7 @@ let target = -1;
 function placePlayerStart(){ player.x = 0; player.z = ROOM.D / 2 - 1.8; player.yaw = 0; player.pitch = 0; }
 
 function startPlaying(){
-  $('menu').classList.add('hidden'); $('viewer').classList.add('hidden'); state = 'playing';
+  $('menu').classList.add('hidden'); $('viewer').classList.add('hidden'); $('viewer').classList.remove('show'); $('book').classList.add('hidden'); $('book').classList.remove('show'); state = 'playing';
   $('cross').classList.remove('hidden'); if (isTouch) $('touch').classList.remove('hidden');
   if (lockOK) {
     try { const pr = canvas.requestPointerLock(); if (pr && pr.catch) pr.catch(() => {}); } catch {}
@@ -718,17 +946,169 @@ function openMenu(){
   state = 'menu'; $('menu').classList.remove('hidden'); $('cross').classList.add('hidden'); $('prompt').classList.add('hidden');
   $('touch').classList.add('hidden'); if (locked) document.exitPointerLock();
 }
+let vIdx = -1, vRect = null, vFlipped = false;
+function paintingScreenRect(idx){
+  const p = paintings[idx], a = p.art, f = frameW(a), hw = a.w / 2 + f, hh = a.h / 2 + f;
+  const xs = [], ys = [];
+  for (const [x, y] of [[-hw, -hh], [hw, -hh], [hw, hh], [-hw, hh]]) {
+    const v = new THREE.Vector3(x, y, 0.03).applyMatrix4(p.group.matrixWorld).project(camera);
+    xs.push((v.x + 1) / 2 * innerWidth); ys.push((1 - v.y) / 2 * innerHeight);
+  }
+  return { x: Math.min(...xs), y: Math.min(...ys), w: Math.max(...xs) - Math.min(...xs), h: Math.max(...ys) - Math.min(...ys) };
+}
 function openViewer(idx){
-  const a = paintings[idx].art; state = 'inspect';
+  if (idx === -2) return openBook();
+  if (idx < 0) return;
+  vIdx = idx; const a = paintings[idx].art; state = 'inspect';
   if (locked) document.exitPointerLock();
-  $('vImg').src = a.src; $('vImg').alt = a.titulo || '';
+  vRect = paintingScreenRect(idx);
   $('vTitle').textContent = a.titulo || 'Sem título';
   $('vMeta').textContent = [CFG.artista, a.ano, a.tecnica].filter(Boolean).join(' · ');
   $('vDims').textContent = dims(a); $('vDesc').textContent = a.descricao || '';
-  Z.s = 1; Z.x = Z.y = 0; applyZ(false); Z.opened = performance.now();
+  $('vFlip').classList.toggle('hidden', !a.verso); $('vFlip').textContent = 'Ver verso'; vFlipped = false;
+  $('vCard').style.transform = '';
   $('vHint').textContent = isTouch ? 'Toque no quadro para voltar' : 'Clique no quadro para voltar ao museu';
-  $('hint').classList.add('hidden'); $('viewer').classList.remove('hidden'); $('cross').classList.add('hidden'); $('prompt').classList.add('hidden'); $('touch').classList.add('hidden');
+  $('hint').classList.add('hidden'); $('cross').classList.add('hidden'); $('prompt').classList.add('hidden'); $('touch').classList.add('hidden');
+  const v = $('viewer'); v.classList.remove('hidden', 'show');
+  Z.s = 1; Z.x = Z.y = 0; applyZ(false);
+  buildCard(a);
+  void v.offsetWidth; v.classList.add('show');
+  Z.opened = performance.now();
+  // zoom out of the wall: start where the painting is on screen, grow to the center
+  const card = $('vCard').getBoundingClientRect();
+  if (vRect.w > 4 && card.width > 0) {
+    const s0 = vRect.w / card.width, dx = (vRect.x + vRect.w / 2) - (card.left + card.width / 2), dy = (vRect.y + vRect.h / 2) - (card.top + card.height / 2);
+    $('vIntro').animate([{ transform: `translate(${dx}px, ${dy}px) scale(${s0})` }, { transform: 'none' }],
+      { duration: 700, easing: 'cubic-bezier(.2,.75,.15,1)' });
+  }
 }
+function closeViewer(){
+  if (performance.now() - Z.opened < 450) return;
+  const v = $('viewer'); if (!v.classList.contains('show')) return;
+  const card = $('vCard').getBoundingClientRect();
+  v.classList.remove('show');
+  if (vRect && vRect.w > 4 && card.width > 0 && Z.s === 1 && !vFlipped) {
+    const s0 = vRect.w / card.width, dx = (vRect.x + vRect.w / 2) - (card.left + card.width / 2), dy = (vRect.y + vRect.h / 2) - (card.top + card.height / 2);
+    const an = $('vIntro').animate([{ transform: 'none', opacity: 1 }, { transform: `translate(${dx}px, ${dy}px) scale(${s0})`, opacity: .85 }],
+      { duration: 420, easing: 'cubic-bezier(.5,0,.75,.4)', fill: 'forwards' });
+    let done = false; const fin = () => { if (done) return; done = true; an.cancel(); startPlaying(); };
+    an.onfinish = fin; setTimeout(fin, 700);
+  } else startPlaying();
+}
+function flipCard(){
+  const a = paintings[vIdx]?.art; if (!a?.verso) return;
+  vFlipped = !vFlipped; setZoom(1);
+  const from = vFlipped ? 0 : 180, to = vFlipped ? 180 : 0, mid = (from + to) / 2;
+  const an = $('vCard').animate([
+    { transform: `rotateY(${from}deg)` },
+    { transform: `translateZ(140px) rotateY(${mid}deg) rotateX(4deg)`, offset: .5 },
+    { transform: `rotateY(${to}deg)` }], { duration: 1100, easing: 'cubic-bezier(.45,.05,.3,1)', fill: 'forwards' });
+  an.onfinish = () => { $('vCard').style.transform = `rotateY(${to}deg)`; an.cancel(); };
+  $('vFlip').textContent = vFlipped ? 'Ver frente' : 'Ver verso';
+}
+$('vFlip').addEventListener('click', e => { e.stopPropagation(); flipCard(); });
+$('vFlip').addEventListener('pointerdown', e => e.stopPropagation());
+
+/* realistic frame drawn with HTML/CSS, at true proportions */
+const cssWood = {};
+function cssWoodTex(set){
+  if (cssWood[set]) return cssWood[set];
+  const base = { nogueira: [62, 38, 23], carvalho: [212, 178, 130], mel: [170, 112, 58], pinho: [228, 202, 156], preta: [26, 24, 22] }[set] || [90, 60, 40];
+  const grainK = set === 'pinho' ? .5 : set === 'preta' ? .05 : .32;
+  const draw = (w, h, vertical) => makeCanvas(w, h, (g) => {
+    const r = rng(set.length * 17 + (vertical ? 3 : 0)), img = g.createImageData(w, h), d = img.data;
+    const ph = r() * 9, ph2 = r() * 9;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const u = vertical ? y : x, v = vertical ? x : y;
+      const A = 2 * Math.PI / (vertical ? h : w);           // periodic along the bar, so tiles join seamlessly
+      const ring = Math.sin(v * 0.75 + Math.sin(u * A + ph) * 2.2 + Math.sin(u * A * 4 + ph2) * 0.6);
+      const fine = Math.sin(v * 2.3 + Math.sin(u * A * 3) * 1.4) * 0.5;
+      const k = 1 + (ring * 0.5 + 0.5) * -grainK * (ring > .6 ? 1.6 : 1) + fine * 0.03 + (r() - .5) * 0.05;
+      const i = (y * w + x) * 4; d[i] = base[0] * k; d[i + 1] = base[1] * k; d[i + 2] = base[2] * k; d[i + 3] = 255;
+    }
+    g.putImageData(img, 0, 0);
+  }).toDataURL('image/jpeg', .85);
+  return cssWood[set] = { h: draw(640, 96, false), v: draw(96, 640, true) };
+}
+const paperTex = makeCanvas(160, 160, (g) => { const r = rng(9), img = g.createImageData(160, 160), d = img.data;
+  for (let i = 0; i < d.length; i += 4) { const n = 246 + (r() - .5) * 9; d[i] = n; d[i + 1] = n - 2; d[i + 2] = n - 7; d[i + 3] = 255; } g.putImageData(img, 0, 0); }).toDataURL('image/jpeg', .8);
+const PROFILES = {
+  moulded: 'rgba(255,255,255,.26) 0%,rgba(0,0,0,.06) 9%,rgba(255,255,255,.16) 26%,rgba(255,255,255,.04) 40%,rgba(0,0,0,.24) 58%,rgba(0,0,0,.08) 72%,rgba(255,255,255,.24) 84%,rgba(0,0,0,.55) 100%',
+  flat: 'rgba(255,255,255,.2) 0%,rgba(255,255,255,0) 12%,rgba(0,0,0,0) 80%,rgba(0,0,0,.28) 92%,rgba(0,0,0,.5) 100%',
+  thin: 'rgba(255,255,255,.3) 0%,rgba(0,0,0,.1) 30%,rgba(255,255,255,.12) 62%,rgba(0,0,0,.6) 100%',
+};
+function buildCard(a){
+  const front = $('vFront'); front.innerHTML = '';
+  const st = $('vStage'), cs = getComputedStyle(st);
+  const availW = st.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const availH = st.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+  let outW, outH, fp = null;
+  if (a.frenteImg) { outH = a.h + 0.05; outW = outH * a.frenteImg.naturalWidth / a.frenteImg.naturalHeight; }
+  else {
+    fp = STYLES[a.moldura] ? { ...frameParts(a) } : { st: null, mat: 0, gap: 0, fw: 0, total: 0 };
+    if (fp.st) { fp.fw = Math.max(fp.fw, Math.min(a.w, a.h) * 0.08, 0.026); fp.total = fp.mat + fp.gap + fp.fw; }   // a bit fuller up close
+    outW = a.w + 2 * fp.total; outH = a.h + 2 * fp.total;
+  }
+  const px = Math.min(availW / outW, availH / outH) * 0.94;
+  const W = Math.round(outW * px), H = Math.round(outH * px);
+  const card = $('vCard'); card.style.width = W + 'px'; card.style.height = H + 'px';
+  $('vBack').src = a.verso ? 'obras/' + a.verso : '';
+  if (a.frenteImg) { const im = new Image(); im.src = a.frenteImg.src; im.className = 'vPhoto'; im.draggable = false; front.appendChild(im); return; }
+  const fr = document.createElement('div'); fr.className = 'fr'; front.appendChild(fr);
+  const fw = Math.round(fp.fw * px); fr.style.setProperty('--fw', fw + 'px');
+  if (fw > 0) {
+    const set = fp.st.set, tex = cssWoodTex(set);
+    const prof = set === 'pinho' ? PROFILES.flat : (fp.st.frame[2] < 0.03 ? PROFILES.thin : PROFILES.moulded);
+    fr.style.setProperty('--prof', prof);
+    const bsz = set === 'pinho' ? 520 : 380;
+    for (const k of ['t', 'b', 'l', 'r']) {
+      const bar = document.createElement('div'); bar.className = 'bar ' + k;
+      const horiz = k === 't' || k === 'b';
+      bar.style[horiz ? 'height' : 'width'] = fw + 'px';
+      bar.style.backgroundImage = `url(${horiz ? tex.h : tex.v})`;
+      bar.style.backgroundSize = horiz ? `${bsz}px ${Math.max(fw, 48)}px` : `${Math.max(fw, 48)}px ${bsz}px`;
+      bar.style.backgroundPosition = { t: '0 0', b: '-140px 0', l: '0 -90px', r: '0 -230px' }[k];
+      fr.appendChild(bar);
+    }
+  }
+  if (fw > 0) {   // fillet: thin bevelled lip on the inside edge of the moulding
+    const lipC = { carvalho: ['#e8cf9a', '#c9a46a', '#8f6c3c'], nogueira: ['#d9bb7a', '#a8875a', '#6e5430'], preta: ['#c8ad6e', '#8f7743', '#5a4a26'],
+                   mel: ['#5a3d24', '#3a2616', '#1f140b'], pinho: ['#f2e2c4', '#d9c39c', '#a8916a'] }[fp.st.set] || ['#ccc', '#999', '#666'];
+    const L = Math.max(2, Math.round(fw * 0.14)), lip = document.createElement('div');
+    lip.style.cssText = `position:absolute;left:${fw - L}px;top:${fw - L}px;right:${fw - L}px;bottom:${fw - L}px;border:${L}px solid;` +
+      `border-color:${lipC[0]} ${lipC[1]} ${lipC[2]} ${lipC[1]};box-shadow:inset 0 0 0 1px rgba(0,0,0,.35),0 0 0 1px rgba(0,0,0,.25)`;
+    fr.appendChild(lip);
+  }
+  const inner = document.createElement('div'); inner.className = 'inner';
+  Object.assign(inner.style, { left: fw + 'px', top: fw + 'px', right: fw + 'px', bottom: fw + 'px' });
+  inner.style.boxShadow = 'inset 0 3px 7px rgba(0,0,0,.45), inset 2px 0 5px rgba(0,0,0,.25)';
+  fr.appendChild(inner);
+  const mw = Math.round(fp.mat * px), gw = Math.round(fp.gap * px);
+  if (mw) {
+    const mat = document.createElement('div'); mat.className = 'mat';
+    mat.style.backgroundColor = fp.st.mat === 'creme' ? '#efe7d6' : '#f8f6f0'; mat.style.backgroundImage = `url(${paperTex})`;
+    if (fp.st.mat === 'creme') mat.style.backgroundBlendMode = 'multiply';
+    inner.appendChild(mat);
+  } else if (gw) inner.style.background = '#151210';
+  const op = document.createElement('div'); op.className = 'open';
+  const off = mw || gw;
+  Object.assign(op.style, { left: off + 'px', top: off + 'px', right: off + 'px', bottom: off + 'px' });
+  if (mw) {
+    const bev = Math.max(3, Math.round(0.0035 * px));
+    op.style.borderStyle = 'solid'; op.style.borderWidth = bev + 'px';
+    op.style.borderColor = '#e9e4d9 #f6f3ec #fffdf8 #f1ede4';      // bevel cut, light from the top
+    op.style.left = op.style.top = op.style.right = op.style.bottom = (off - bev) + 'px';
+  }
+  if (gw) op.style.boxShadow = '0 4px 10px rgba(0,0,0,.6), 0 0 0 1px rgba(0,0,0,.4)';
+  const img = new Image(); img.src = a.src; img.draggable = false; op.appendChild(img);
+  const sh = document.createElement('style');
+  op.style.setProperty('--sh', mw ? 'inset 1px 2px 5px rgba(0,0,0,.35)' : 'inset 0 0 0 1px rgba(255,255,255,.04)');
+  inner.appendChild(op);
+  const s2 = document.createElement('div'); s2.style.cssText = 'position:absolute;inset:0;pointer-events:none;box-shadow:' + (mw ? 'inset 1px 2px 5px rgba(0,0,0,.35)' : 'none');
+  op.appendChild(s2);
+  if (mw || fp.st.set !== 'pinho') { const sheen = document.createElement('div'); sheen.className = 'sheen'; inner.appendChild(sheen); }
+}
+
 function teleportTo(idx){
   const p = paintings[idx], n = p.wall.n, gp = p.group.position;
   const dist = clamp(Math.max(p.art.w, p.art.h) * 1.6 + 0.55, 0.85, Math.min(ROOM.W, ROOM.D) - 1);
@@ -740,22 +1120,21 @@ function teleportTo(idx){
 
 $('mStart').addEventListener('click', startPlaying);
 $('tMenu').addEventListener('click', openMenu);
-$('tView').addEventListener('click', () => { if (target >= 0) openViewer(target); });
+$('tView').addEventListener('click', () => { if (target >= 0 || target === -2) openViewer(target); });
 
 /* viewer zoom: buttons, wheel, drag to pan; a click on the picture goes back to the museum */
-const Z = { s: 1, x: 0, y: 0, opened: 0 }; const vImg = $('vImg'), vStage = $('vStage');
+const Z = { s: 1, x: 0, y: 0, opened: 0 }; const vPan = $('vPan'), vStage = $('vStage');
 function applyZ(anim = true){
-  vImg.style.transition = anim ? 'transform .18s ease-out' : 'none';
-  vImg.style.transform = `translate(${Z.x}px, ${Z.y}px) scale(${Z.s})`;
+  vPan.style.transition = anim ? 'transform .18s ease-out' : 'none';
+  vPan.style.transform = `translate(${Z.x}px, ${Z.y}px) scale(${Z.s})`;
   vStage.classList.toggle('zoomed', Z.s > 1); $('zLvl').textContent = Math.round(Z.s * 100) + '%';
   $('zOut').disabled = Z.s <= 1; $('zFit').disabled = Z.s <= 1; $('zIn').disabled = Z.s >= 8;
 }
 function clampPan(){
-  const mx = Math.max(0, (vImg.offsetWidth * Z.s - vStage.clientWidth) / 2 + 60), my = Math.max(0, (vImg.offsetHeight * Z.s - vStage.clientHeight) / 2 + 60);
+  const vc = $('vCard'); const mx = Math.max(0, (vc.offsetWidth * Z.s - vStage.clientWidth) / 2 + 60), my = Math.max(0, (vc.offsetHeight * Z.s - vStage.clientHeight) / 2 + 60);
   Z.x = clamp(Z.x, -mx, mx); Z.y = clamp(Z.y, -my, my);
 }
 function setZoom(s, anim = true){ s = clamp(s, 1, 8); const k = s / Z.s; Z.x *= k; Z.y *= k; Z.s = s; if (s === 1) Z.x = Z.y = 0; clampPan(); applyZ(anim); }
-function closeViewer(){ if (performance.now() - Z.opened < 300) return; startPlaying(); }
 $('zIn').addEventListener('click', () => setZoom(Z.s * 1.6));
 $('zOut').addEventListener('click', () => setZoom(Z.s / 1.6));
 $('zFit').addEventListener('click', () => setZoom(1));
@@ -788,14 +1167,21 @@ document.addEventListener('pointerlockerror', () => { lockOK = false; showHint('
 
 addEventListener('keydown', e => {
   keys[e.code] = true;
+  if (state === 'book') {
+    if (e.code === 'ArrowRight' || e.code === 'KeyD' || e.code === 'Space') { e.preventDefault(); bookGo(1); }
+    else if (e.code === 'ArrowLeft' || e.code === 'KeyA') bookGo(-1);
+    else if (e.code === 'Escape' || e.code === 'KeyE') closeBook();
+    return;
+  }
   if (state === 'inspect') {
-    if (e.code === 'Escape') { e.preventDefault(); startPlaying(); }
+    if (e.code === 'Escape') { e.preventDefault(); closeViewer(); }
+    else if (e.code === 'KeyV') flipCard();
     else if (e.key === '+' || e.key === '=') setZoom(Z.s * 1.6);
     else if (e.key === '-') setZoom(Z.s / 1.6);
     return;
   }
   if (state === 'playing') {
-    if ((e.code === 'KeyE' || e.code === 'Enter') && target >= 0) openViewer(target);
+    if ((e.code === 'KeyE' || e.code === 'Enter') && (target >= 0 || target === -2)) openViewer(target);
     if (e.code === 'Escape' && !locked) openMenu();
   } else if (state === 'menu' && e.code === 'Enter' && document.activeElement?.tagName !== 'BUTTON') startPlaying();
 });
@@ -812,7 +1198,7 @@ addEventListener('mousemove', e => {
 });
 addEventListener('mouseup', e => {
   if (state !== 'playing' || isTouch) return;
-  if (locked) { if (target >= 0) openViewer(target); }
+  if (locked) { if (target >= 0 || target === -2) openViewer(target); }
   else if (drag) { if (drag.moved < 6) { const hit = pick(e.clientX, e.clientY, 4); if (hit >= 0) openViewer(hit); else if (lockOK) startPlaying(); } drag = null; }
 });
 function turn(dx, dy, s = 0.0022){ player.yaw -= dx * s; player.pitch = clamp(player.pitch - dy * s, -1.3, 1.3); }
@@ -850,11 +1236,12 @@ canvas.addEventListener('touchend', endTouch); canvas.addEventListener('touchcan
 
 // picking
 const ray = new THREE.Raycaster(); let pickables = [];
-const viewDist = i => 1.3 + Math.max(paintings[i].art.w, paintings[i].art.h) * 1.1;   // A5 ≈ 1,5 m · A2 ≈ 2 m
+const viewDist = i => i === -2 ? 2.6 : 1.3 + Math.max(paintings[i].art.w, paintings[i].art.h) * 1.1;   // A5 ≈ 1,5 m · A2 ≈ 2 m
 function pick(cx, cy, far){
   const v = new THREE.Vector2((cx / innerWidth) * 2 - 1, -(cy / innerHeight) * 2 + 1);
   ray.setFromCamera(v, camera); ray.far = far;
-  const hit = ray.intersectObjects(pickables, false)[0]; const i = hit?.object.userData.idx;
+  const hit = ray.intersectObjects(pickables, false)[0]; if (hit?.object.userData.book && hit.distance < 3) return -2;
+  const i = hit?.object.userData.idx;
   return i !== undefined && hit.distance <= viewDist(i) ? i : -1;
 }
 
@@ -879,14 +1266,18 @@ function update(dt){
     const sp = Math.hypot(player.vx, player.vz); player.bob += dt * sp * 4.2;
     // what are we looking at?
     ray.setFromCamera(center, camera); ray.far = 4;
-    const hit = ray.intersectObjects(pickables, false)[0]; const isSoon = !!hit?.object.userData.soon && hit.distance < 3;
-    const hi = hit && !isSoon ? hit.object.userData.idx : undefined;
-    target = hi !== undefined && hit.distance <= viewDist(hi) ? hi : -1;
-    $('cross').classList.toggle('on', target >= 0);
-    $('tView').classList.toggle('on', target >= 0);
+    const hit = ray.intersectObjects(pickables, false)[0]; const ud = hit?.object.userData || {};
+    const isSoon = !!ud.soon && hit.distance < 3, isBust = !!ud.bust && hit.distance < 3.5, isBook = !!ud.book && hit.distance < 2.6;
+    const hi = hit && !isSoon ? ud.idx : undefined;
+    target = isBook ? -2 : (hi !== undefined && hit.distance <= viewDist(hi) ? hi : -1);
+    const on = target >= 0 || target === -2;
+    $('cross').classList.toggle('on', on);
+    $('tView').classList.toggle('on', on);
     const pr = $('prompt');
     if (isSoon) { pr.textContent = 'Em breve: uma obra nova vai ficar aqui'; pr.classList.remove('hidden'); }
-    else if (target >= 0) { pr.innerHTML = `${isTouch ? '' : '<kbd>E</kbd>'}ver de perto: ${escapeHtml(paintings[target].art.titulo || 'Sem título')}`; pr.classList.remove('hidden'); }
+    else if (isBook) { pr.innerHTML = `${isTouch ? '' : '<kbd>E</kbd>'}folhear o caderno de esboços`; pr.classList.remove('hidden'); }
+    else if (isBust) { pr.textContent = `${CFG.artista || 'Pedro'} · autorretrato em bronze`; pr.classList.remove('hidden'); }
+    else if (target >= 0) { pr.innerHTML = `${isTouch ? '' : '<kbd>E</kbd>'}ver de perto: ${escapeHtml(paintings[target].art.titulo || 'Sem título')}${paintings[target].art.verso ? ' (tem verso)' : ''}`; pr.classList.remove('hidden'); }
     else pr.classList.add('hidden');
   } else {
     player.vx = player.vz = 0;
@@ -928,9 +1319,15 @@ function loop(){
   ROOM = { W, D, H };
   buildRoom(W, D, H);
   for (const p of placed) hangPainting(p, H);
-  pickables = [...paintings.flatMap(p => p.meshes), ...soon.flatMap(p => p.meshes), ...occluders];
+  buildBookTable();
+  pickables = [...paintings.flatMap(p => p.meshes), ...soon.flatMap(p => p.meshes), ...occluders, ...bookMeshes];
+  buildBust().then(() => { pickables.push(...bustProxy); });
   // menu list
   const lista = $('lista');
+  const extra = [];
+  if (BOOK) extra.push(['Caderno de esboços', 'na mesinha', () => { player.x = -ROOM.W / 2 + 1.5; player.z = -ROOM.D / 2 + 1.5; player.yaw = Math.PI / 4; player.pitch = -0.45; startPlaying(); }]);
+  extra.push(['Autorretrato em bronze', 'busto', () => { player.x = 0; player.z = PART_T / 2 + 2.3; player.yaw = 0; player.pitch = -0.08; startPlaying(); }]);
+  for (const [t, d, fn] of extra) { const b = document.createElement('button'); b.innerHTML = `<span>${t}</span><span>${d}</span>`; b.addEventListener('click', fn); lista.appendChild(b); }
   paintings.forEach((p, i) => {
     const b = document.createElement('button');
     b.innerHTML = `<span>${escapeHtml(p.art.titulo || 'Sem título')}</span><span>${dims(p.art)}</span>`;
@@ -939,7 +1336,7 @@ function loop(){
   if (isTouch) { $('keysDesk').classList.add('hidden'); $('keysTouch').classList.remove('hidden'); }
   placePlayerStart();
   $('loading').classList.add('hidden'); $('menu').classList.remove('hidden');
-  window.__museu = { ROOM, paintings, player, startPlaying, teleportTo, openViewer, update, render: () => renderer.render(scene, camera) };
+  window.__museu = { ROOM, paintings, player, startPlaying, teleportTo, openViewer, openBook, bookGo, flipCard, closeViewer, update, render: () => renderer.render(scene, camera) };
   loop();
 })();
 </script>

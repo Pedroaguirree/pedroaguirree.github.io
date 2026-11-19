@@ -16,6 +16,14 @@ Um museu 3D em primeira pessoa, com visual pixelado, para visitar meus desenhos 
 - `moldura`: `"clara"` (carvalho claro com passe-partout branco), `"nogueira_passe"` (madeira escura com passe-partout creme), `"preta_passe"` (preta fina com passe-partout), `"mel"` (madeira cor de mel), `"madeira"` (madeira escura), `"caixa"` (moldura flutuante, para telas), `"vitoriana"` (dourada) ou `"nenhuma"`.
 - As obras vão para as paredes na ordem da lista, e a sala cresce sozinha para caber todas.
 
+## Verso de uma obra
+
+Se uma obra tem algo escrito atrás, coloque `frente: "foto-da-frente.jpg"` e `verso: "foto-do-verso.jpg"` na linha dela. Na tela de ver de perto aparece o botão **Ver verso**, que vira o quadro.
+
+## Caderno de esboços
+
+As páginas ficam na pasta `caderno/` e a lista está em `caderno` no fim do `obras.js` (capa + páginas na ordem). O caderno fica na mesinha do canto, e quem clica nele folheia as páginas.
+
 ## Obras "Em breve"
 
 No fim do `obras.js` há a lista `em_breve`: quadros grandes cobertos por uma cortina branca, com a placa "Em breve", no lado de trás da parede do meio. Para revelar uma obra, apague uma linha de `em_breve` e adicione a obra normalmente na lista `obras`.
