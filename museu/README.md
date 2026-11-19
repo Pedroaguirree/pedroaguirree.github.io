@@ -1,5 +1,7 @@
 # Museu do Pedro
 
+**No ar:** https://pedroaguirree.github.io/museu/
+
 Um museu 3D em primeira pessoa, com visual pixelado, para visitar meus desenhos e pinturas em tamanho real direto no navegador.
 
 ## Como adicionar uma obra
@@ -33,6 +35,8 @@ Na entrada, à esquerda da parede "Museu do Pedro", fica uma mesinha com post-it
 
 Para tirar um bilhete: Supabase → Table Editor → `recados` → apague a linha, ou mude `visivel` para `false` para só esconder.
 
+Quem escreve um bilhete pode editar ou remover o próprio bilhete depois: é só clicar nele no museu (vale no mesmo navegador/celular onde ele foi escrito). Isso precisa do código do arquivo `recados-editar.sql` rodado uma vez no Supabase → SQL Editor. Sem ele, os bilhetes continuam funcionando, só sem esses botões.
+
 Os bilhetes funcionam no site do GitHub; na página do museu dentro do Claude a mesinha não aparece.
 
 ## Mensagem na entrada
@@ -59,8 +63,6 @@ Dica: use fotos recortadas só na obra (sem a parede em volta), retas e bem ilum
 2. Na página do repositório: **Add file → Upload files** e arraste tudo desta pasta (`index.html`, `obras.js`, `lib/`, `obras/`, `README.md`). Clique em **Commit changes**.
 3. Vá em **Settings → Pages**. Em *Branch*, escolha `main` e a pasta `/ (root)`, e clique em **Save**.
 4. Em 1 ou 2 minutos o museu fica online em `https://SEU-USUARIO.github.io/museu/`.
-
-**No ar:** https://pedroaguirree.github.io/museu/
 
 Para atualizar depois, basta subir as novas fotos e o `obras.js` editado da mesma forma.
 
