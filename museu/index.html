@@ -343,27 +343,64 @@ function victorianFrame(g, w, h, fw, idx){
 }
 
 
-/* ---------- Dark wood frame ---------- */
-const woodTex = smoothTex(makeCanvas(256, 32, (g, w, h) => {
-  const r = rng(21); g.fillStyle = '#3a2416'; g.fillRect(0, 0, w, h);
-  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-    const v = Math.sin(x * 0.045 + Math.sin(y * 0.35) * 2.2 + Math.sin(x * 0.011) * 3) * 0.5 + 0.5;
-    const n = (r() - .5) * 8, k = 0.72 + v * 0.34;
-    g.fillStyle = rgb((58 + n) * k, (36 + n * .6) * k, (22 + n * .4) * k); g.fillRect(x, y, 1, 1);
-  }
-  g.strokeStyle = 'rgba(15,8,4,.35)'; g.lineWidth = 1;
-  for (let k = 0; k < 6; k++) { const y0 = r() * h; g.beginPath(); g.moveTo(0, y0);
-    for (let x = 0; x <= w; x += 8) g.lineTo(x, y0 + Math.sin(x * .03 + k) * 2.5); g.stroke(); }
-}));
-const WOOD_MATS = {
-  outer: new THREE.MeshPhongMaterial({ map: woodTex, color: 0xffffff, specular: 0x2a1a10, shininess: 28 }),
-  inner: new THREE.MeshPhongMaterial({ map: woodTex, color: 0xc9a98a, specular: 0x2a1a10, shininess: 28 }),
-  lip:   new THREE.MeshPhongMaterial({ map: woodTex, color: 0x8a6a50, specular: 0x3a2818, shininess: 40 }),
+/* ---------- Wood & mat frames ---------- */
+function woodCanvas(base, seed, grain = .35){
+  return smoothTex(makeCanvas(256, 32, (g, w, h) => {
+    const r = rng(seed);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const v = Math.sin(x * 0.045 + Math.sin(y * 0.35 + seed) * 2.2 + Math.sin(x * 0.011) * 3) * 0.5 + 0.5;
+      const n = (r() - .5) * 8, k = 0.78 + v * 0.28;
+      g.fillStyle = rgb((base[0] + n) * k, (base[1] + n * .7) * k, (base[2] + n * .5) * k); g.fillRect(x, y, 1, 1);
+    }
+    g.strokeStyle = `rgba(${base[0] * .35 | 0},${base[1] * .3 | 0},${base[2] * .25 | 0},${grain})`; g.lineWidth = 1;
+    for (let k = 0; k < 7; k++) { const y0 = r() * h; g.beginPath(); g.moveTo(0, y0);
+      for (let x = 0; x <= w; x += 8) g.lineTo(x, y0 + Math.sin(x * .03 + k) * 2.5); g.stroke(); }
+  }));
+}
+const WOODS = {
+  nogueira: woodCanvas([58, 36, 22], 21),     // dark walnut
+  carvalho: woodCanvas([214, 182, 136], 7, .28), // light oak
+  mel:      woodCanvas([168, 112, 58], 13),   // honey
 };
-function woodFrame(g, w, h, fw, idx){
-  addRing(g, w, h, 0,         fw * .14, 0.022, WOOD_MATS.lip,   0.25, idx);
-  addRing(g, w, h, fw * .14,  fw * .55, 0.034, WOOD_MATS.inner, 0.25, idx);
-  addRing(g, w, h, fw * .55,  fw,       0.050, WOOD_MATS.outer, 0.25, idx);
+const phong = (map, color = 0xffffff, shininess = 28) => new THREE.MeshPhongMaterial({ map, color, specular: 0x2a1a10, shininess });
+const FRAME_SETS = {
+  nogueira: { outer: phong(WOODS.nogueira), inner: phong(WOODS.nogueira, 0xc9a98a), lip: phong(WOODS.nogueira, 0x8a6a50, 40) },
+  carvalho: { outer: phong(WOODS.carvalho), inner: phong(WOODS.carvalho, 0xf0e4d4), lip: phong(WOODS.carvalho, 0xd9c6ae, 40) },
+  mel:      { outer: phong(WOODS.mel), inner: phong(WOODS.mel, 0xe8d2b8), lip: phong(WOODS.mel, 0xb89270, 40) },
+  preta:    { outer: new THREE.MeshPhongMaterial({ color: 0x1a1816, specular: 0x333333, shininess: 60 }),
+              inner: new THREE.MeshPhongMaterial({ color: 0x232120, specular: 0x333333, shininess: 60 }),
+              lip:   new THREE.MeshPhongMaterial({ color: 0x0f0e0d, specular: 0x222222, shininess: 60 }) },
+};
+const MAT_MAT = { branco: new THREE.MeshLambertMaterial({ color: 0xfbfaf7, emissive: 0x2a2a2a }), creme: new THREE.MeshLambertMaterial({ color: 0xeee6d6 }),
+                  bevel: new THREE.MeshLambertMaterial({ color: 0xffffff }) };
+const GAP_MAT = new THREE.MeshLambertMaterial({ color: 0x0c0b0a });
+// Frame styles: wood set, optional passe-partout (mat) and optional floating gap for canvases.
+const STYLES = {
+  madeira:        { set: 'nogueira', frame: [0.13, 0.035, 0.065] },
+  clara:          { set: 'carvalho', frame: [0.07, 0.026, 0.042], mat: 'branco', matW: [0.2, 0.035, 0.085] },
+  nogueira_passe: { set: 'nogueira', frame: [0.08, 0.028, 0.045], mat: 'creme',  matW: [0.18, 0.03, 0.075] },
+  preta_passe:    { set: 'preta',    frame: [0.05, 0.016, 0.026], mat: 'branco', matW: [0.2, 0.03, 0.08] },
+  mel:            { set: 'mel',      frame: [0.12, 0.032, 0.058] },
+  caixa:          { set: 'carvalho', frame: [0.05, 0.016, 0.022], gap: 0.01 },
+};
+const sz = (a, [k, lo, hi]) => clamp(Math.min(a.w, a.h) * k, lo, hi);
+function frameParts(a){
+  const st = STYLES[a.moldura || 'madeira']; if (!st) return null;
+  const mat = st.mat ? sz(a, st.matW) : 0, gap = st.gap || 0, fw = sz(a, st.frame);
+  return { st, mat, gap, fw, total: mat + gap + fw };
+}
+function styledFrame(g, a, idx){
+  const f = frameParts(a), { w, h } = a, S = FRAME_SETS[f.st.set];
+  let o = 0;
+  if (f.mat) {
+    addRing(g, w, h, 0, 0.004, 0.034, MAT_MAT.bevel, 1, idx);               // bevel cut
+    addRing(g, w, h, 0.004, f.mat, 0.032, MAT_MAT[f.st.mat], 1, idx); o = f.mat;
+  }
+  if (f.gap) { addRing(g, w, h, 0, f.gap, 0.006, GAP_MAT, 1, idx); o = f.gap; }
+  const fw = f.fw, deep = f.gap ? 0.045 : 0.05;
+  addRing(g, w, h, o,              o + fw * .16, deep - 0.026, S.lip,   0.25, idx);
+  addRing(g, w, h, o + fw * .16,   o + fw * .55, deep - 0.014, S.inner, 0.25, idx);
+  addRing(g, w, h, o + fw * .55,   o + fw,       deep,         S.outer, 0.25, idx);
 }
 
 function planeUV(w, h, tile){
@@ -500,7 +537,7 @@ function place(groups, segs){
 }
 function frameW(a){ const m = a.moldura || 'madeira'; if (m === 'nenhuma') return 0;
   if (m === 'vitoriana') return clamp(Math.min(a.w, a.h) * 0.2, 0.05, 0.12);
-  if (m === 'madeira') return clamp(Math.min(a.w, a.h) * 0.13, 0.035, 0.065);
+  if (STYLES[m]) return frameParts(a).total;
   return clamp(Math.min(a.w, a.h) * 0.06, 0.03, 0.08); }
 
 /* ---------- Build world ---------- */
@@ -608,7 +645,7 @@ function hangPainting(p, H){
   // frame
   const mold = a.moldura || 'madeira';
   if (fw && mold === 'vitoriana') victorianFrame(g, a.w, a.h, fw, paintings.length);
-  else if (fw && mold === 'madeira') woodFrame(g, a.w, a.h, fw, paintings.length);
+  else if (fw && STYLES[mold]) styledFrame(g, a, paintings.length);
   else if (fw) {
     const fm = new THREE.MeshLambertMaterial({ color: FRAME_COLORS[a.moldura] ?? FRAME_COLORS.madeira });
     const fd = 0.05, W2 = a.w + fw * 2;

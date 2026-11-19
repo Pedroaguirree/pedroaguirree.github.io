@@ -13,7 +13,7 @@ Um museu 3D em primeira pessoa, com visual pixelado, para visitar meus desenhos 
 ```
 
 - `largura` e `altura` são o tamanho **real em cm**, sem moldura. Se você deixar `altura: 0`, ela é calculada pela proporção da foto.
-- `moldura`: `"madeira"` (madeira escura), `"vitoriana"` (dourada e ornamentada), `"preta"`, `"branca"`, `"dourada"` ou `"nenhuma"`.
+- `moldura`: `"clara"` (carvalho claro com passe-partout branco), `"nogueira_passe"` (madeira escura com passe-partout creme), `"preta_passe"` (preta fina com passe-partout), `"mel"` (madeira cor de mel), `"madeira"` (madeira escura), `"caixa"` (moldura flutuante, para telas), `"vitoriana"` (dourada) ou `"nenhuma"`.
 - As obras vão para as paredes na ordem da lista, e a sala cresce sozinha para caber todas.
 
 ## Obras "Em breve"
