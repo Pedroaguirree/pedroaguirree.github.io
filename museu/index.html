@@ -450,7 +450,6 @@ $('mSub').textContent = CFG.subtitulo || '';
 const canvas = $('c');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
 renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.toneMapping = THREE.NeutralToneMapping; renderer.toneMappingExposure = 1.0;
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x15110e);
 const camera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 0.05, 100);
@@ -509,82 +508,6 @@ const ceilTex = pixelTex(makeCanvas(64, 64, (g) => {
     const v = line ? 168 : 212 + n; g.fillStyle = rgb(v, v - 2, v - 6); g.fillRect(x, y, 1, 1);
   }
 }));
-// light oak planks (one tile = 4 m × 4 m), satin finish
-const floorTex2 = (() => {
-  const S = 2048, c = makeCanvas(S, S, (g) => {
-    const r = rng(11), PW = S / 20;                       // planks 20 cm wide
-    for (let row = 0; row < 20; row++) {
-      let x = -Math.floor(r() * S * 0.5);
-      while (x < S) {
-        const len = Math.floor(S * (0.3 + r() * 0.32)), y0 = row * PW;
-        const hue = 30 + r() * 5, sat = 24 + r() * 10, lig = 60 + r() * 8;
-        const draw = ox => {
-          g.fillStyle = `hsl(${hue},${sat}%,${lig}%)`; g.fillRect(ox, y0, len, PW);
-          // grain: long wavy lines with a little colour drift
-          for (let k = 0; k < 26; k++) {
-            const yy = y0 + r() * PW, amp = 1 + r() * 4, f = 0.004 + r() * 0.01, ph = r() * 9, dark = r() < 0.5;
-            g.strokeStyle = dark ? `hsla(${hue - 4},${sat + 8}%,${lig - 16 - r() * 10}%,${0.08 + r() * 0.14})` : `hsla(${hue + 2},${sat}%,${lig + 10}%,${0.06 + r() * 0.1})`;
-            g.lineWidth = 0.6 + r() * 1.6; g.beginPath();
-            for (let xx = 0; xx <= len; xx += 12) g.lineTo(ox + xx, yy + Math.sin(xx * f + ph) * amp + Math.sin(xx * f * 3.1 + ph) * amp * 0.3);
-            g.stroke();
-          }
-          if (r() < 0.12) { const kx = ox + r() * len, ky = y0 + PW * (0.3 + r() * 0.4); const kg = g.createRadialGradient(kx, ky, 1, kx, ky, 9 + r() * 7); kg.addColorStop(0, `hsla(${hue - 8},40%,${lig - 30}%,.55)`); kg.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = kg; g.beginPath(); g.ellipse(kx, ky, 18, 8, 0, 0, Math.PI * 2); g.fill(); }
-          // soft sheen variation along the plank
-          const sh = g.createLinearGradient(ox, 0, ox + len, 0); sh.addColorStop(0, 'rgba(255,255,255,0)'); sh.addColorStop(0.5, `rgba(255,248,235,${r() * 0.07})`); sh.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = sh; g.fillRect(ox, y0, len, PW);
-          // joints
-          g.fillStyle = 'rgba(60,38,20,.55)'; g.fillRect(ox, y0, 2, PW); g.fillStyle = 'rgba(60,38,20,.35)'; g.fillRect(ox, y0 + PW - 2, len, 2);
-          g.fillStyle = 'rgba(255,240,220,.12)'; g.fillRect(ox, y0 + 1, len, 1);
-        };
-        draw(x); if (x + len > S) draw(x - S); if (x < 0) draw(x + S);
-        x += len;
-      }
-    }
-  });
-  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping;
-  t.anisotropy = renderer.capabilities.getMaxAnisotropy(); return t;
-})();
-// warm gallery white with a faint plaster texture
-const wallTex2 = (() => {
-  const c = makeCanvas(512, 512, (g, w, h) => {
-    g.fillStyle = '#f1ece4'; g.fillRect(0, 0, w, h); const r = rng(21);
-    for (let k = 0; k < 9000; k++) { const v = r(); g.fillStyle = v < 0.5 ? `rgba(120,100,80,${0.015 + r() * 0.02})` : `rgba(255,255,255,${0.02 + r() * 0.03})`; g.fillRect(r() * w, r() * h, 1 + r() * 3, 1 + r() * 3); }
-  });
-  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8; return t;
-})();
-const ceilTex2 = (() => {
-  const c = makeCanvas(256, 256, (g, w, h) => { g.fillStyle = '#f4f2ee'; g.fillRect(0, 0, w, h); const r = rng(23); for (let k = 0; k < 2500; k++) { g.fillStyle = `rgba(110,100,90,${0.012 + r() * 0.02})`; g.fillRect(r() * w, r() * h, 1 + r() * 2, 1 + r() * 2); } });
-  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; return t;
-})();
-// the pool of light a ceiling spot throws on the wall: brightest near the top, soft cone edges
-const scallopTex = (() => {
-  const W = 256, H = 512, c = makeCanvas(W, H, (g) => {
-    const im = g.createImageData(W, H), d = im.data;
-    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-      const u = (x / W - 0.5) * 2, v = y / H;
-      const cone = 0.18 + v * 0.95, edge = Math.max(0, 1 - Math.pow(Math.abs(u) / cone, 2.4));      // widens downwards
-      const top = Math.min(1, v / 0.1), fall = Math.exp(-Math.pow((v - 0.36) / 0.36, 2) * 1.2);
-      const ring = 1 + 0.25 * Math.exp(-Math.pow((Math.abs(u) - cone * 0.82) / 0.06, 2));            // a slightly brighter rim, like a real spot
-      const a = Math.min(1, edge * top * fall * ring) * (v < 0.95 ? 1 : (1 - v) / 0.05);
-      const o = (y * W + x) * 4; d[o] = 255; d[o + 1] = 236; d[o + 2] = 205; d[o + 3] = Math.round(a * 255);
-    }
-    g.putImageData(im, 0, 0);
-  });
-  return smoothTex(c);
-})();
-const washTex = (() => {
-  const W = 256, H = 256, c = makeCanvas(W, H, (g) => {
-    const im = g.createImageData(W, H), d = im.data;
-    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-      const u = (x / W - 0.5) * 2, v = y / H;
-      const a = Math.exp(-Math.pow(u / (0.55 + v * 0.35), 2) * 2.2) * Math.exp(-v * 2.3) * Math.min(1, v / 0.04);
-      const o = (y * W + x) * 4; d[o] = 255; d[o + 1] = 232; d[o + 2] = 196; d[o + 3] = Math.round(a * 255);
-    }
-    g.putImageData(im, 0, 0);
-  });
-  return smoothTex(c);
-})();
-// soft contact shadow for corners (dark at v=0)
-const aoTex = smoothTex(makeCanvas(8, 128, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(0.35, 'rgba(0,0,0,.35)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(0, 0, w, h); }));
 const glowTex = smoothTex(makeCanvas(128, 128, (g) => {
   const grd = g.createRadialGradient(64, 40, 4, 64, 64, 64);
   grd.addColorStop(0, 'rgba(255,236,200,1)'); grd.addColorStop(.5, 'rgba(255,226,180,.35)'); grd.addColorStop(1, 'rgba(255,220,170,0)');
@@ -879,52 +802,30 @@ function frameW(a){ const m = a.moldura || 'madeira'; if (m === 'nenhuma' || m =
 
 /* ---------- Build world ---------- */
 const paintings = []; const colliders = []; const occluders = [];
-const ROOM_FX = {};
 let ROOM = { W: 8, D: 6, H: 3.6 };
 
 function buildRoom(W, D, H){
-  const wallMat = new THREE.MeshLambertMaterial({ map: wallTex2, emissive: 0xffffff, emissiveMap: wallTex2, emissiveIntensity: 0.07 });
-  // floor: light oak, satin (picks up soft reflections from the environment made after the room is built)
-  floorTex2.repeat.set(1, 1);
-  const floor = new THREE.Mesh(planeUV(W, D, 4), new THREE.MeshStandardMaterial({ map: floorTex2, roughness: 0.42, metalness: 0, envMapIntensity: 0.55 }));
-  floor.rotation.x = -Math.PI / 2; scene.add(floor); ROOM_FX.floor = floor;
-  // ceiling: smooth white plaster
-  const ceil = new THREE.Mesh(planeUV(W, D, 3), new THREE.MeshLambertMaterial({ map: ceilTex2, emissive: 0xffffff, emissiveMap: ceilTex2, emissiveIntensity: 0.24 }));
+  const wallMat = new THREE.MeshLambertMaterial({ map: wallTex });
+  const floor = new THREE.Mesh(planeUV(W, D, 2), new THREE.MeshLambertMaterial({ map: floorTex }));
+  floor.rotation.x = -Math.PI / 2; scene.add(floor);
+  const ceil = new THREE.Mesh(planeUV(W, D, 2), new THREE.MeshLambertMaterial({ map: ceilTex }));
   ceil.rotation.x = Math.PI / 2; ceil.position.y = H; scene.add(ceil);
-  // slim, light skirting with a shadow line, instead of the dark wooden one
-  const base = new THREE.MeshLambertMaterial({ color: 0xe4ddd2 });
-  const gapMat = new THREE.MeshBasicMaterial({ color: 0x2a221c });
+  const base = new THREE.MeshLambertMaterial({ color: 0x3a2e26 });
   const wallsDef = [ [W, 0, -D/2, 0], [W, 0, D/2, Math.PI], [D, W/2, 0, -Math.PI/2], [D, -W/2, 0, Math.PI/2] ];
-  const ao = (len, h) => new THREE.Mesh(new THREE.PlaneGeometry(len, h), new THREE.MeshBasicMaterial({ map: aoTex, transparent: true, opacity: 0.3, depthWrite: false }));
   for (const [len, x, z, ry] of wallsDef) {
-    const m = new THREE.Mesh(planeUV(len, H, 1.5), wallMat); m.position.set(x, H / 2, z); m.rotation.y = ry; scene.add(m); occluders.push(m);
-    const b = new THREE.Mesh(new THREE.BoxGeometry(len, 0.075, 0.014), base); b.position.set(x, 0.0375 + 0.008, z); b.rotation.y = ry; b.translateZ(0.007); scene.add(b);
-    const gl = new THREE.Mesh(new THREE.BoxGeometry(len, 0.008, 0.004), gapMat); gl.position.set(x, 0.004, z); gl.rotation.y = ry; gl.translateZ(0.002); scene.add(gl);
-    // contact shadows: on the floor along the wall, and where the wall meets the ceiling
-    const nX = Math.sin(ry), nZ = Math.cos(ry);
-    const f = ao(len, 0.5); f.rotation.order = 'YXZ'; f.rotation.y = ry; f.rotation.x = -Math.PI / 2; f.position.set(x + nX * 0.25, 0.002, z + nZ * 0.25); scene.add(f);
-    const c2 = ao(len, 0.6); c2.material = c2.material.clone(); c2.material.opacity = 0.1; c2.rotation.y = ry; c2.position.set(x + nX * 0.003, H - 0.3, z + nZ * 0.003); scene.add(c2);
+    const m = new THREE.Mesh(planeUV(len, H, 1), wallMat); m.position.set(x, H / 2, z); m.rotation.y = ry; scene.add(m); occluders.push(m);
+    const b = new THREE.Mesh(new THREE.BoxGeometry(len, 0.14, 0.02), base);
+    b.position.set(x, 0.07, z); b.rotation.y = ry; b.translateZ(0.01); scene.add(b);
   }
-  // light: a warm fill, plus recessed laylight panels in the ceiling
-  scene.add(new THREE.HemisphereLight(0xfff3e4, 0x6b5a48, 0.85));
-  scene.add(new THREE.AmbientLight(0xfff6ee, 0.12));
+  // Lights
+  scene.add(new THREE.HemisphereLight(0xfff4e6, 0x5a4a3c, 0.75));
+  scene.add(new THREE.AmbientLight(0xffffff, 0.15));
   const nx = Math.max(1, Math.round(W / 4.5)), nz = Math.max(1, Math.round(D / 4.5));
-  const panelTex = smoothTex(makeCanvas(512, 256, (g, w, h) => {
-    const gr = g.createRadialGradient(w / 2, h / 2, 10, w / 2, h / 2, w * 0.6); gr.addColorStop(0, '#fffaf0'); gr.addColorStop(1, '#f3e6d0'); g.fillStyle = gr; g.fillRect(0, 0, w, h);
-    g.strokeStyle = 'rgba(150,135,115,.35)'; g.lineWidth = 3; for (let k = 1; k < 4; k++) { g.beginPath(); g.moveTo(w * k / 4, 0); g.lineTo(w * k / 4, h); g.stroke(); } g.beginPath(); g.moveTo(0, h / 2); g.lineTo(w, h / 2); g.stroke();
-  }));
-  const panelMat = new THREE.MeshBasicMaterial({ map: panelTex, toneMapped: false });
-  const trim = new THREE.MeshLambertMaterial({ color: 0xd9d4cc });
+  const lampMat = new THREE.MeshBasicMaterial({ color: 0xfff6e2 });
   for (let a = 0; a < nx; a++) for (let b = 0; b < nz; b++) {
     const x = ((a + .5) / nx - .5) * W, z = ((b + .5) / nz - .5) * D;
-    const l = new THREE.PointLight(0xffe9cf, 5.2, 0, 1.6); l.position.set(x, H - 0.45, z); scene.add(l);
-    const pw = 2.2, pd = 1.1;
-    const panel = new THREE.Mesh(new THREE.PlaneGeometry(pw, pd), panelMat); panel.rotation.x = Math.PI / 2; panel.position.set(x, H - 0.004, z); scene.add(panel);
-    const halo = new THREE.Mesh(new THREE.PlaneGeometry(pw + 1.6, pd + 1.6), new THREE.MeshBasicMaterial({ map: glowTex, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }));
-    halo.rotation.x = Math.PI / 2; halo.position.set(x, H - 0.003, z); scene.add(halo);
-    for (const [w2, d2, ox, oz] of [[pw + 0.08, 0.04, 0, pd / 2 + 0.02], [pw + 0.08, 0.04, 0, -pd / 2 - 0.02], [0.04, pd, pw / 2 + 0.02, 0], [0.04, pd, -pw / 2 - 0.02, 0]]) {
-      const t = new THREE.Mesh(new THREE.BoxGeometry(w2, 0.02, d2), trim); t.position.set(x + ox, H - 0.01, z + oz); scene.add(t);
-    }
+    const l = new THREE.PointLight(0xffefd8, 6.5, 0, 1.6); l.position.set(x, H - 0.3, z); scene.add(l);
+    const lamp = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.04, 0.3), lampMat); lamp.position.set(x, H - 0.02, z); scene.add(lamp);
   }
   // Door + sign on entrance wall
   const doorMat = new THREE.MeshLambertMaterial({ color: 0x4a3426 });
@@ -949,12 +850,8 @@ function buildRoom(W, D, H){
   part.geometry = (() => { const g = new THREE.BoxGeometry(P, PART_H, PART_T); const uv = g.attributes.uv;
     for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * P, uv.getY(i) * PART_H); return g; })();
   part.position.set(0, PART_H / 2, 0); scene.add(part); occluders.push(part);
-  const pbase = new THREE.Mesh(new THREE.BoxGeometry(P + 0.028, 0.075, PART_T + 0.028), base); pbase.position.set(0, 0.0375 + 0.008, 0); scene.add(pbase);
-  const pcap = new THREE.Mesh(new THREE.BoxGeometry(P + 0.02, 0.03, PART_T + 0.02), new THREE.MeshLambertMaterial({ color: 0xece6dc })); pcap.position.set(0, PART_H + 0.015, 0); scene.add(pcap);
-  for (const sd of [1, -1]) {   // contact shadow at the foot of the free-standing wall
-    const f = new THREE.Mesh(new THREE.PlaneGeometry(P + 0.3, 0.45), new THREE.MeshBasicMaterial({ map: aoTex, transparent: true, opacity: 0.3, depthWrite: false }));
-    f.rotation.order = 'YXZ'; f.rotation.y = sd > 0 ? 0 : Math.PI; f.rotation.x = -Math.PI / 2; f.position.set(0, 0.002, sd * (PART_T / 2 + 0.225)); scene.add(f);
-  }
+  const pbase = new THREE.Mesh(new THREE.BoxGeometry(P + 0.02, 0.14, PART_T + 0.02), base); pbase.position.set(0, 0.07, 0); scene.add(pbase);
+  const pcap = new THREE.Mesh(new THREE.BoxGeometry(P + 0.04, 0.05, PART_T + 0.04), base); pcap.position.set(0, PART_H + 0.025, 0); scene.add(pcap);
   colliders.push({ x0: -P / 2, x1: P / 2, z0: -PART_T / 2, z1: PART_T / 2 });
   // title on the side facing the entrance
   const intro = makeCanvas(1400, 420, (g, w, h) => {
@@ -969,38 +866,6 @@ function buildRoom(W, D, H){
   im.position.set(0, 2.42, PART_T / 2 + 0.005); scene.add(im);
 }
 
-const LAMP_BRASS = new THREE.MeshStandardMaterial({ color: 0xb4914f, metalness: .9, roughness: .32 });
-const LAMP_GLOW = new THREE.MeshBasicMaterial({ color: 0xfff0d2, toneMapped: false, side: THREE.DoubleSide });
-const LAMP_GEO = {
-  plate: (() => { const g = new THREE.CylinderGeometry(0.022, 0.022, 0.01, 24); g.rotateX(Math.PI / 2); return g; })(),
-  arm: new THREE.TubeGeometry(new THREE.CatmullRomCurve3([[0, 0.055, 0.008], [0, 0.07, 0.05], [0, 0.06, 0.11], [0, 0.03, 0.15], [0, 0.012, 0.165]].map(p => new THREE.Vector3(...p))), 24, 0.0045, 8, false),
-  bar: (() => { const g = new THREE.CylinderGeometry(0.0145, 0.0145, 1, 20, 1, true); g.rotateZ(Math.PI / 2); return g; })(),
-  cap: new THREE.SphereGeometry(0.0145, 16, 10),
-  strip: (() => { const g = new THREE.PlaneGeometry(1, 0.011); g.rotateX(Math.PI / 2); return g; })(),
-};
-const SPOTS = [];   // lamp parts, collected and then drawn as a handful of instanced meshes
-function pictureLight(parent, w, y){
-  // wall disc, a curved arm reaching out and a slim tube with a warm glowing slot facing the work
-  const grp = new THREE.Group(); grp.position.set(0, y, 0); parent.add(grp);
-  grp.add(new THREE.Mesh(LAMP_GEO.plate, LAMP_BRASS)); grp.children[0].position.set(0, 0.055, 0.005);
-  grp.add(new THREE.Mesh(LAMP_GEO.arm, LAMP_BRASS));
-  const head = new THREE.Group(); head.position.set(0, 0, 0.17); head.rotation.x = 0.35; grp.add(head);
-  const bar = new THREE.Mesh(LAMP_GEO.bar, LAMP_BRASS); bar.scale.set(w, 1, 1); head.add(bar);
-  for (const sx of [-1, 1]) { const c = new THREE.Mesh(LAMP_GEO.cap, LAMP_BRASS); c.position.x = sx * w / 2; c.scale.set(0.55, 1, 1); head.add(c); }
-  const st = new THREE.Mesh(LAMP_GEO.strip, LAMP_GLOW); st.scale.set(w * 0.94, 1, 1); st.position.set(0, -0.0135, -0.004); head.add(st);
-  SPOTS.push(grp); return grp;
-}
-function instanceSpots(){
-  if (!SPOTS.length) return;
-  scene.updateMatrixWorld(true);
-  const parts = new Map();
-  for (const grp of SPOTS) {
-    grp.traverse(o => { if (!o.isMesh) return; const k = o.geometry.uuid + o.material.uuid; if (!parts.has(k)) parts.set(k, { geo: o.geometry, mat: o.material, ms: [] }); parts.get(k).ms.push(o.matrixWorld.clone()); });
-    grp.parent?.remove(grp);
-  }
-  for (const { geo, mat, ms } of parts.values()) { const im = new THREE.InstancedMesh(geo, mat, ms.length); ms.forEach((m, i) => im.setMatrixAt(i, m)); im.instanceMatrix.needsUpdate = true; im.frustumCulled = false; scene.add(im); }
-  SPOTS.length = 0;
-}
 function drawOrnament(g, cx, cy, s){
   // a symmetric brass flourish: a diamond in the middle, scrolls, leaves and dots either side
   const brass = '#9a7a3e', light = 'rgba(255,240,210,.45)';
@@ -1227,9 +1092,9 @@ function hangPainting(p, H){
   if (a.giro) g.rotateZ(a.giro * Math.PI / 180);
   // soft light pool + shadow behind
   if (!a.pos) {
-  const lyW = a.h / 2 + fw + (a.soon ? 0.34 : 0.15), Hs = a.h + 2 * fw + 0.7, Ws = Math.max(0.8, (a.w + 2 * fw) * 1.45);
-  const glow = new THREE.Mesh(new THREE.PlaneGeometry(Ws, Hs), new THREE.MeshBasicMaterial({ map: washTex, transparent: true, opacity: 0.25, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }));
-  glow.position.set(0, lyW - Hs / 2, 0.004); g.add(glow);
+  const glow = new THREE.Mesh(new THREE.PlaneGeometry(a.w + 1.4, a.h + 1.6),
+    new THREE.MeshBasicMaterial({ map: glowTex, transparent: true, opacity: 0.22, blending: THREE.AdditiveBlending, depthWrite: false }));
+  glow.position.set(0, 0.25, 0.004); g.add(glow);
   }
   const sh = new THREE.Mesh(new THREE.PlaneGeometry((a.w + fw * 2) * 1.12, (a.h + fw * 2) * 1.12),
     new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, opacity: 0.35, depthWrite: false }));
@@ -1262,8 +1127,13 @@ function hangPainting(p, H){
     paintings.push({ art: a, group: g, wall: wl, cy, starAt: [0, a.h / 2 + fw + 0.024, 0.004], meshes: g.children.filter(m => m.userData.idx !== undefined) });
     return;
   }
-  // a slim brass picture light on the wall, just above the frame
-  pictureLight(g, clamp((a.w + 2 * fw) * 0.6, 0.22, 0.85), a.h / 2 + fw + (a.soon ? 0.34 : 0.15));
+  // picture light
+  const brass = new THREE.MeshLambertMaterial({ color: 0x9a7a3e });
+  const lampW = clamp(a.w * 0.5, 0.25, 0.9), ly = a.h / 2 + fw + (a.soon ? 0.34 : 0.16);
+  const bar = new THREE.Mesh(new THREE.BoxGeometry(lampW, 0.05, 0.07), brass); bar.position.set(0, ly, 0.17); g.add(bar);
+  const bulb = new THREE.Mesh(new THREE.BoxGeometry(lampW * 0.92, 0.012, 0.05), new THREE.MeshBasicMaterial({ color: 0xfff1cc }));
+  bulb.position.set(0, ly - 0.03, 0.17); g.add(bulb);
+  const arm = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.02, 0.17), brass); arm.position.set(0, ly + 0.02, 0.085); g.add(arm);
   // plaque
   const pc = a.soon ? makeCanvas(640, 400, (c, w, h) => {
     brushedAluminium(c, w, h); c.fillStyle = '#121212'; c.textAlign = 'center';
@@ -2757,12 +2627,9 @@ function loop(){
   if (muralArts.length) {
     buildMuralText(northWall);
     const x0 = northWall.o[0] + MURAL_T0, x1 = northWall.o[0] + MURAL_END, zc = northWall.o[1];
-    const nS = Math.max(2, Math.round((x1 - x0) / 1.1));
-    for (let k = 0; k < nS; k++) {
-      const gx = x0 + (k + 0.5) * (x1 - x0) / nS;
-      const glow = new THREE.Mesh(new THREE.PlaneGeometry(1.7, 1.6), new THREE.MeshBasicMaterial({ map: glowTex, transparent: true, opacity: 0.1, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }));
-      glow.position.set(gx, 1.75, zc + 0.004); scene.add(glow);
-    }
+    const glow = new THREE.Mesh(new THREE.PlaneGeometry(x1 - x0 + 0.9, 1.5),
+      new THREE.MeshBasicMaterial({ map: glowTex, transparent: true, opacity: 0.12, blending: THREE.AdditiveBlending, depthWrite: false }));
+    glow.position.set((x0 + x1) / 2, 1.8, zc + 0.004); scene.add(glow);
     const spot = new THREE.SpotLight(0xfff0d8, 0.8, 6, 0.6, 0.8, 1.2);
     spot.position.set((x0 + x1) / 2, H - 0.2, zc + 1.6); spot.target.position.set((x0 + x1) / 2, 1.6, zc); scene.add(spot, spot.target);
   }
@@ -2770,13 +2637,6 @@ function loop(){
   pickables = [...paintings.flatMap(p => p.meshes), ...soon.flatMap(p => p.meshes), ...occluders, ...bookMeshes];
   buildNote().then(() => { pickables.push(...noteMeshes); });
   buildVideoScreen();
-  instanceSpots();
-  // soft reflections for the satin floor and the metal details: render the finished room once into an environment map
-  try {
-    const rt = new THREE.WebGLCubeRenderTarget(256, { type: THREE.HalfFloatType }); const cc = new THREE.CubeCamera(0.05, 60, rt);
-    cc.position.set(0, 1.5, ROOM.D / 4); scene.add(cc); ROOM_FX.floor.visible = false; cc.update(renderer, scene); ROOM_FX.floor.visible = true; scene.remove(cc);
-    const pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromCubemap(rt.texture).texture; scene.environmentIntensity = 0.55; pm.dispose(); rt.dispose();
-  } catch (e) { console.warn('ambiente', e); }
   const recReady = REC.on ? recInit() : null;
   const reaReady = REC.on ? socialLoad() : null;
   const visReady = REC.on ? statsVisit() : null;
