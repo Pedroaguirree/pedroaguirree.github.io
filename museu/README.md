@@ -53,11 +53,11 @@ As obras mais queridas ganham estrelinhas douradas bem pequenas logo acima da pl
 
 ## O museu em números
 
-Na parede de entrada, entre os bilhetes e o pilar, há um painel com: visitas no total, visitantes diferentes, visitas hoje, obras expostas (e quantas estão a caminho), bilhetes, reações, comentários, páginas do caderno e a obra favorita dos visitantes. Os números sobem numa animação quando a pessoa se aproxima. Uma visita conta uma vez a cada 30 minutos por navegador. O contador de visitas precisa do `visitas.sql` rodado uma vez no Supabase → SQL Editor (sem ele, o painel mostra só os outros números). Para zerar as visitas, apague as linhas da tabela `visitas`.
+Na parede de entrada, entre os bilhetes e o pilar, há uma TV com: visitas no total, visitas hoje, obras expostas (e quantas estão a caminho), bilhetes, reações, comentários e a obra favorita dos visitantes. Os números sobem numa animação quando a pessoa se aproxima. Uma visita conta uma vez a cada 30 minutos por navegador. O contador de visitas precisa do `visitas.sql` rodado uma vez no Supabase → SQL Editor (sem ele, o painel mostra só os outros números). Para zerar as visitas, apague as linhas da tabela `visitas`.
 
 ## Artesanato
 
-Na mesa à direita da parede de entrada ficam a caixa pintada (aberta, com a tampa em pé mostrando os girassóis e o interior lilás) e os pratos de cerâmica em suportes. Cada peça pode ser vista de perto, recebe reações e comentários e entra no ranking como as obras. As fotos ficam na pasta `artesanato/` e a lista em `artesanato` no `obras.js` (título, técnica, ano, descrição e medidas). Para os pratos, use fotos de cima com o fundo recortado (PNG ou WebP transparente); a ordem dos pratos na lista define a posição na mesa.
+Na mesa à direita da parede de entrada ficam a caixa pintada (fechada, com os girassóis na tampa, o fecho e a alça) e os pratos de cerâmica em suportes. Cada peça pode ser vista de perto, recebe reações e comentários e entra no ranking como as obras. As fotos ficam na pasta `artesanato/` e a lista em `artesanato` no `obras.js` (título, técnica, ano, descrição e medidas). Para os pratos, use fotos de cima com o fundo recortado (PNG ou WebP transparente); a ordem dos pratos na lista define a posição na mesa.
 
 ## Vídeos do ateliê
 

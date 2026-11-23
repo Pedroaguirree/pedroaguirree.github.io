@@ -29,7 +29,7 @@ window.MUSEU = {
   // Vídeos do ateliê: a tela fica no canto entre os dois tucanos.
   // Coloque os arquivos na pasta "videos/" (MP4) e liste aqui, na ordem em que devem passar.
   videos: [
-    // { arquivo: "timelapse-tucano.mp4", titulo: "Timelapse: Tucano na copa", descricao: "Do esboço ao final em 2 minutos." },
+    { arquivo: "atelie.mp4", titulo: "Bastidores do ateliê", descricao: "Um pouco das obras e do processo." },
   ],
 
   obras: [
@@ -78,10 +78,10 @@ window.MUSEU = {
   mural: { texto: "um sonho que tive", pos: [147, 166] },
 
   // Artesanato na mesa à direita da parede de entrada (arquivos na pasta "artesanato/").
-  // A caixa: largura e altura são as medidas da tampa (cm) e profundidade é a altura da caixa fechada.
+  // A caixa (fechada): largura e altura são as medidas da tampa (cm) e profundidade é a altura da caixa.
   // Os pratos: largura é o diâmetro (cm). A ordem dos pratos define a posição na mesa.
   artesanato: [
-    { tipo: "caixa", arquivo: "caixa-tampa.jpg", titulo: "Caixa dos girassóis", ano: "", tecnica: "Acrílica sobre caixa de madeira", largura: 33, altura: 26, profundidade: 12, descricao: "" },
+    { tipo: "caixa", arquivo: "caixa-tampa.jpg", frente: "caixa-frente.webp", titulo: "Caixa dos girassóis", ano: "", tecnica: "Acrílica sobre caixa de madeira", largura: 33, altura: 27.5, profundidade: 9.5, descricao: "" },
     { tipo: "prato", arquivo: "prato-xadrez.webp", titulo: "Prato xadrez", ano: "", tecnica: "Cerâmica pintada à mão", largura: 20, descricao: "" },
     { tipo: "prato", arquivo: "prato-coruja.webp", titulo: "Prato da coruja", ano: "", tecnica: "Cerâmica pintada à mão", largura: 21, descricao: "" },
     { tipo: "prato", arquivo: "prato-peixes.webp", titulo: "Prato dos peixes", ano: "", tecnica: "Cerâmica pintada à mão", largura: 21, descricao: "" },
