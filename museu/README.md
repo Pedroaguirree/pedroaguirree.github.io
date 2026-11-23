@@ -78,6 +78,12 @@ Sem nenhum vídeo na lista, a tela mostra "Vídeos do ateliê · em breve".
 
 Ao entrar no museu toca uma música calma, gerada pelo próprio site (nunca se repete igual). O visitante liga e desliga pelo botão de alto-falante no canto, pela tecla **M** ou no menu. Ela abaixa sozinha enquanto um vídeo está tocando. Para usar uma música sua, coloque o arquivo na pasta do museu e escreva o nome em `musica` no `obras.js` (ex.: `musica: "musica.mp3"`).
 
+## Sala de Inspirações
+
+Na parede do fundo, logo depois do mural, há uma porta de madeira com a placa dourada "Sala de Inspirações". Um tapete vermelho com borda dourada começa no salão, passa entre pedestais de latão com cordas de veludo vermelho e atravessa a sala inteira. A sala tem papel de parede verde com desenho clássico, lambri de madeira, um lustre de velas e, por enquanto, um quadrinho na parede do fundo dizendo que as inspirações estão chegando aos poucos. Dá para ir direto pelo menu (**Sala de Inspirações**).
+
+As coisas que inspiram o Pedro vão entrar em `inspiracoes` no `obras.js`. Para esconder a sala (a parede volta a ficar inteira), use `inspiracoes: false`. As obras da parede do fundo sempre ficam à direita da porta, sem cobri-la.
+
 ## Mensagem na entrada
 
 O texto da folha sobre o pilar, em frente à parede "Museu do Pedro", fica em `mensagem` no `obras.js`. Cada linha vira um parágrafo.

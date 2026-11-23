@@ -748,6 +748,15 @@ async function loadArtworks(){
 const MARGIN = 1.05, MIN_SPACE = 0.65, DOOR_W = 1.8, PART_T = 0.24, PART_H = 3.0;
 const partLen = W => clamp(W * 0.5, 5, 9);
 const MURAL_T0 = 0.35; let MURAL_END = 0;   // the mural starts near the north-west corner
+// "Sala de Inspirações": a door in the north wall, just after the mural, into a small salon behind it
+const INSP = { on: CFG.inspiracoes !== false, dw: 1.3, dh: 2.45, cw: 0.11, t: 0.2, rw: 5.0, rd: 6.0, rh: 3.3, blocked: false };
+function inspSetup(W, D){
+  if (!INSP.on) return;
+  const t0 = (MURAL_END || 2.6) + 0.45;
+  INSP.x0 = -W / 2 + t0 + INSP.cw; INSP.x1 = INSP.x0 + INSP.dw; INSP.xc = (INSP.x0 + INSP.x1) / 2; INSP.zw = -D / 2;
+  INSP.rx0 = INSP.xc - INSP.rw / 2; INSP.rx1 = INSP.xc + INSP.rw / 2; INSP.rz0 = INSP.zw - INSP.t; INSP.rz1 = INSP.rz0 - INSP.rd;
+  INSP.reserveT = t0 + 2 * INSP.cw + INSP.dw + 0.35;       // works on the north wall begin after this point
+}
 function outerSegments(W, D){
   const walls = [
     { o: [-W/2, -D/2], u: [1, 0],  n: [0, 1],  len: W }, // fundo (norte)
@@ -788,9 +797,15 @@ function place(groups, segs){
   const placed = [];
   segs.forEach((s, k) => {
     const items = groups[k] || []; if (!items.length) return;
-    const len = s.b - s.a, sum = items.reduce((t, o) => t + need(o), 0);
-    const n = items.length, sp = Math.min((len - sum) / (n + 1), 1.3 + sum / n * 0.8);
-    let t = s.a + (len - sum - sp * (n - 1)) / 2;
+    let a0 = s.a, len = s.b - s.a; const sum = items.reduce((t, o) => t + need(o), 0), n = items.length;
+    let sp = Math.min((len - sum) / (n + 1), 1.3 + sum / n * 0.8);
+    let t = a0 + (len - sum - sp * (n - 1)) / 2;
+    // keep the door of the Sala de Inspirações clear: only moves works if they would cover it
+    if (INSP.on && INSP.reserveT && s.wall.u[0] === 1 && s.wall.n[1] === 1 && t < INSP.reserveT) {
+      const len2 = s.b - INSP.reserveT;
+      if (len2 - sum > 0.3 * (n + 1)) { a0 = INSP.reserveT; len = len2; sp = Math.min((len - sum) / (n + 1), 1.3 + sum / n * 0.8); t = a0 + (len - sum - sp * (n - 1)) / 2; }
+      else INSP.blocked = true;
+    }
     for (const a of items) { const fw = need(a); placed.push({ art: a, wall: s.wall, t: t + fw / 2 }); t += fw + sp; }
   });
   return placed;
@@ -812,7 +827,16 @@ function buildRoom(W, D, H){
   ceil.rotation.x = Math.PI / 2; ceil.position.y = H; scene.add(ceil);
   const base = new THREE.MeshLambertMaterial({ color: 0x3a2e26 });
   const wallsDef = [ [W, 0, -D/2, 0], [W, 0, D/2, Math.PI], [D, W/2, 0, -Math.PI/2], [D, -W/2, 0, Math.PI/2] ];
-  for (const [len, x, z, ry] of wallsDef) {
+  for (const [k, [len, x, z, ry]] of wallsDef.entries()) {
+    if (k === 0 && INSP.on && !INSP.blocked && INSP.x0 != null) {   // north wall with a doorway cut out
+      const sh = new THREE.Shape(); sh.moveTo(-W / 2, 0); sh.lineTo(INSP.x0, 0); sh.lineTo(INSP.x0, INSP.dh); sh.lineTo(INSP.x1, INSP.dh); sh.lineTo(INSP.x1, 0);
+      sh.lineTo(W / 2, 0); sh.lineTo(W / 2, H); sh.lineTo(-W / 2, H); sh.closePath();
+      const m = new THREE.Mesh(new THREE.ShapeGeometry(sh), wallMat); m.position.set(0, 0, z); scene.add(m); occluders.push(m);
+      for (const [a, b2] of [[-W / 2, INSP.x0 - INSP.cw], [INSP.x1 + INSP.cw, W / 2]]) {
+        const bb = new THREE.Mesh(new THREE.BoxGeometry(b2 - a, 0.14, 0.02), base); bb.position.set((a + b2) / 2, 0.07, z + 0.01); scene.add(bb);
+      }
+      continue;
+    }
     const m = new THREE.Mesh(planeUV(len, H, 1), wallMat); m.position.set(x, H / 2, z); m.rotation.y = ry; scene.add(m); occluders.push(m);
     const b = new THREE.Mesh(new THREE.BoxGeometry(len, 0.14, 0.02), base);
     b.position.set(x, 0.07, z); b.rotation.y = ry; b.translateZ(0.01); scene.add(b);
@@ -2186,6 +2210,171 @@ function statsTick(dt){
   else if (STATS.shown && state === 'playing') { const ph = (performance.now() / 1000) % 2 < 1.3; if (ph !== STATS.ph && Math.hypot(player.x - STATS.pos.x, player.z - STATS.pos.z) < 9) { STATS.ph = ph; statsDraw(1); } }
 }
 
+/* ---------- Sala de Inspirações ---------- */
+const BRASS = new THREE.MeshPhongMaterial({ color: 0xc9a14f, specular: 0xffe9b0, shininess: 70, emissive: 0x2a1c06 });
+const VELVET = new THREE.MeshPhongMaterial({ color: 0x8c0f1e, specular: 0x3a0b0b, shininess: 10 });
+function inspBox(w, h, d, mat, x, y, z, parent = scene){ const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); parent.add(m); return m; }
+function stanchion(x, z){
+  const g = new THREE.Group(); g.position.set(x, 0, z); scene.add(g);
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.165, 0.035, 32), BRASS); base.position.y = 0.0175; g.add(base);
+  const dome = new THREE.Mesh(new THREE.SphereGeometry(0.12, 28, 10, 0, Math.PI * 2, 0, Math.PI / 2), BRASS); dome.scale.y = 0.35; dome.position.y = 0.035; g.add(dome);
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.021, 0.021, 0.86, 16), BRASS); pole.position.y = 0.47; g.add(pole);
+  for (const y of [0.1, 0.86]) { const c = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.032, 0.03, 18), BRASS); c.position.y = y; g.add(c); }
+  const ball = new THREE.Mesh(new THREE.SphereGeometry(0.045, 20, 14), BRASS); ball.position.y = 0.93; g.add(ball);
+  colliders.push({ x0: x - 0.15, x1: x + 0.15, z0: z - 0.15, z1: z + 0.15 });
+  return g;
+}
+function velvetRope(a, b){
+  // a soft sag between two posts, with brass snaps at the ends
+  const y = 0.85, p0 = new THREE.Vector3(a[0], y, a[1]), p1 = new THREE.Vector3(b[0], y, b[1]);
+  const mid = p0.clone().add(p1).multiplyScalar(0.5); mid.y -= 0.3;
+  const rope = new THREE.Mesh(new THREE.TubeGeometry(new THREE.QuadraticBezierCurve3(p0, mid, p1), 28, 0.022, 10, false), VELVET); scene.add(rope);
+  for (const [p, q] of [[p0, p1], [p1, p0]]) {
+    const d = q.clone().sub(p).normalize(), snap = new THREE.Mesh(new THREE.CylinderGeometry(0.026, 0.026, 0.07, 14), BRASS);
+    snap.position.copy(p).addScaledVector(d, 0.04); snap.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), d); scene.add(snap);
+  }
+}
+function damaskCanvas(){
+  return makeCanvas(256, 256, (g, w, h) => {
+    g.fillStyle = '#21382e'; g.fillRect(0, 0, w, h);
+    const r = rng(8); for (let k = 0; k < 2600; k++) { g.fillStyle = r() < 0.5 ? 'rgba(0,0,0,.05)' : 'rgba(255,255,255,.022)'; g.fillRect(r() * w, r() * h, 1, 1 + r() * 2); }
+    // ogee trellis: two mirrored waves make the classic onion-shaped cells
+    g.strokeStyle = 'rgba(196,222,196,.16)'; g.lineWidth = 3;
+    for (const [c, sg] of [[w / 4, 1], [3 * w / 4, -1]]) for (const off of [-w, 0, w]) {
+      g.beginPath(); for (let y = 0; y <= h; y += 2) { const x = c + off + sg * (w / 4) * Math.sin(2 * Math.PI * y / h); y ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke();
+    }
+    const flower = (cx, cy) => {
+      g.fillStyle = 'rgba(200,226,198,.15)';
+      for (let k = 0; k < 4; k++) { g.save(); g.translate(cx, cy); g.rotate(k * Math.PI / 2); g.beginPath(); g.ellipse(0, -12, 5.5, 10, 0, 0, Math.PI * 2); g.fill(); g.restore(); }
+      for (let k = 0; k < 4; k++) { g.save(); g.translate(cx, cy); g.rotate(Math.PI / 4 + k * Math.PI / 2); g.beginPath(); g.ellipse(0, -10, 2.5, 6, 0, 0, Math.PI * 2); g.fill(); g.restore(); }
+      g.fillStyle = 'rgba(214,186,112,.32)'; g.beginPath(); g.arc(cx, cy, 3.6, 0, Math.PI * 2); g.fill();
+    };
+    flower(w / 2, 3 * h / 4); flower(0, h / 4); flower(w, h / 4);
+    g.fillStyle = 'rgba(214,186,112,.28)'; for (const [x, y] of [[w / 2, h / 4], [0, 3 * h / 4], [w, 3 * h / 4]]) { g.beginPath(); g.arc(x, y, 3, 0, Math.PI * 2); g.fill(); }
+  });
+}
+function buildInspiracao(){
+  if (!INSP.on || INSP.blocked || INSP.x0 == null) return;
+  const { x0, x1, xc, zw, t, dw, dh, cw, rx0, rx1, rz0, rz1, rh, rw, rd } = INSP;
+  const wood = FRAME_SETS.nogueira.outer, ivory = new THREE.MeshLambertMaterial({ color: 0xf3ece0 });
+  // --- doorway: jambs through the wall thickness, casing and cornice on both faces
+  inspBox(0.04, dh, t, wood, x0 - 0.02, dh / 2, zw - t / 2); inspBox(0.04, dh, t, wood, x1 + 0.02, dh / 2, zw - t / 2);
+  inspBox(dw + 0.08, 0.04, t, wood, xc, dh + 0.02, zw - t / 2);
+  for (const [z, s] of [[zw + 0.0125, 1], [rz0 - 0.0125, -1]]) {
+    inspBox(cw, dh + cw, 0.025, wood, x0 - cw / 2, (dh + cw) / 2, z); inspBox(cw, dh + cw, 0.025, wood, x1 + cw / 2, (dh + cw) / 2, z);
+    inspBox(dw + 2 * cw, cw, 0.025, wood, xc, dh + cw / 2, z);
+    inspBox(dw + 2 * cw + 0.14, 0.05, 0.07, wood, xc, dh + cw + 0.025, z + s * 0.02);
+    inspBox(dw + 2 * cw + 0.2, 0.025, 0.09, BRASS, xc, dh + cw + 0.0625, z + s * 0.03);
+    for (const x of [x0 - cw / 2, x1 + cw / 2]) inspBox(cw + 0.03, 0.12, 0.04, wood, x, 0.06, z + s * 0.01);   // plinth blocks
+  }
+  inspBox(dw + 0.04, 0.01, t + 0.06, BRASS, xc, 0.005, zw - t / 2);   // threshold
+  // --- the sign over the door
+  const sign = new THREE.Mesh(new THREE.PlaneGeometry(2.0, 0.26), new THREE.MeshLambertMaterial({ transparent: true, emissive: 0xffffff, emissiveIntensity: 0.12,
+    map: smoothTex(makeCanvas(2000, 260, (g, w, h) => {
+      const gr = g.createLinearGradient(0, 40, 0, 200); gr.addColorStop(0, '#e9cf8a'); gr.addColorStop(0.5, '#b8913f'); gr.addColorStop(1, '#8e6a28');
+      g.fillStyle = gr; g.textAlign = 'center'; g.font = '700 118px Manrope, "Helvetica Neue", Arial, sans-serif'; g.letterSpacing = '20px'; g.fillText('SALA DE INSPIRAÇÕES', w / 2 + 10, 168);
+    })) }));
+  sign.material.emissiveMap = sign.material.map; sign.position.set(xc, dh + cw + 0.34, zw + 0.006); scene.add(sign);
+  // --- the salon: wooden floor, damask walls with dark wainscot, brass picture rail, ivory cornice
+  const fl = new THREE.Mesh(planeUV(rw, rd + t, 2), new THREE.MeshLambertMaterial({ map: floorTex })); fl.rotation.x = -Math.PI / 2; fl.position.set(xc, 0, (rz1 + zw) / 2); scene.add(fl);
+  const ce = new THREE.Mesh(new THREE.PlaneGeometry(rw, rd), new THREE.MeshLambertMaterial({ color: 0xf2ebe0, emissive: 0x2a241c })); ce.rotation.x = Math.PI / 2; ce.position.set(xc, rh, (rz0 + rz1) / 2); scene.add(ce);
+  const dam = smoothTex(damaskCanvas()); dam.wrapS = dam.wrapT = THREE.RepeatWrapping;
+  const wallM = new THREE.MeshLambertMaterial({ map: dam, emissive: 0xffffff, emissiveMap: dam, emissiveIntensity: 0.22 });
+  const wain = smoothTex(makeCanvas(512, 256, (g, w, h) => {
+    g.fillStyle = '#3b2517'; g.fillRect(0, 0, w, h);
+    for (const x of [24, 280]) { g.strokeStyle = 'rgba(0,0,0,.45)'; g.lineWidth = 6; g.strokeRect(x, 34, 208, 188); g.strokeStyle = 'rgba(255,214,170,.14)'; g.lineWidth = 3; g.strokeRect(x + 10, 44, 188, 168); }
+    const r = rng(5); for (let k = 0; k < 900; k++) { g.fillStyle = `rgba(${r() < 0.5 ? '0,0,0' : '255,220,180'},${0.03 + r() * 0.04})`; g.fillRect(r() * w, r() * h, 6 + r() * 30, 1); }
+  })); wain.wrapS = wain.wrapT = THREE.RepeatWrapping;
+  const wainM = new THREE.MeshLambertMaterial({ map: wain, emissive: 0xffffff, emissiveMap: wain, emissiveIntensity: 0.12 });
+  const zc = (rz0 + rz1) / 2;
+  const walls = [[rw, xc, rz1, 0], [rd, rx0, zc, Math.PI / 2], [rd, rx1, zc, -Math.PI / 2]];
+  // the wall around the door, seen from inside
+  const sh = new THREE.Shape(), hx = rw / 2, hd = dw / 2;
+  sh.moveTo(-hx, 0); sh.lineTo(-hd, 0); sh.lineTo(-hd, dh); sh.lineTo(hd, dh); sh.lineTo(hd, 0); sh.lineTo(hx, 0); sh.lineTo(hx, rh); sh.lineTo(-hx, rh); sh.closePath();
+  const sg = new THREE.ShapeGeometry(sh); const su = sg.attributes.uv; for (let i = 0; i < su.count; i++) su.setXY(i, su.getX(i) / 0.6, su.getY(i) / 0.6);
+  const south = new THREE.Mesh(sg, wallM); south.rotation.y = Math.PI; south.position.set(xc, 0, rz0); scene.add(south); occluders.push(south);
+  for (const [len, x, z, ry] of walls) {
+    const m = new THREE.Mesh(planeUV(len, rh, 0.6), wallM); m.position.set(x, rh / 2, z); m.rotation.y = ry; scene.add(m); occluders.push(m);
+    const nx = Math.sin(ry), nz = Math.cos(ry);
+    const wp = new THREE.Mesh(planeUV(len, 0.95, 1.2), wainM); wp.position.set(x + nx * 0.02, 0.475, z + nz * 0.02); wp.rotation.y = ry; scene.add(wp);
+    const rail = inspBox(len, 0.05, 0.05, wood, x + nx * 0.03, 0.97, z + nz * 0.03); rail.rotation.y = ry;
+    const pr = inspBox(len, 0.022, 0.018, BRASS, x + nx * 0.01, 2.45, z + nz * 0.01); pr.rotation.y = ry;
+    const cr = inspBox(len, 0.13, 0.1, ivory, x + nx * 0.05, rh - 0.065, z + nz * 0.05); cr.rotation.y = ry;
+  }
+  // wainscot and rails beside the door on the inside
+  for (const sgn of [-1, 1]) {
+    const len = hx - hd - cw, x = xc + sgn * (hd + cw + len / 2);
+    const wp = new THREE.Mesh(planeUV(len, 0.95, 1.2), wainM); wp.position.set(x, 0.475, rz0 - 0.02); wp.rotation.y = Math.PI; scene.add(wp);
+    inspBox(len, 0.05, 0.05, wood, x, 0.97, rz0 - 0.03); inspBox(len, 0.022, 0.018, BRASS, x, 2.45, rz0 - 0.01);
+  }
+  inspBox(rw, 0.13, 0.1, ivory, xc, rh - 0.065, rz0 - 0.05);
+  // --- the doors, open into the room
+  const leafTex = smoothTex(makeCanvas(256, 960, (g, w, h) => {
+    g.fillStyle = '#3e2618'; g.fillRect(0, 0, w, h);
+    for (const [y, hh] of [[60, 380], [500, 400]]) { g.strokeStyle = 'rgba(0,0,0,.5)'; g.lineWidth = 8; g.strokeRect(36, y, w - 72, hh); g.strokeStyle = 'rgba(255,214,170,.16)'; g.lineWidth = 4; g.strokeRect(50, y + 14, w - 100, hh - 28); }
+    const r = rng(9); for (let k = 0; k < 900; k++) { g.fillStyle = `rgba(${r() < 0.5 ? '0,0,0' : '255,220,180'},${0.03 + r() * 0.04})`; g.fillRect(r() * w, r() * h, 1, 10 + r() * 40); }
+  }));
+  const leafM = new THREE.MeshLambertMaterial({ map: leafTex }), lw = dw / 2 - 0.01;
+  for (const [hx2, th] of [[x0, 1.74], [x1, 1.40]]) {
+    const hinge = new THREE.Group(); hinge.position.set(hx2, 0, rz0 - 0.03); hinge.rotation.y = th; scene.add(hinge);
+    const leaf = new THREE.Mesh(new THREE.BoxGeometry(lw, dh - 0.01, 0.045), [wood, wood, wood, wood, leafM, leafM]); leaf.position.set(lw / 2, (dh - 0.01) / 2, 0); hinge.add(leaf);
+    for (const s2 of [1, -1]) { const kn = new THREE.Mesh(new THREE.SphereGeometry(0.028, 16, 12), BRASS); kn.position.set(lw - 0.07, 1.0, s2 * 0.045); hinge.add(kn);
+      const ro = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.01, 18), BRASS); ro.rotation.x = Math.PI / 2; ro.position.set(lw - 0.07, 1.0, s2 * 0.026); hinge.add(ro); }
+    const dx = Math.cos(th), dz = -Math.sin(th);
+    colliders.push({ x0: Math.min(hx2, hx2 + dx * lw) - 0.04, x1: Math.max(hx2, hx2 + dx * lw) + 0.04, z0: Math.min(rz0, rz0 + dz * lw) - 0.04, z1: Math.max(rz0, rz0 + dz * lw) + 0.04 });
+  }
+  // --- a brass chandelier
+  const ch = new THREE.Group(); ch.position.set(xc, rh, zc); scene.add(ch);
+  const rose = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.025, 32), ivory); rose.position.y = -0.0125; ch.add(rose);
+  const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.009, 0.009, 0.62, 10), BRASS); rod.position.y = -0.31; ch.add(rod);
+  const hub = new THREE.Mesh(new THREE.SphereGeometry(0.06, 20, 14), BRASS); hub.position.y = -0.68; ch.add(hub);
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.36, 0.014, 10, 56), BRASS); ring.rotation.x = Math.PI / 2; ring.position.y = -0.72; ch.add(ring);
+  const bulbM = new THREE.MeshBasicMaterial({ color: 0xfff1cc }), candleM = new THREE.MeshLambertMaterial({ color: 0xfaf6ee, emissive: 0xfff2dc, emissiveIntensity: 0.5 });
+  for (let k = 0; k < 8; k++) {
+    const a = k / 8 * Math.PI * 2, px = Math.cos(a) * 0.36, pz = Math.sin(a) * 0.36;
+    if (k % 2 === 0) { const sp = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.36, 6), BRASS); sp.rotation.z = Math.PI / 2; sp.rotation.y = -a; sp.position.set(px / 2, -0.7, pz / 2); ch.add(sp); }
+    const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.02, 0.035, 14), BRASS); cup.position.set(px, -0.7, pz); ch.add(cup);
+    const cd = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.09, 10), candleM); cd.position.set(px, -0.64, pz); ch.add(cd);
+    const bl = new THREE.Mesh(new THREE.SphereGeometry(0.02, 12, 10), bulbM); bl.scale.y = 1.4; bl.position.set(px, -0.58, pz); ch.add(bl);
+  }
+  const halo = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 2.6), new THREE.MeshBasicMaterial({ map: glowTex, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false }));
+  halo.rotation.x = Math.PI / 2; halo.position.set(xc, rh - 0.004, zc); scene.add(halo);
+  const med = new THREE.Mesh(new THREE.RingGeometry(0.2, 0.42, 48), ivory); med.rotation.x = Math.PI / 2; med.position.set(xc, rh - 0.006, zc); scene.add(med);
+  const medRim = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.018, 8, 48), ivory); medRim.rotation.x = Math.PI / 2; medRim.position.set(xc, rh - 0.01, zc); scene.add(medRim);
+  const lamp = new THREE.PointLight(0xffe0b4, 2.6, 7.5, 1.3); lamp.position.set(xc, rh - 0.95, zc); scene.add(lamp);
+  // --- a little card on the back wall, until the inspirations arrive
+  {
+    const card = new THREE.Group(); card.position.set(xc, 1.55, rz1 + 0.01); scene.add(card);
+    const cc = makeCanvas(1000, 640, (g, w, h) => {
+      g.fillStyle = '#f4ecdc'; g.fillRect(0, 0, w, h);
+      g.strokeStyle = '#b8913f'; g.lineWidth = 6; g.strokeRect(30, 30, w - 60, h - 60); g.lineWidth = 2; g.strokeRect(46, 46, w - 92, h - 92);
+      g.textAlign = 'center'; g.fillStyle = '#8e6a28'; g.font = '700 54px Manrope, "Helvetica Neue", Arial, sans-serif'; g.letterSpacing = '10px'; g.fillText('SALA DE INSPIRAÇÕES', w / 2 + 5, 230); g.letterSpacing = '0px';
+      g.fillStyle = '#b8913f'; g.fillRect(w / 2 - 70, 268, 140, 4);
+      g.fillStyle = '#3a2f26'; g.font = '500 40px Manrope, "Helvetica Neue", Arial, sans-serif'; g.fillText('As coisas que inspiram o Pedro', w / 2, 352);
+      g.fillStyle = '#6b5d50'; g.font = '600 58px Caveat, cursive'; g.fillText('chegando aos poucos…', w / 2, 448);
+    });
+    const face = new THREE.Mesh(new THREE.PlaneGeometry(0.78, 0.5), new THREE.MeshLambertMaterial({ map: smoothTex(cc), emissive: 0xffffff, emissiveMap: smoothTex(cc), emissiveIntensity: 0.2 })); face.position.z = 0.03; card.add(face);
+    for (const [w2, h2, x, y] of [[0.86, 0.04, 0, 0.27], [0.86, 0.04, 0, -0.27], [0.04, 0.5, 0.41, 0], [0.04, 0.5, -0.41, 0]]) inspBox(w2, h2, 0.05, BRASS, x, y, 0.025, card);
+  }
+  // --- the red carpet, from the museum through the door to the back of the room
+  const zA = zw + 2.35, zB = rz1 + 0.55, len = zA - zB, cwid = 1.18;
+  const ct = smoothTex(makeCanvas(256, 512, (g, w, h) => {
+    const gr = g.createLinearGradient(0, 0, w, 0); gr.addColorStop(0, '#6d0a14'); gr.addColorStop(0.5, '#8d1220'); gr.addColorStop(1, '#6d0a14'); g.fillStyle = gr; g.fillRect(0, 0, w, h);
+    const r = rng(13); for (let k = 0; k < 7000; k++) { g.fillStyle = r() < 0.5 ? 'rgba(0,0,0,.08)' : 'rgba(255,120,120,.05)'; g.fillRect(r() * w, r() * h, 1, 1 + r() * 2); }
+    g.fillStyle = '#c8a04c'; g.fillRect(10, 0, 5, h); g.fillRect(w - 15, 0, 5, h); g.fillRect(22, 0, 2, h); g.fillRect(w - 24, 0, 2, h);
+  })); ct.wrapS = ct.wrapT = THREE.RepeatWrapping; ct.repeat.set(1, len / 1.2);
+  const carpet = new THREE.Mesh(new THREE.BoxGeometry(cwid, 0.016, len), [VELVET, VELVET, new THREE.MeshLambertMaterial({ map: ct }), VELVET, VELVET, VELVET]);
+  carpet.position.set(xc, 0.008, (zA + zB) / 2); scene.add(carpet);
+  for (const z of [zA, zB]) inspBox(cwid + 0.02, 0.02, 0.03, BRASS, xc, 0.01, z);
+  // --- brass stanchions with red velvet ropes, a little aisle up to the door
+  const px = 0.95, zs = [zw + 0.32, zw + 1.16, zw + 2.0];
+  for (const sgn of [-1, 1]) {
+    zs.forEach(z => stanchion(xc + sgn * px, z));
+    for (let k = 0; k < zs.length - 1; k++) velvetRope([xc + sgn * px, zs[k]], [xc + sgn * px, zs[k + 1]]);
+    colliders.push({ x0: xc + sgn * px - 0.03, x1: xc + sgn * px + 0.03, z0: zw, z1: zs[zs.length - 1] });
+  }
+}
+
 /* ---------- Player & controls ---------- */
 const player = { x: 0, z: 0, yaw: 0, pitch: 0, vx: 0, vz: 0, bob: 0 };
 const keys = {}; let state = 'menu'; let locked = false; let lockOK = !isTouch && 'requestPointerLock' in canvas;
@@ -2579,9 +2768,23 @@ function update(dt){
   camera.position.set(player.x, 1.6 + Math.sin(player.bob) * 0.03 * Math.min(1, spd / 2), player.z);
   camera.rotation.set(player.pitch, player.yaw, 0);
 }
+function walkAreas(){
+  const R = 0.3, W = ROOM.W, D = ROOM.D, m = R + 0.1;
+  const A = [{ x0: -W / 2 + m, x1: W / 2 - m, z0: -D / 2 + m, z1: D / 2 - m }];
+  if (INSP.on && !INSP.blocked && INSP.x0 != null) {
+    A.push({ x0: INSP.x0 + R, x1: INSP.x1 - R, z0: INSP.rz0 - m - 0.2, z1: INSP.zw + m + 0.2 });   // through the doorway
+    A.push({ x0: INSP.rx0 + m, x1: INSP.rx1 - m, z0: INSP.rz1 + m, z1: INSP.rz0 - m });            // the salon
+  }
+  return A;
+}
 function move(dx, dz){
-  const R = 0.3, W = ROOM.W, D = ROOM.D;
-  let nx = clamp(player.x + dx, -W / 2 + R + 0.1, W / 2 - R - 0.1), nz = clamp(player.z + dz, -D / 2 + R + 0.1, D / 2 - R - 0.1);
+  const R = 0.3, A = walkAreas(), inA = (x, z) => A.some(a => x >= a.x0 && x <= a.x1 && z >= a.z0 && z <= a.z1);
+  let nx = player.x + dx, nz = player.z + dz;
+  if (!inA(nx, nz)) {
+    if (inA(nx, player.z)) nz = player.z;
+    else if (inA(player.x, nz)) nx = player.x;
+    else { const cur = A.find(a => player.x >= a.x0 - 0.05 && player.x <= a.x1 + 0.05 && player.z >= a.z0 - 0.05 && player.z <= a.z1 + 0.05) || A[0]; nx = clamp(nx, cur.x0, cur.x1); nz = clamp(nz, cur.z0, cur.z1); }
+  }
   for (const c of colliders) {
     if (nx > c.x0 - R && nx < c.x1 + R && nz > c.z0 - R && nz < c.z1 + R) {
       const px = Math.min(nx - (c.x0 - R), (c.x1 + R) - nx), pz = Math.min(nz - (c.z0 - R), (c.z1 + R) - nz);
@@ -2613,6 +2816,7 @@ function loop(){
     if (g1 && g2) break; W *= 1.04; D *= 1.03;
   }
   const northWall = outerSegments(W, D)[0].wall;
+  inspSetup(W, D);
   const placed = [...place(g1 || [], outerSegments(W, D)), ...place(g2 || [], partitionSegments(W)),
                   ...muralArts.map(a => ({ art: a, wall: northWall, t: MURAL_T0 + a.pos[0] / 100 }))];
   const tallest = Math.max(0, ...placed.map(p => Math.max(1.55, p.art.h / 2 + 0.5) + p.art.h / 2));
@@ -2634,6 +2838,7 @@ function loop(){
     spot.position.set((x0 + x1) / 2, H - 0.2, zc + 1.6); spot.target.position.set((x0 + x1) / 2, 1.6, zc); scene.add(spot, spot.target);
   }
   await buildCraft();
+  buildInspiracao();
   pickables = [...paintings.flatMap(p => p.meshes), ...soon.flatMap(p => p.meshes), ...occluders, ...bookMeshes];
   buildNote().then(() => { pickables.push(...noteMeshes); });
   buildVideoScreen();
@@ -2644,6 +2849,7 @@ function loop(){
   const lista = $('lista');
   const extra = [];
   if (NOTE) extra.push(['Mensagem do artista', 'no pilar', () => { player.x = 0; player.z = PART_T / 2 + 0.9 + 1.05; player.yaw = 0; player.pitch = -0.42; startPlaying(); }]);
+  if (INSP.on && !INSP.blocked && INSP.x0 != null) extra.push(['Sala de Inspirações', 'pela porta do tapete vermelho', () => { player.x = INSP.xc; player.z = INSP.rz0 - 1.2; player.yaw = 0; player.pitch = -0.02; startPlaying(); }]);
   if (BOOK) extra.push(['Caderno criativo', 'na mesinha', () => { player.x = -ROOM.W / 2 + 1.5; player.z = -ROOM.D / 2 + 1.5; player.yaw = Math.PI / 4; player.pitch = -0.45; startPlaying(); }]);
   addRecMenu = () => { const b = document.createElement('button'); b.innerHTML = '<span>Bilhetes dos visitantes</span><span>na entrada</span>';
     b.addEventListener('click', () => { const P = partLen(ROOM.W); player.x = -P / 2 + 1.35; player.z = PART_T / 2 + 1.9; player.yaw = 0.35; player.pitch = -0.12; startPlaying(); });
@@ -2659,7 +2865,7 @@ function loop(){
   if (recReady) { $('loadTxt').textContent = 'Colando os bilhetes…'; await Promise.race([Promise.all([recReady, reaReady, visReady]), new Promise(r => setTimeout(r, 6000))]); }
   statsDirty();
   $('loading').classList.add('hidden'); $('menu').classList.remove('hidden');
-  window.__museu = { REC, ROOM, MUS, VID, REA, COM, STATS, rankUpdate, openRecRead, openRecWrite, paintings, player, startPlaying, teleportTo, openViewer, openBook, openNote, closeNote, bookGo, flipCard, closeViewer, update, render: () => renderer.render(scene, camera) };
+  window.__museu = { INSP, REC, ROOM, MUS, VID, REA, COM, STATS, rankUpdate, openRecRead, openRecWrite, paintings, player, startPlaying, teleportTo, openViewer, openBook, openNote, closeNote, bookGo, flipCard, closeViewer, update, render: () => renderer.render(scene, camera) };
   loop();
 })();
 </script>

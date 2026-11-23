@@ -22,6 +22,12 @@ window.MUSEU = {
   subtitulo: "Desenhos e pinturas",
   artista: "Pedro",
 
+  // Sala de Inspirações: a porta com tapete vermelho logo depois do mural.
+  // Para esconder a sala, troque por:  inspiracoes: false,
+  inspiracoes: {
+    itens: [],   // as coisas que inspiram o Pedro (fotos e objetos) entram aqui
+  },
+
   // Música de fundo: deixe "" para a música calminha gerada pelo próprio museu,
   // ou coloque o nome de um arquivo seu (ex.: "musica.mp3") na pasta do museu.
   musica: "",
