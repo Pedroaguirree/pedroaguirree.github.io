@@ -1761,9 +1761,8 @@ function vidTick(){
 function vidShow(i){
   VID.cur = i; const it = VID.list[i], pl = $('vidPlayer');
   $('vidTitle').textContent = it.titulo || 'Vídeos do ateliê'; $('vidDesc').textContent = it.descricao || '';
-  const same = VID.el && VID.el.currentSrc && VID.el.currentSrc.endsWith(vidSrc(it)) ? VID.el.currentTime : 0;
   if (!pl.currentSrc.endsWith(vidSrc(it))) pl.src = vidSrc(it);
-  try { pl.currentTime = same; } catch {}
+  try { pl.currentTime = 0; } catch {}          // always from the beginning
   pl.play().catch(() => {});
   for (const [k, b] of [...$('vidList').children].entries()) b.classList.toggle('on', k === i);
 }
@@ -1782,7 +1781,7 @@ function openVideo(){
 }
 function closeVideo(){
   if (performance.now() - Z.opened < 300) return;
-  const pl = $('vidPlayer'); if (VID.el && pl.currentSrc && VID.el.currentSrc === pl.currentSrc) { try { VID.el.currentTime = pl.currentTime; } catch {} }
+  const pl = $('vidPlayer');
   pl.pause(); VID.open = false; musDuck(1);
   $('vid').classList.remove('show'); setTimeout(startPlaying, 220);
 }
