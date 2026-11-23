@@ -77,6 +77,16 @@ window.MUSEU = {
   // Frase escrita na parede do mural, com a seta apontando para a esquerda (pos = ponta da seta, em cm)
   mural: { texto: "um sonho que tive", pos: [147, 166] },
 
+  // Artesanato na mesa à direita da parede de entrada (arquivos na pasta "artesanato/").
+  // A caixa: largura e altura são as medidas da tampa (cm) e profundidade é a altura da caixa fechada.
+  // Os pratos: largura é o diâmetro (cm). A ordem dos pratos define a posição na mesa.
+  artesanato: [
+    { tipo: "caixa", arquivo: "caixa-tampa.jpg", titulo: "Caixa dos girassóis", ano: "", tecnica: "Acrílica sobre caixa de madeira", largura: 33, altura: 26, profundidade: 12, descricao: "" },
+    { tipo: "prato", arquivo: "prato-xadrez.webp", titulo: "Prato xadrez", ano: "", tecnica: "Cerâmica pintada à mão", largura: 20, descricao: "" },
+    { tipo: "prato", arquivo: "prato-coruja.webp", titulo: "Prato da coruja", ano: "", tecnica: "Cerâmica pintada à mão", largura: 21, descricao: "" },
+    { tipo: "prato", arquivo: "prato-peixes.webp", titulo: "Prato dos peixes", ano: "", tecnica: "Cerâmica pintada à mão", largura: 21, descricao: "" },
+  ],
+
   // Caderno criativo na mesinha do canto (arquivos na pasta "caderno/")
   caderno: {
     capa: "capa-v2.jpg",

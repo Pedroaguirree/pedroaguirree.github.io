@@ -76,6 +76,8 @@
   /* realistic frame */
   .fr{position:absolute;inset:0;box-shadow:0 26px 60px rgba(0,0,0,.62),0 5px 14px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.1);border-radius:2px}
   .fr .bar{position:absolute;background-repeat:repeat}
+  .fr.cut,.fr.cut .inner{box-shadow:none!important;background:transparent!important} .fr.cut .open{filter:drop-shadow(0 22px 34px rgba(0,0,0,.6));background:transparent!important;box-shadow:none!important} .fr.cut .open *{background-color:transparent!important;box-shadow:none!important}
+  .fr.boxlid .open,.fr.boxlid .open *{border-radius:14px;overflow:hidden} .fr.cut .sheen,.fr.boxlid .sheen{display:none}
   .fr .bar::after{content:"";position:absolute;inset:0}
   .fr .t{left:0;top:0;width:100%;clip-path:polygon(0 0,100% 0,calc(100% - var(--fw)) 100%,var(--fw) 100%)}
   .fr .b{left:0;bottom:0;width:100%;clip-path:polygon(var(--fw) 0,calc(100% - var(--fw)) 0,100% 100%,0 100%)}
@@ -902,60 +904,126 @@ function drawOrnament(g, cx, cy, s){
   g.restore();
 }
 const CLOTH = new THREE.MeshLambertMaterial({ color: 0xf4f2ee, side: THREE.DoubleSide });
-function buildCraft(){
-  // a little table with a box on it, all under a linen sheet: "Em breve, artesanato sendo feito"
+// Artisan pieces on the table by the entrance wall: an open painted box and plates on stands.
+// Each piece is also a "work" (index in paintings): click to see it up close, react and comment.
+async function buildCraft(){
+  const items = (CFG.artesanato || []).filter(o => o && o.arquivo);
+  if (!items.length) return;
   const P = partLen(ROOM.W), cx = Math.min(P / 2 - 1.15, 2.5), cz = PART_T / 2 + 0.62, W = FRAME_SETS.nogueira;
   const g = new THREE.Group(); g.position.set(cx, 0, cz); g.rotation.y = -0.06; scene.add(g);
-  const TY = 0.76, hx = 0.55, hz = 0.32, DROP = 0.6, Lx = hx + DROP, Lz = hz + DROP;
-  const bx = 0.05, bz = -0.04, bhx = 0.25, bhz = 0.17, BH = 0.3;                 // the box under the sheet
-  for (const sx of [-1, 1]) for (const sz of [-1, 1]) { const leg = new THREE.Mesh(new THREE.BoxGeometry(0.04, TY, 0.04), W.inner); leg.position.set(sx * (hx - 0.05), TY / 2, sz * (hz - 0.05)); g.add(leg); }
-  const CW = 2048, CH = Math.round(CW * Lz / Lx);
-  const tex = smoothTex(makeCanvas(CW, CH, (c, w, h) => {
-    const r = rng(77); c.fillStyle = '#f3efe6'; c.fillRect(0, 0, w, h);
-    for (let y = 0; y < h; y += 3) { c.fillStyle = `rgba(120,105,80,${0.015 + r() * 0.035})`; c.fillRect(0, y, w, 1); }   // linen weave
-    for (let x = 0; x < w; x += 3) { c.fillStyle = `rgba(120,105,80,${0.01 + r() * 0.03})`; c.fillRect(x, 0, 1, h); }
-    for (let k = 0; k < 900; k++) { c.fillStyle = `rgba(150,130,100,${0.05 + r() * 0.08})`; c.fillRect(r() * w, r() * h, 1 + r() * 6, 1); }
-    c.strokeStyle = 'rgba(150,130,100,.35)'; c.lineWidth = 3; c.setLineDash([14, 10]); c.strokeRect(26, 26, w - 52, h - 52); c.setLineDash([]);   // hem stitching
-    // the writing goes on the front drop
-    const top = h * (1 - DROP / (2 * Lz)) , x0 = w * (DROP / (2 * Lx)), x1 = w - x0, cw2 = (x0 + x1) / 2, dh = h - top;
-    c.textAlign = 'center'; c.fillStyle = '#3a2f26';
-    c.font = `700 ${Math.round(dh * 0.17)}px Manrope, "Helvetica Neue", Arial, sans-serif`; c.letterSpacing = `${Math.round(dh * 0.03)}px`;
-    c.fillText('EM BREVE', cw2, top + dh * 0.33);
-    c.letterSpacing = '0px'; c.fillStyle = '#9a7a3e'; c.fillRect(cw2 - dh * 0.12, top + dh * 0.41, dh * 0.24, Math.max(3, dh * 0.008));
-    c.fillStyle = '#3a2f26'; c.font = `500 ${Math.round(dh * 0.2)}px Caveat, "Segoe Script", cursive`;
-    c.fillText('artesanato sendo feito', cw2, top + dh * 0.64);
-    c.globalAlpha = 0.6; drawOrnament(c, cw2, top + dh * 0.78, dh * 0.0016); c.globalAlpha = 1;
-  }));
-  const NX = 120, NZ = 100, geo = new THREE.PlaneGeometry(2 * Lx, 2 * Lz, NX, NZ), pos = geo.attributes.position, rr = rng(11);
-  const ss = (e0, e1, x) => { const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0))); return t * t * (3 - 2 * t); };
-  const ph = [rr() * 6, rr() * 6, rr() * 6, rr() * 6];
-  for (let i = 0; i < pos.count; i++) {
-    const u = pos.getX(i), v = -pos.getY(i);
-    const ex = Math.max(0, Math.abs(u) - hx), ez = Math.max(0, Math.abs(v) - hz);
-    let x = Math.sign(u) * Math.min(Math.abs(u), hx), z = Math.sign(v) * Math.min(Math.abs(v), hz), y;
-    if (ex === 0 && ez === 0) {
-      // on top: the box makes a soft bump
-      const dx = Math.max(0, Math.abs(u - bx) - bhx), dz = Math.max(0, Math.abs(v - bz) - bhz), d = Math.hypot(dx, dz);
-      y = TY + 0.006 + BH * (1 - ss(0, 0.075, d)) * (1 - 0.06 * ss(0, 1, Math.hypot(u - bx, v - bz) / 0.3));
-      y += Math.sin(u * 23 + v * 9) * 0.002;
-    } else {
-      const e = Math.hypot(ex, ez), edge = ss(0, 0.04, e);
-      y = TY + 0.006 - e + 0.012 * (1 - edge);
-      const f = Math.min(1, e / DROP);
-      // folds grow toward the hem; they are gentle on the front so the writing stays readable
-      if (ez > 0) { const amp = v > 0 ? 0.01 : 0.022; z += Math.sign(v) * (0.012 + e * 0.05 + (Math.sin(u * 14 + ph[0]) * 0.6 + Math.sin(u * 31 + ph[1]) * 0.4) * amp * f); }
-      if (ex > 0) { x += Math.sign(u) * (0.012 + e * 0.05 + (Math.sin(v * 15 + ph[2]) * 0.6 + Math.sin(v * 29 + ph[3]) * 0.4) * 0.022 * f); }
-      if (ex > 0 && ez > 0) { const k = Math.min(ex, ez); x += Math.sign(u) * k * 0.16; z += Math.sign(v) * k * 0.16; y += k * 0.3; }   // the corners flare out in a fold
-    }
-    pos.setXYZ(i, x, y, z);
+  const TY = 0.76, TW = 1.02, TD = 0.56, TT = 0.035;
+  // the table
+  const top = new THREE.Mesh(new THREE.BoxGeometry(TW, TT, TD), W.inner); top.position.y = TY - TT / 2; g.add(top);
+  for (const [sx, sz, lx, lz] of [[0, 1, TW - 0.1, 0.02], [0, -1, TW - 0.1, 0.02], [1, 0, 0.02, TD - 0.1], [-1, 0, 0.02, TD - 0.1]]) {
+    const ap = new THREE.Mesh(new THREE.BoxGeometry(lx, 0.07, lz), W.inner); ap.position.set(sx * (TW / 2 - 0.06), TY - TT - 0.035, sz * (TD / 2 - 0.06)); g.add(ap);
   }
-  geo.computeVertexNormals();
-  const sheet = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ map: tex, color: 0xe9e5dc, side: THREE.DoubleSide }));
-  g.add(sheet);
-  const sh = new THREE.Mesh(new THREE.PlaneGeometry(2 * Lx + 0.3, 2 * Lz + 0.3), new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, opacity: 0.4, depthWrite: false }));
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.013, TY - TT, 12), W.inner); leg.position.set(sx * (TW / 2 - 0.06), (TY - TT) / 2, sz * (TD / 2 - 0.06)); g.add(leg);
+  }
+  const sh = new THREE.Mesh(new THREE.PlaneGeometry(TW + 0.4, TD + 0.4), new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, opacity: 0.4, depthWrite: false }));
   sh.rotation.x = -Math.PI / 2; sh.position.y = 0.004; g.add(sh);
-  const lamp = new THREE.PointLight(0xfff0d8, 0.35, 2.8, 1.6); lamp.position.set(0, 2.0, 0.6); g.add(lamp);
-  colliders.push({ x0: cx - hx - 0.12, x1: cx + hx + 0.12, z0: cz - hz - 0.12, z1: cz + hz + 0.12 });
+  const lamp = new THREE.PointLight(0xfff2dc, 0.55, 2.6, 1.5); lamp.position.set(0.1, 1.75, 0.55); g.add(lamp);
+  colliders.push({ x0: cx - TW / 2 - 0.1, x1: cx + TW / 2 + 0.1, z0: cz - TD / 2 - 0.1, z1: cz + TD / 2 + 0.1 });
+  const brass = new THREE.MeshStandardMaterial({ color: 0xb8954f, metalness: .85, roughness: .32 });
+  const imgs = await Promise.all(items.map(o => loadImage('artesanato/' + o.arquivo).catch(() => null)));
+  const plateSpots = [[0.07, 0.09, -0.12, 0], [0.25, -0.13, -0.22, 0.05], [0.41, 0.08, -0.34, 0]];   // x, z, yaw, riser height
+  let pk = 0;
+  items.forEach((o, k) => {
+    const im = imgs[k]; if (!im) { console.warn('Não encontrei', o.arquivo); return; }
+    const idx = paintings.length, w = (+o.largura || 20) / 100;
+    const art = { ...o, i: idx, w, h: o.tipo === 'caixa' ? (+o.altura || 26) / 100 : w * im.naturalHeight / im.naturalWidth, src: 'artesanato/' + o.arquivo, moldura: 'nenhuma', recorte: o.tipo !== 'caixa' };
+    const tex = smoothTex(downscale(im, 1024)); tex.anisotropy = 8;
+    let anchor, meshes = [];
+    if (o.tipo === 'caixa') ({ anchor, meshes } = craftBox(g, art, tex, brass));
+    else { const sp = plateSpots[pk++ % plateSpots.length]; ({ anchor, meshes } = craftPlate(g, art, im, tex, sp, W)); }
+    for (const m of meshes) m.userData.idx = idx;
+    g.updateMatrixWorld(true);
+    const wp = new THREE.Vector3(), q = new THREE.Quaternion(); anchor.getWorldPosition(wp); anchor.getWorldQuaternion(q);
+    const nrm = new THREE.Vector3(0, 0, 1).applyQuaternion(q); const L = Math.hypot(nrm.x, nrm.z) || 1;
+    paintings.push({ art, group: anchor, wall: { n: [nrm.x / L, nrm.z / L] }, pos: wp, cy: wp.y, craft: true, starAt: null, meshes });
+  });
+  // a small aluminium label at the front corner of the table
+  const lab = new THREE.Group(); lab.position.set(-TW / 2 + 0.1, TY, TD / 2 - 0.07); lab.rotation.y = 0.25; g.add(lab);
+  const card = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.08, 0.004), new THREE.MeshPhongMaterial({ shininess: 40, map: smoothTex(makeCanvas(640, 320, (c, w, h) => {
+    brushedAluminium(c, w, h); c.fillStyle = '#111'; c.textAlign = 'center';
+    c.font = '800 64px Manrope, "Helvetica Neue", Arial, sans-serif'; c.letterSpacing = '8px'; c.fillText('ARTESANATO', w / 2 + 4, 120); c.letterSpacing = '0px';
+    c.fillRect(w / 2 - 60, 146, 120, 4);
+    c.font = '600 36px Manrope, "Helvetica Neue", Arial, sans-serif'; c.fillText('Caixa e pratos pintados à mão', w / 2, 208);
+    c.font = '500 32px Manrope, "Helvetica Neue", Arial, sans-serif'; c.fillStyle = '#333'; c.fillText('Pedro', w / 2, 262);
+  })) }));
+  card.position.set(0, 0.05, 0); card.rotation.x = -0.35; lab.add(card);
+  const foot = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.006, 0.05), brass); foot.position.set(0, 0.003, -0.005); lab.add(foot);
+  const post = new THREE.Mesh(new THREE.BoxGeometry(0.008, 0.05, 0.008), brass); post.position.set(0, 0.025, -0.012); lab.add(post);
+}
+function roundedRect(w, d, r){
+  const s = new THREE.Shape(), x = -w / 2, y = -d / 2;
+  s.moveTo(x + r, y); s.lineTo(x + w - r, y); s.quadraticCurveTo(x + w, y, x + w, y + r); s.lineTo(x + w, y + d - r); s.quadraticCurveTo(x + w, y + d, x + w - r, y + d);
+  s.lineTo(x + r, y + d); s.quadraticCurveTo(x, y + d, x, y + d - r); s.lineTo(x, y + r); s.quadraticCurveTo(x, y, x + r, y); return s;
+}
+function craftBox(g, art, tex, brass){
+  // the lid's painting is art.w wide by art.h tall; the lid hinges on its lower edge (the box's left side) and stands open
+  const BD = art.w, BW = art.h, bodyH = (+art.profundidade || 12) / 100 * 0.72, lidH = (+art.profundidade || 12) / 100 * 0.28, r = 0.03, t = 0.009;
+  const purple = new THREE.MeshStandardMaterial({ color: new THREE.Color('#3f2f88'), roughness: .55 });
+  const lilac = new THREE.MeshStandardMaterial({ color: new THREE.Color('#ad6fd6'), roughness: .8 });
+  const box = new THREE.Group(); box.position.set(-0.24, 0.76, -0.02); box.rotation.y = 0.9; g.add(box);
+  const flat = geo => { geo.rotateX(-Math.PI / 2); return geo; };
+  const outer = roundedRect(BW, BD, r); const wall = roundedRect(BW, BD, r); wall.holes.push(roundedRect(BW - 2 * t, BD - 2 * t, r - t));
+  const bottom = new THREE.Mesh(flat(new THREE.ExtrudeGeometry(outer, { depth: 0.006, bevelEnabled: false, curveSegments: 8 })), purple); box.add(bottom);
+  const walls = new THREE.Mesh(flat(new THREE.ExtrudeGeometry(wall, { depth: bodyH, bevelEnabled: false, curveSegments: 8 })), purple); box.add(walls);
+  const lin = roundedRect(BW - 2 * t - 0.002, BD - 2 * t - 0.002, r - t); lin.holes.push(roundedRect(BW - 2 * t - 0.006, BD - 2 * t - 0.006, r - t - 0.003));
+  const liner = new THREE.Mesh(flat(new THREE.ExtrudeGeometry(lin, { depth: bodyH - 0.008, bevelEnabled: false, curveSegments: 8 })), lilac); liner.position.y = 0.006; box.add(liner);
+  const floor = new THREE.Mesh(flat(new THREE.ShapeGeometry(roundedRect(BW - 2 * t - 0.002, BD - 2 * t - 0.002, r - t), 8)), lilac); floor.position.y = 0.0075; box.add(floor);
+  // lid: painted outside, lilac inside
+  const pivot = new THREE.Group(); pivot.position.set(-BW / 2, bodyH, 0); pivot.rotation.z = 84 * Math.PI / 180; box.add(pivot);
+  const lg = flat(new THREE.ExtrudeGeometry(roundedRect(BW, BD, r), { depth: lidH, bevelEnabled: false, curveSegments: 8 }));
+  const pos = lg.attributes.position, uv = lg.attributes.uv;
+  for (let i = 0; i < pos.count; i++) uv.setXY(i, 0.5 + pos.getZ(i) / BD, 0.5 + pos.getX(i) / BW);   // painting upright when the lid stands open
+  const paint = new THREE.MeshStandardMaterial({ map: tex, roughness: .5 });
+  const lid = new THREE.Mesh(lg, [paint, purple]); lid.position.x = BW / 2; pivot.add(lid);
+  const under = new THREE.Mesh(new THREE.ShapeGeometry(roundedRect(BW - 0.012, BD - 0.012, r - 0.006), 8), lilac); under.rotation.x = Math.PI / 2; under.position.y = -0.0008; lid.add(under);
+  // brass hinges and latch
+  for (const z of [-BD * 0.3, BD * 0.3]) { const h = new THREE.Mesh(new THREE.CylinderGeometry(0.005, 0.005, 0.045, 10), brass); h.rotation.x = Math.PI / 2; h.position.set(-BW / 2 - 0.002, bodyH, z); box.add(h); }
+  const latch = new THREE.Mesh(new THREE.BoxGeometry(0.004, 0.035, 0.03), brass); latch.position.set(BW / 2 + 0.002, bodyH - 0.02, 0); box.add(latch);
+  const latch2 = new THREE.Mesh(new THREE.BoxGeometry(0.004, 0.012, 0.022), brass); latch2.position.set(BW + 0.002, lidH * 0.5, 0); latch2.rotation.z = Math.PI / 2; lid.add(latch2);
+  // the anchor sits on the painted face: x along the painting's width, y up the painting
+  const anchor = new THREE.Object3D(); anchor.position.set(0, lidH + 0.001, 0);
+  anchor.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(new THREE.Vector3(0, 0, 1), new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0)));
+  lid.add(anchor);
+  return { anchor, meshes: [lid, walls, bottom, liner, floor, under] };
+}
+function plateOutline(im){
+  // trace the plate's edge from the transparent background, as an angle → radius table
+  const N = 256, c = document.createElement('canvas'); c.width = c.height = N; const x = c.getContext('2d'); x.drawImage(im, 0, 0, N, N);
+  const d = x.getImageData(0, 0, N, N).data, pts = [], A = 120;
+  let rim = [0, 0, 0, 0];
+  for (let k = 0; k < A; k++) {
+    const a = k / A * Math.PI * 2, ca = Math.cos(a), sa = Math.sin(a); let rr = 0;
+    for (let r = N / 2 - 1; r > 2; r -= 0.5) { const px = Math.round(N / 2 + ca * r), py = Math.round(N / 2 - sa * r); if (d[(py * N + px) * 4 + 3] > 128) { rr = r; break; } }
+    pts.push([ca * rr / N, sa * rr / N]);
+    const px = Math.round(N / 2 + ca * rr * 0.97), py = Math.round(N / 2 - sa * rr * 0.97), o = (py * N + px) * 4; rim = [rim[0] + d[o], rim[1] + d[o + 1], rim[2] + d[o + 2], rim[3] + 1];
+  }
+  return { pts, rim: new THREE.Color(`rgb(${Math.round(rim[0] / rim[3])},${Math.round(rim[1] / rim[3])},${Math.round(rim[2] / rim[3])})`) };
+}
+function craftPlate(g, art, im, tex, [x, z, yaw, riser], W){
+  const D = art.w, { pts, rim } = plateOutline(im), tilt = 0.27;
+  const s = new THREE.Shape(); pts.forEach(([px, py], i) => i ? s.lineTo(px * D, py * D) : s.moveTo(px * D, py * D)); s.closePath();
+  const geo = new THREE.ExtrudeGeometry(s, { depth: 0.01, bevelEnabled: false, curveSegments: 2 });
+  const pos = geo.attributes.position, uv = geo.attributes.uv;
+  for (let i = 0; i < pos.count; i++) uv.setXY(i, 0.5 + pos.getX(i) / D, 0.5 + pos.getY(i) / D);
+  const glaze = new THREE.MeshStandardMaterial({ map: tex, roughness: .22, metalness: 0 });
+  const side = new THREE.MeshStandardMaterial({ color: rim, roughness: .3 });
+  const base = new THREE.Group(); base.position.set(x, 0.76 + riser, z); base.rotation.y = yaw; g.add(base);
+  if (riser > 0) { const rb = new THREE.Mesh(new THREE.BoxGeometry(D * 0.95, riser, 0.15), W.inner); rb.position.set(0, -riser / 2, -0.02); base.add(rb); }
+  const holder = new THREE.Group(); holder.position.set(0, 0.012, 0); holder.rotation.x = -tilt; base.add(holder);
+  const plate = new THREE.Mesh(geo, [glaze, side]); plate.position.set(0, D / 2, -0.005); holder.add(plate);
+  // a slim dark-bronze plate stand
+  const metal = new THREE.MeshStandardMaterial({ color: 0x2a2520, metalness: .7, roughness: .4 });
+  const rod = (len, px, py, pz, rx = 0, rz = 0) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(0.0022, 0.0022, len, 6), metal); m.position.set(px, py, pz); m.rotation.set(rx, 0, rz); base.add(m); };
+  rod(D * 0.62, 0, 0.003, 0.012, 0, Math.PI / 2);                                         // front bar
+  for (const sx of [-1, 1]) { rod(0.026, sx * D * 0.24, 0.014, 0.016); rod(0.11, sx * D * 0.18, 0.004, -0.04, Math.PI / 2, 0); }   // hooks and feet
+  const back = Math.sin(tilt) * D * 0.55; rod(Math.hypot(back + 0.02, D * 0.5), 0, D * 0.25, -back / 2 - 0.03, -Math.atan2(back + 0.02, D * 0.5), 0);   // back support
+  const anchor = new THREE.Object3D(); anchor.position.set(0, D / 2, 0.011); holder.add(anchor);
+  return { anchor, meshes: [plate] };
 }
 function curtain(g, cw, ch, topY, seed){
   const geo = new THREE.PlaneGeometry(cw, ch, 72, 14), pos = geo.attributes.position, r = rng(seed), ph = r() * 6;
@@ -2229,6 +2297,8 @@ function frameInto(host, a, fp, px, src, isBack){
       `border-color:${lipC[0]} ${lipC[1]} ${lipC[2]} ${lipC[1]};box-shadow:inset 0 0 0 1px rgba(0,0,0,.35),0 0 0 1px rgba(0,0,0,.25)`;
     fr.appendChild(lip);
   }
+  if (a.recorte) fr.classList.add('cut');
+  if (a.tipo === 'caixa') fr.classList.add('boxlid');
   const inner = document.createElement('div'); inner.className = 'inner';
   Object.assign(inner.style, { left: fw + 'px', top: fw + 'px', right: fw + 'px', bottom: fw + 'px' });
   inner.style.boxShadow = isBack ? 'inset 0 0 0 1px rgba(0,0,0,.4), inset 0 2px 5px rgba(0,0,0,.35)' : 'inset 0 3px 7px rgba(0,0,0,.45), inset 2px 0 5px rgba(0,0,0,.25)';
@@ -2259,7 +2329,7 @@ function frameInto(host, a, fp, px, src, isBack){
 
 function teleportTo(idx){ placeAt(idx); startPlaying(); }
 function placeAt(idx){
-  const p = paintings[idx], n = p.wall.n, gp = p.group.position;
+  const p = paintings[idx], n = p.wall.n, gp = p.pos || p.group.position;
   const dist = clamp(Math.max(p.art.w, p.art.h) * 1.6 + 0.55, 0.85, Math.min(ROOM.W, ROOM.D) - 1);
   player.x = clamp(gp.x + n[0] * dist, -ROOM.W / 2 + .5, ROOM.W / 2 - .5);
   player.z = clamp(gp.z + n[1] * dist, -ROOM.D / 2 + .5, ROOM.D / 2 - .5);
@@ -2500,7 +2570,6 @@ function loop(){
   try { await Promise.race([Promise.all(['400', '500', '600', '700', '800'].map(wt => document.fonts.load(`${wt} 40px Manrope`))), new Promise(r => setTimeout(r, 4000))]); } catch {}
   buildRoom(W, D, H);
   try { await document.fonts.load('40px Caveat'); } catch {}
-  buildCraft();
   buildStatsPanel();
   for (const p of placed) hangPainting(p, H);
   buildBookTable();
@@ -2513,6 +2582,7 @@ function loop(){
     const spot = new THREE.SpotLight(0xfff0d8, 0.8, 6, 0.6, 0.8, 1.2);
     spot.position.set((x0 + x1) / 2, H - 0.2, zc + 1.6); spot.target.position.set((x0 + x1) / 2, 1.6, zc); scene.add(spot, spot.target);
   }
+  await buildCraft();
   pickables = [...paintings.flatMap(p => p.meshes), ...soon.flatMap(p => p.meshes), ...occluders, ...bookMeshes];
   buildNote().then(() => { pickables.push(...noteMeshes); });
   buildVideoScreen();
