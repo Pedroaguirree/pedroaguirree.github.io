@@ -1489,7 +1489,7 @@ async function recInit(){
 function hash(str){ let h = 2166136261; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
 function recSlots(){
   // spots on the entrance face of the middle wall: a cluster that grows from beside the little table
-  const P = partLen(ROOM.W), S = 0.122, out = [];
+  const P = partLen(ROOM.W), S = 0.132, out = [];
   const regions = [[-P / 2 + 0.16, -2.3, -P / 2 + 0.95, 0.86], [0.95, P / 2 - 0.16, P / 2 - 0.95, 1.22]];
   for (const [x0, x1, sx, ymin] of regions) {
     const pts = [];
@@ -1525,9 +1525,9 @@ function recAdd(n, pop){
   if (!n?.id || REC.byId.has(n.id) || !REC.slots.length) return;
   const k = REC.list.length; REC.list.push(n); REC.byId.set(n.id, k);
   const slot = REC.slots[k % REC.slots.length], layer = Math.floor(k / REC.slots.length);
-  const r = rng(hash(n.id)), jx = (r() - .5) * 0.04, jy = (r() - .5) * 0.04, rot = (r() - .5) * 0.26;
+  const r = rng(hash(n.id)), jx = (r() - .5) * 0.012, jy = (r() - .5) * 0.012, rot = (r() - .5) * 0.14;   // small tilt and nudge: neighbours never touch
   const g = new THREE.Group();
-  g.position.set(slot.x + jx + layer * 0.03, slot.y + jy - layer * 0.025, PART_T / 2 + 0.006 + layer * 0.004 + (k % 97) * 0.00002);
+  g.position.set(slot.x + jx + layer * 0.03, slot.y + jy - layer * 0.025, PART_T / 2 + 0.006 + layer * 0.011 + (k % 97) * 0.00002);   // a new layer sits clearly in front of the curled notes below
   g.rotation.z = rot;
   const sh = new THREE.Mesh(new THREE.PlaneGeometry(0.118, 0.118), recShadowMat()); sh.position.set(0.004, -0.006, -0.0015); g.add(sh);
   const geo = new THREE.PlaneGeometry(0.104, 0.104, 1, 4); const pos = geo.attributes.position;
