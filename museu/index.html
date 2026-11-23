@@ -2357,7 +2357,7 @@ function buildInspiracao(){
     for (const [w2, h2, x, y] of [[0.86, 0.04, 0, 0.27], [0.86, 0.04, 0, -0.27], [0.04, 0.5, 0.41, 0], [0.04, 0.5, -0.41, 0]]) inspBox(w2, h2, 0.05, BRASS, x, y, 0.025, card);
   }
   // --- the red carpet, from the museum through the door to the back of the room
-  const zA = zw + 2.35, zB = rz1 + 0.55, len = zA - zB, cwid = 1.18;
+  const zA = zw + 1.45, zB = rz1 + 0.55, len = zA - zB, cwid = 1.18;
   const ct = smoothTex(makeCanvas(256, 512, (g, w, h) => {
     const gr = g.createLinearGradient(0, 0, w, 0); gr.addColorStop(0, '#6d0a14'); gr.addColorStop(0.5, '#8d1220'); gr.addColorStop(1, '#6d0a14'); g.fillStyle = gr; g.fillRect(0, 0, w, h);
     const r = rng(13); for (let k = 0; k < 7000; k++) { g.fillStyle = r() < 0.5 ? 'rgba(0,0,0,.08)' : 'rgba(255,120,120,.05)'; g.fillRect(r() * w, r() * h, 1, 1 + r() * 2); }
@@ -2367,7 +2367,7 @@ function buildInspiracao(){
   carpet.position.set(xc, 0.008, (zA + zB) / 2); scene.add(carpet);
   for (const z of [zA, zB]) inspBox(cwid + 0.02, 0.02, 0.03, BRASS, xc, 0.01, z);
   // --- brass stanchions with red velvet ropes, a little aisle up to the door
-  const px = 0.95, zs = [zw + 0.32, zw + 1.16, zw + 2.0];
+  const px = 0.95, zs = [zw + 0.32, zw + 1.16];
   for (const sgn of [-1, 1]) {
     zs.forEach(z => stanchion(xc + sgn * px, z));
     for (let k = 0; k < zs.length - 1; k++) velvetRope([xc + sgn * px, zs[k]], [xc + sgn * px, zs[k + 1]]);
