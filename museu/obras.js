@@ -86,19 +86,21 @@ window.MUSEU = {
       // Expositor de vidro na parede ao lado da bicicleta: os desenhos e, no meio, a foto com a plaquinha.
       // foto: o arquivo da foto na pasta "inspiracoes/" (enquanto estiver vazio, a moldura fica esperando por ela).
       // Desenhos: largura e altura em cm; o maior vai para a esquerda e os outros formam a grade da direita, na ordem da lista.
-      { tipo: "expositor", centro: 4.15,
+      // solto: true deixa tudo um pouco fora do alinhamento, como se tivesse sido preso à mão: giro = inclinação em graus,
+      // desloc = [direita, cima] em cm para empurrar a peça; fixacao: "alfinete" ou "fita" (fita crepe nos cantos).
+      { tipo: "expositor", centro: 4.15, solto: true,
         foto: "casal.jpg", titulo_foto: "Pedro e Juliana",
         frase: "Acredito que uma das energias criativas mais poderosas venha do nosso amor, acredito nisso pois vivo ela na pele e me leva para lugares incríveis",
         desenhos: [
-          { arquivo: "desenho-copo.jpg", titulo: "Copo e flores", ano: "", tecnica: "Pastel oleoso sobre papel", largura: 42, altura: 59.4, formato: "A2", descricao: "" },
-          { arquivo: "desenho-girassol.jpg", titulo: "Girassol", ano: "", tecnica: "Pastel oleoso sobre papel", largura: 14.8, altura: 21, formato: "A5", descricao: "" },
-          { arquivo: "desenho-besouro.jpg", titulo: "Besouro", ano: "", tecnica: "Pastel oleoso e grafite sobre papel", largura: 14.8, altura: 21, formato: "A5", descricao: "" },
+          { arquivo: "desenho-copo.jpg", giro: -1.2, desloc: [0, -1.5], titulo: "Copo e flores", ano: "", tecnica: "Pastel oleoso sobre papel", largura: 42, altura: 59.4, formato: "A2", descricao: "" },
+          { arquivo: "desenho-girassol.jpg", giro: 4, desloc: [-3, -2], titulo: "Girassol", ano: "", tecnica: "Pastel oleoso sobre papel", largura: 14.8, altura: 21, formato: "A5", descricao: "" },
+          { arquivo: "desenho-besouro.jpg", giro: -3, desloc: [2, 3], fixacao: "fita", titulo: "Besouro", ano: "", tecnica: "Pastel oleoso e grafite sobre papel", largura: 14.8, altura: 21, formato: "A5", descricao: "" },
           // As duas telinhas das árvores ficam lado a lado no meio da grade (tela: true dá a espessura de tela esticada).
           // Para pôr uma peça entre a foto e a placa, use lado: "meio".
-          { arquivo: "arvore-pedro.jpg", titulo: "Árvore do parque", ano: "", tecnica: "Acrílica sobre tela", largura: 15, altura: 15, medida: "cerca de 15 × 15 cm", tela: true, descricao: "Uma das árvores do parque da cidade, pintada lá mesmo, junto com a Juliana." },
-          { arquivo: "arvore-juliana.jpg", titulo: "Árvores do parque", artista: "Juliana", ano: "", tecnica: "Acrílica sobre tela", largura: 15, altura: 15, medida: "cerca de 15 × 15 cm", tela: true, descricao: "Pintada pela Juliana no parque da cidade, no mesmo dia da árvore do Pedro." },
-          { arquivo: "desenho-ovo-tucano.jpg", titulo: "Ovo e tucano", ano: "", tecnica: "Pastel oleoso sobre papel", largura: 21, altura: 14.8, formato: "A5", descricao: "" },
-          { arquivo: "desenho-gato.jpg", titulo: "Gato na lua", artista: "Juliana", ano: "", tecnica: "Pastel oleoso sobre papel", largura: 14.8, altura: 21, formato: "A5", descricao: "Desenho feito pela Juliana." },
+          { arquivo: "arvore-pedro.jpg", giro: -2.5, desloc: [-2, -0.5], titulo: "Árvore do parque", ano: "", tecnica: "Acrílica sobre tela", largura: 15, altura: 15, medida: "cerca de 15 × 15 cm", tela: true, descricao: "Uma das árvores do parque da cidade, pintada lá mesmo, junto com a Juliana." },
+          { arquivo: "arvore-juliana.jpg", giro: 4, desloc: [-1, -3.5], titulo: "Árvores do parque", artista: "Juliana", ano: "", tecnica: "Acrílica sobre tela", largura: 15, altura: 15, medida: "cerca de 15 × 15 cm", tela: true, descricao: "Pintada pela Juliana no parque da cidade, no mesmo dia da árvore do Pedro." },
+          { arquivo: "desenho-ovo-tucano.jpg", giro: -5, desloc: [-1, 1], fixacao: "fita", titulo: "Ovo e tucano", ano: "", tecnica: "Pastel oleoso sobre papel", largura: 21, altura: 14.8, formato: "A5", descricao: "" },
+          { arquivo: "desenho-gato.jpg", giro: 2, desloc: [3, -2], titulo: "Gato na lua", artista: "Juliana", ano: "", tecnica: "Pastel oleoso sobre papel", largura: 14.8, altura: 21, formato: "A5", descricao: "Desenho feito pela Juliana." },
         ] },
     ],
   },

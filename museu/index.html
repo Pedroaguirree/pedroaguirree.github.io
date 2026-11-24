@@ -2979,7 +2979,8 @@ function buildVaral(o){
 }
 
 /* ---------- Sala de Inspirações: expositor de vidro na parede, com os desenhos e a foto do casal ---------- */
-const PIN_GEO = new THREE.SphereGeometry(0.0034, 10, 6);
+const PIN_GEO = new THREE.SphereGeometry(0.0034, 10, 6), TAPE_GEO = new THREE.PlaneGeometry(0.05, 0.017);
+const EXPO_TAPE = new THREE.MeshLambertMaterial({ map: TAPE_MAT.map, transparent: true, depthWrite: false, emissive: 0x77736a, emissiveMap: TAPE_MAT.map });
 const EXPO_MAT = new THREE.MeshLambertMaterial({ color: 0xfdfbf6, emissive: 0x77746c }), EXPO_BEVEL = new THREE.MeshLambertMaterial({ color: 0xffffff, emissive: 0x8a8780 });   // the mat is lit by the case's own LEDs
 function heartPath(c, x, y, s){
   c.beginPath(); c.moveTo(x, y + s * 0.42);
@@ -3084,6 +3085,11 @@ async function buildExpositor(o){
   const fy = CH / 2 - fh / 2, py = -CH / 2 + PLH / 2, my = CH / 2 - fh - 0.035 - midH / 2;
   items.forEach(it => { it.x = it.side * zx + it.gx; it.y = it.gy; });
   { let x = -midW / 2; MID.forEach(it => { it.x = x + it.w / 2; it.y = my; x += it.w + MG; }); }
+  for (const it of items) {   // not everything lined up: a little nudge and tilt, as if pinned up by hand (giro in degrees, desloc in cm)
+    const d = it.d, r = rng(hash(d.arquivo)), dl = Array.isArray(d.desloc) ? d.desloc : o.solto ? [(r() - 0.5) * 3, (r() - 0.5) * 3] : [0, 0];
+    it.x += (+dl[0] || 0) / 100; it.y += (+dl[1] || 0) / 100;
+    it.rot = (d.giro != null ? +d.giro : o.solto ? (r() - 0.5) * 5 : 0) * Math.PI / 180;
+  }
 
   const zc = rz1 + (+o.centro || 4.15), cy = clamp((+o.altura_centro || 162) / 100, 1.06 + Hout / 2, 2.39 - Hout / 2);
   const g = new THREE.Group(); g.position.set(rx1, cy, zc); g.rotation.y = -Math.PI / 2; scene.add(g);   // local +x runs along the wall to the visitor's right, +z comes out of the wall
@@ -3124,9 +3130,9 @@ async function buildExpositor(o){
     band(bx, 0, bx + k1, 0, bx, by, k1, bh, 0.22); band(bx + bw, 0, bx + bw - k1, 0, bx + bw - k1, by, k1, bh, 0.22);
     band(0, by, 0, by - k2, bx, by - k2, bw, k2, 0.3); band(0, by + bh, 0, by + bh + k2, bx, by + bh, bw, k2, 0.22);
     band(bx, 0, bx - k2, 0, bx - k2, by, k2, bh, 0.25); band(bx + bw, 0, bx + bw + k2, 0, bx + bw, by, k2, bh, 0.25);
-    const shadow = (x, y, w, h, off, blur, a) => { c.save(); c.shadowColor = `rgba(36,24,10,${a})`; c.shadowBlur = blur; c.shadowOffsetY = 20000 + off; c.fillStyle = '#000';
-      c.fillRect(X(x - w / 2), Y(y + h / 2) - 20000, w * PPM, h * PPM); c.restore(); };
-    items.forEach(it => it.d.tela ? shadow(it.x, it.y, it.w, it.h, 0.014 * PPM, 0.017 * PPM, 0.55) : shadow(it.x, it.y, it.w, it.h, 0.008 * PPM, 0.012 * PPM, 0.5));
+    const shadow = (x, y, w, h, off, blur, a, rot = 0) => { c.save(); c.shadowColor = `rgba(36,24,10,${a})`; c.shadowBlur = blur; c.shadowOffsetY = 20000 + off; c.fillStyle = '#000';
+      c.translate(X(x), Y(y) - 20000); c.rotate(-rot); c.fillRect(-w * PPM / 2, -h * PPM / 2, w * PPM, h * PPM); c.restore(); };   // shadow offsets ignore the transform
+    items.forEach(it => it.d.tela ? shadow(it.x, it.y, it.w, it.h, 0.014 * PPM, 0.017 * PPM, 0.55, it.rot) : shadow(it.x, it.y, it.w, it.h, 0.008 * PPM, 0.012 * PPM, 0.5, it.rot));
     shadow(0, fy, fw, fh, 0.016 * PPM, 0.02 * PPM, 0.55);
     shadow(0, py, PLW, PLH, 0.009 * PPM, 0.012 * PPM, 0.5);
   });
@@ -3162,11 +3168,13 @@ async function buildExpositor(o){
       const lg = c.createLinearGradient(0, 0, 0, H); lg.addColorStop(0, 'rgba(255,250,238,.06)'); lg.addColorStop(1, 'rgba(40,30,18,.08)'); c.fillStyle = lg; c.fillRect(0, 0, W, H);
       c.strokeStyle = 'rgba(0,0,0,.12)'; c.lineWidth = 2; c.strokeRect(1, 1, W - 2, H - 2);
     }));
-    const anchor = new THREE.Object3D(); anchor.position.set(it.x, it.y, ZB + (d.tela ? 0.019 : 0.012)); g.add(anchor);
+    const anchor = new THREE.Object3D(); anchor.position.set(it.x, it.y, ZB + (d.tela ? 0.019 : 0.012)); anchor.rotation.z = it.rot || 0; g.add(anchor);
     if (d.tela) { const box = new THREE.Mesh(new THREE.BoxGeometry(w - 0.001, h - 0.001, 0.018), new THREE.MeshLambertMaterial({ color: edgeCol })); box.position.z = -0.0092; anchor.add(box); }
     const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: tex, color: 0xf4f4f4 }));
     mesh.userData.idx = idx; anchor.add(mesh);
-    if (!d.tela) for (const [sx, sy] of w * h > 0.1 ? [[-1, 1], [1, 1], [-1, -1], [1, -1]] : [[-1, 1], [1, 1]]) {
+    const fix = d.fixacao || (d.tela ? '' : 'alfinete'), tr = rng(hash(d.arquivo) + 7);
+    if (fix === 'fita') for (const sx of [-1, 1]) { const t = new THREE.Mesh(TAPE_GEO, EXPO_TAPE); t.position.set(sx * (w / 2 - 0.007), h / 2 - 0.006, 0.0008); t.rotation.z = -sx * 0.72 + (tr() - 0.5) * 0.25; anchor.add(t); }
+    if (fix === 'alfinete') for (const [sx, sy] of w * h > 0.1 ? [[-1, 1], [1, 1], [-1, -1], [1, -1]] : [[-1, 1], [1, 1]]) {
       const pin = new THREE.Mesh(PIN_GEO, BRASS); pin.scale.z = 0.6; pin.position.set(sx * (w / 2 - 0.01), sy * (h / 2 - 0.01), 0.0012); anchor.add(pin);
     }
     g.updateMatrixWorld(true); anchor.getWorldPosition(wp);
