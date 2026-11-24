@@ -2757,6 +2757,27 @@ function buildEasel(o, x, z, yaw){
     const s2 = new THREE.Mesh(new THREE.PlaneGeometry(it.w * 1.25, it.d * 1.25), new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, opacity: 0.16, depthWrite: false }));
     s2.rotation.x = -Math.PI / 2; s2.position.set(it.x + 0.01, 0.002, it.z + 0.01); fl.add(s2);
   }
+  // a few brushes lying next to the rag
+  const brushes = [   // [x, z, angle, length, handle radius, handle colour, ferrule colour, tip colour, flat]
+    [-0.44, -0.10, 0.22, 0.29, 0.0052, 0xb5835a, 0xc9ccd0, 0x7a2335, 1],
+    [-0.42, -0.045, 0.15, 0.25, 0.005, 0x9e1f24, 0xc9a14f, 0x3c5a9a, 0],
+    [-0.45, 0.01, 0.28, 0.31, 0.0058, 0x1d1d1f, 0xc9ccd0, 0x3e7a3a, 1],
+    [-0.41, 0.065, 0.1, 0.22, 0.0042, 0xd9b27c, 0xc9a14f, 0xe6c34a, 0],
+    [-0.44, 0.12, 0.2, 0.26, 0.0048, 0x2f5d8a, 0xc9ccd0, 0x6b2f5e, 0],
+  ];
+  for (const [bx, bz, ang, len, r, hc, fc, tc, flat] of brushes) {
+    const b = new THREE.Group(); b.position.set(bx, 0, bz); b.rotation.y = ang; fl.add(b);
+    const hl = len * 0.68, fL = len * 0.13, bL = len * 0.19;
+    const lay = (geo, mat, x0, rr) => { const m = new THREE.Mesh(geo, mat); m.rotation.z = Math.PI / 2; m.position.set(x0, rr, 0); b.add(m); return m; };
+    const handle = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.75, r * 1.15, hl, 14), new THREE.MeshPhongMaterial({ color: hc, shininess: 70, specular: 0x666666 }));
+    handle.rotation.z = Math.PI / 2; handle.position.set(-hl / 2, r * 1.15, 0); b.add(handle);   // thick end toward the bristles
+    lay(new THREE.CylinderGeometry(r * 1.2, r * 1.1, fL, 14), new THREE.MeshPhongMaterial({ color: fc, shininess: 110, specular: 0xffffff }), fL / 2, r * 1.15);
+    const tipM = new THREE.MeshLambertMaterial({ color: tc });
+    if (flat) { const t = new THREE.Mesh(new THREE.BoxGeometry(bL, r * 1.3, r * 3.2), tipM); t.position.set(fL + bL / 2, r * 1.15, 0); b.add(t); }
+    else { const t = new THREE.Mesh(new THREE.ConeGeometry(r * 1.25, bL, 14), tipM); t.rotation.z = -Math.PI / 2; t.position.set(fL + bL / 2, r * 1.15, 0); b.add(t); }
+    const sh = new THREE.Mesh(new THREE.PlaneGeometry(len * 1.1, r * 9), new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, opacity: 0.25, depthWrite: false }));
+    sh.rotation.x = -Math.PI / 2; sh.position.set(len * 0.05, 0.0015, 0); b.add(sh);
+  }
   colliders.push({ x0: x - 0.55, x1: x + 0.55, z0: z - 0.55, z1: z + 0.55 });
 }
 
