@@ -25,7 +25,16 @@ window.MUSEU = {
   // Sala de Inspirações: a porta com tapete vermelho logo depois do mural.
   // Para esconder a sala, troque por:  inspiracoes: false,
   inspiracoes: {
-    itens: [],   // as coisas que inspiram o Pedro (fotos e objetos) entram aqui
+    itens: [
+      { tipo: "quadro", arquivo: "rosinha-retrato.jpg", titulo: "Rosinha", artista: "", tecnica: "Retrato pintado a partir de uma foto",
+        largura: 50, moldura: "vitoriana", medida: "",
+        descricao: "Minha cachorrinha Rosinha, iluminada entre as nuvens." },
+      { tipo: "vitrine", arquivo: "rosinha-boneco-frente.webp", lados: ["rosinha-boneco-lado-esq.webp", "rosinha-boneco-lado-dir.webp"],
+        titulo: "Rosinha de crochê", artista: "", tecnica: "Bonequinho de crochê", altura: 10, medida: "cerca de 10 cm", placa: "Rosinha",
+        descricao: "Um bonequinho de crochê da Rosinha, com a coleirinha com o nome dela." },
+      { tipo: "bicicleta", titulo: "Minha bicicleta", subtitulo: "Caloi aro 29",
+        descricao: "Me ajudou a descobrir caminhos e a encontrar lindas paisagens pelo caminho." },
+    ],
   },
 
   // Música de fundo: deixe "" para a música calminha gerada pelo próprio museu,

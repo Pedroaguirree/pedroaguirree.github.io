@@ -80,9 +80,11 @@ Ao entrar no museu toca uma música calma, gerada pelo próprio site (nunca se r
 
 ## Sala de Inspirações
 
-Na parede do fundo, logo depois do mural, há uma porta de madeira com a placa dourada "Sala de Inspirações". Um tapete vermelho com borda dourada começa no salão, passa entre pedestais de latão com cordas de veludo vermelho e atravessa a sala inteira. A sala tem papel de parede verde com desenho clássico, lambri de madeira, um lustre de velas e, por enquanto, um quadrinho na parede do fundo dizendo que as inspirações estão chegando aos poucos. Dá para ir direto pelo menu (**Sala de Inspirações**).
+Na parede do fundo, logo depois do mural, há uma porta de madeira com a placa dourada "Sala de Inspirações". Um tapete vermelho com borda dourada começa no salão, passa entre pedestais de latão com cordas de veludo vermelho e atravessa a sala inteira. A sala tem papel de parede verde com desenho clássico, madeira na parte de baixo das paredes e um lustre de velas. Dá para ir direto pelo menu (**Sala de Inspirações**).
 
-As coisas que inspiram o Pedro vão entrar em `inspiracoes` no `obras.js`. Para esconder a sala (a parede volta a ficar inteira), use `inspiracoes: false`. As obras da parede do fundo sempre ficam à direita da porta, sem cobri-la.
+No fundo da sala, onde o tapete termina, fica a homenagem à Rosinha: o retrato dela em moldura dourada, com céu azul de nuvens, e logo à frente uma vitrine de vidro num pedestal com o bonequinho de crochê dela, em tamanho real (cerca de 10 cm). O boneco é feito com as fotos de verdade e muda de foto conforme o lado de onde a pessoa olha (frente, três-quartos e perfil). Clicando no retrato ou na vitrine, abre para ver de perto, com reações e comentários. No canto direito, encostada na parede, está a bicicleta Caloi, com uma plaquinha.
+
+Os arquivos ficam na pasta `inspiracoes/` e a lista em `inspiracoes` no `obras.js` (textos das plaquinhas e descrições). As peças da sala não entram na contagem de obras nem no ranking de estrelinhas. Para esconder a sala (a parede volta a ficar inteira), use `inspiracoes: false`. As obras da parede do fundo sempre ficam à direita da porta, sem cobri-la.
 
 ## Mensagem na entrada
 
