@@ -2663,7 +2663,7 @@ function prettyPlaque(parent, w, h, t, pos, rotY){
 }
 
 async function buildInspItems(){
-  try { await Promise.race([Promise.all(['italic 600 40px "Cormorant Garamond"', 'italic 500 40px "Cormorant Garamond"'].map(f => document.fonts.load(f))), new Promise(r => setTimeout(r, 3000))]); } catch {}
+  try { await Promise.race([Promise.all(['italic 600 40px "Cormorant Garamond"', 'italic 500 40px "Cormorant Garamond"', '600 40px Caveat'].map(f => document.fonts.load(f))), new Promise(r => setTimeout(r, 3000))]); } catch {}
   const cfg = CFG.inspiracoes; if (!cfg || !Array.isArray(cfg.itens)) return;
   const { xc, rx0, rx1, rz1 } = INSP, dir = 'inspiracoes/';
   for (const o of cfg.itens) {
@@ -2678,6 +2678,7 @@ async function buildInspItems(){
     if (o.tipo === 'cavalete') buildEasel(o, rx0 + 0.8, rz1 + 0.85, Math.PI / 4);
     if (o.tipo === 'varal') buildVaral(o);
     if (o.tipo === 'discos') buildDiscos(o, rx0, rz1 + 1.95, INSP.rz0 - 1.25);
+    if (o.tipo === 'expositor') await buildExpositor(o);
     if (o.tipo === 'bicicleta') {
       const outer = new THREE.Group(); outer.position.set(rx1 - 0.52, 0, rz1 + 0.95); outer.rotation.y = -Math.PI / 2; scene.add(outer);
       const bike = buildBike(); bike.rotation.x = -0.17; outer.add(bike);
@@ -2977,6 +2978,222 @@ function buildVaral(o){
   const hang = new THREE.Mesh(new THREE.CylinderGeometry(0.0015, 0.0015, 0.05, 5), new THREE.MeshLambertMaterial({ color: 0xf2a3b3 })); hang.position.set(hx, hy + 0.045, 0.012); g.add(hang);
 }
 
+/* ---------- Sala de Inspirações: expositor de vidro na parede, com os desenhos e a foto do casal ---------- */
+const PIN_GEO = new THREE.SphereGeometry(0.0034, 10, 6);
+const EXPO_MAT = new THREE.MeshLambertMaterial({ color: 0xfdfbf6, emissive: 0x77746c }), EXPO_BEVEL = new THREE.MeshLambertMaterial({ color: 0xffffff, emissive: 0x8a8780 });   // the mat is lit by the case's own LEDs
+function heartPath(c, x, y, s){
+  c.beginPath(); c.moveTo(x, y + s * 0.42);
+  c.bezierCurveTo(x - s * 0.95, y - s * 0.2, x - s * 0.42, y - s * 0.95, x, y - s * 0.38);
+  c.bezierCurveTo(x + s * 0.42, y - s * 0.95, x + s * 0.95, y - s * 0.2, x, y + s * 0.42);
+  c.closePath();
+}
+function engrave(c, draw, depth = 1.6){   // a light edge below and right, then the dark cut
+  c.save(); c.translate(depth, depth); c.globalAlpha = 0.55; c.fillStyle = c.strokeStyle = '#fff1cc'; draw(); c.restore();
+  c.save(); c.fillStyle = c.strokeStyle = 'rgba(54,35,10,.92)'; draw(); c.restore();
+}
+function brassPlaqueCanvas(w, h, text){
+  return makeCanvas(Math.round(w * 4400), Math.round(h * 4400), (c, W, H) => {
+    const gr = c.createLinearGradient(0, 0, W, H * 1.6);
+    gr.addColorStop(0, '#a98440'); gr.addColorStop(0.3, '#d9b971'); gr.addColorStop(0.5, '#ead293'); gr.addColorStop(0.72, '#cba65d'); gr.addColorStop(1, '#a07c39');
+    c.fillStyle = gr; c.fillRect(0, 0, W, H);
+    const r = rng(77);   // brushed
+    for (let k = 0; k < 3400; k++) { c.fillStyle = r() < 0.5 ? `rgba(255,244,210,${0.05 + r() * 0.07})` : `rgba(96,66,22,${0.04 + r() * 0.06})`; c.fillRect(r() * W - 100, r() * H, 60 + r() * 380, r() < 0.2 ? 2 : 1); }
+    c.lineWidth = 4;     // bevelled edge
+    c.strokeStyle = 'rgba(255,240,200,.6)'; c.beginPath(); c.moveTo(2, H - 2); c.lineTo(2, 2); c.lineTo(W - 2, 2); c.stroke();
+    c.strokeStyle = 'rgba(70,46,12,.55)'; c.beginPath(); c.moveTo(W - 2, 2); c.lineTo(W - 2, H - 2); c.lineTo(2, H - 2); c.stroke();
+    engrave(c, () => { c.lineWidth = 3.2; c.strokeRect(44, 44, W - 88, H - 88); c.lineWidth = 1.4; c.strokeRect(57, 57, W - 114, H - 114); });
+    for (const [x, y] of [[24, 24], [W - 24, 24], [24, H - 24], [W - 24, H - 24]]) {   // screws
+      const sg = c.createRadialGradient(x - 4, y - 4, 1, x, y, 12); sg.addColorStop(0, '#fff3cf'); sg.addColorStop(0.5, '#cfa95c'); sg.addColorStop(1, '#6d4f1c');
+      c.fillStyle = sg; c.beginPath(); c.arc(x, y, 12, 0, 7); c.fill();
+      c.strokeStyle = 'rgba(60,40,10,.8)'; c.lineWidth = 2.4; c.beginPath(); c.moveTo(x - 7, y + 3); c.lineTo(x + 7, y - 3); c.stroke();
+    }
+    // the words, in the largest size that fits
+    const words = ('“' + text.trim() + '”').split(/\s+/), maxW = W - 200, ornH = 58;
+    let fs = 72, lines = [];
+    const wrap = () => { lines = []; let line = ''; for (const wd of words) { const t = line ? line + ' ' + wd : wd; if (c.measureText(t).width > maxW && line) { lines.push(line); line = wd; } else line = t; } if (line) lines.push(line); };
+    for (; fs > 30; fs -= 2) { c.font = `italic 600 ${fs}px ${SERIF}`; wrap(); if (lines.length * fs * 1.17 + ornH <= H - 160) break; }
+    const lh = fs * 1.17, y0 = (H - (lines.length * lh + ornH)) / 2 + fs * 0.88;
+    c.textAlign = 'center'; c.textBaseline = 'alphabetic';
+    engrave(c, () => lines.forEach((l, k) => c.fillText(l, W / 2, y0 + k * lh)), 1.5);
+    const oy = y0 + (lines.length - 1) * lh + ornH * 0.74;   // a little flourish with a heart
+    engrave(c, () => {
+      c.lineWidth = 2; c.beginPath(); c.moveTo(W / 2 - 130, oy); c.lineTo(W / 2 - 28, oy); c.moveTo(W / 2 + 28, oy); c.lineTo(W / 2 + 130, oy); c.stroke();
+      for (const s of [-1, 1]) { c.beginPath(); c.arc(W / 2 + s * 138, oy, 3.2, 0, 7); c.fill(); }
+      heartPath(c, W / 2, oy + 2, 19); c.fill();
+    }, 1.2);
+  });
+}
+let GLASS_TEX = null;
+function glassTex(){
+  return GLASS_TEX ||= smoothTex(makeCanvas(512, 256, (c, W, H) => {
+    c.fillStyle = 'rgba(228,240,242,0.035)'; c.fillRect(0, 0, W, H);
+    c.setTransform(1, 0, -0.6, 1, 0, 0);   // reflections lean across the pane
+    for (const [x, w, a] of [[150, 80, 0.1], [250, 18, 0.075], [470, 120, 0.055], [560, 26, 0.05]]) {
+      const g = c.createLinearGradient(x, 0, x + w, 0); g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(0.5, `rgba(255,255,255,${a})`); g.addColorStop(1, 'rgba(255,255,255,0)');
+      c.fillStyle = g; c.fillRect(x, 0, w, H);
+    }
+    c.setTransform(1, 0, 0, 1, 0, 0);
+    const sky = c.createLinearGradient(0, 0, 0, H * 0.5); sky.addColorStop(0, 'rgba(255,250,240,.05)'); sky.addColorStop(1, 'rgba(255,250,240,0)'); c.fillStyle = sky; c.fillRect(0, 0, W, H * 0.5);   // the ceiling light, faintly
+    c.strokeStyle = 'rgba(200,225,215,.12)'; c.lineWidth = 3; c.strokeRect(1.5, 1.5, W - 3, H - 3);   // the cut edge of the glass
+  }));
+}
+async function buildExpositor(o){
+  const { rx1, rz1 } = INSP, dir = 'inspiracoes/';
+  const des = (o.desenhos || []).filter(d => d && d.arquivo);
+  const [ims, foto] = await Promise.all([
+    Promise.all(des.map(d => loadImage(dir + d.arquivo).catch(() => { console.warn('Não encontrei', d.arquivo); return null; }))),
+    o.foto ? loadImage(dir + o.foto).catch(() => { console.warn('Não encontrei', o.foto); return null; }) : null]);
+  const items = des.map((d, k) => ({ d, im: ims[k], w: (+d.largura || 14.8) / 100, h: (+d.altura || 21) / 100 })).filter(it => it.im);
+
+  // ---- layout: the biggest drawing on the left, the photo and its plaque in the middle, the others in a grid on the right
+  const GAP = 0.05;
+  const big = items.reduce((b, it) => !b || it.w * it.h > b.w * b.h ? it : b, null);
+  items.forEach(it => it.side = it.d.lado === 'esquerda' ? -1 : it.d.lado === 'direita' ? 1 : it === big && items.length > 1 ? -1 : 1);
+  const grid = list => {
+    if (!list.length) return { W: 0, H: 0 };
+    const cols = list.length >= 3 ? 2 : 1, rows = [];
+    for (let k = 0; k < list.length; k += cols) rows.push(list.slice(k, k + cols));
+    const rowH = rows.map(r => Math.max(...r.map(it => it.h))), H = rowH.reduce((s, v) => s + v, 0) + GAP * (rows.length - 1);
+    let y = H / 2;
+    rows.forEach((r, ri) => {
+      const top = y, bot = y - rowH[ri], last = ri === rows.length - 1 && rows.length > 1;
+      r.forEach((it, c) => {
+        it.gy = ri === 0 && rows.length > 1 ? bot + it.h / 2 : last ? top - it.h / 2 : (top + bot) / 2;   // hug the gutters
+        if (cols === 2 && r.length === 2) it.gx = c === 0 ? -GAP / 2 - it.w / 2 : GAP / 2 + it.w / 2;
+        else it.gx = 0;
+      });
+      y -= rowH[ri] + GAP;
+    });
+    const x0 = Math.min(...list.map(it => it.gx - it.w / 2)), x1 = Math.max(...list.map(it => it.gx + it.w / 2));
+    const y0 = Math.min(...list.map(it => it.gy - it.h / 2)), y1 = Math.max(...list.map(it => it.gy + it.h / 2));
+    list.forEach(it => { it.gx -= (x0 + x1) / 2; it.gy -= (y0 + y1) / 2; });
+    return { W: x1 - x0, H: y1 - y0 };
+  };
+  const GL = grid(items.filter(it => it.side < 0)), GR = grid(items.filter(it => it.side > 0));
+  const ar = foto ? foto.naturalWidth / foto.naturalHeight : 3 / 4;
+  let pw = Math.sqrt(0.0588 * ar), ph = pw / ar;            // a 21 x 28 cm print for a 3:4 photo
+  if (ph > 0.3) { ph = 0.3; pw = ph * ar; } if (pw > 0.3) { pw = 0.3; ph = pw / ar; }
+  const MW = 0.042, FWG = 0.026, fw = pw + 2 * (MW + FWG), fh = ph + 2 * (MW + FWG);
+  const PLW = 0.34, PLH = 0.13, CW = Math.max(fw, PLW), CH = fh + 0.035 + PLH;
+  const Z = Math.max(GL.W, GR.W, 0.3), G = 0.11, M = 0.1, MV = 0.1;
+  const Win = 2 * M + 2 * Z + 2 * G + CW, Hin = Math.max(GL.H, GR.H, CH) + 2 * MV;
+  const D = 0.11, FWC = 0.05, ZB = 0.014, ZF = D - 0.008, Wout = Win + 2 * FWC, Hout = Hin + 2 * FWC;
+  const zx = CW / 2 + G + Z / 2;
+  items.forEach(it => { it.x = it.side * zx + it.gx; it.y = it.gy; });
+  const fy = CH / 2 - fh / 2, py = -CH / 2 + PLH / 2;
+
+  const zc = rz1 + (+o.centro || 4.15), cy = clamp((+o.altura_centro || 162) / 100, 1.06 + Hout / 2, 2.39 - Hout / 2);
+  const g = new THREE.Group(); g.position.set(rx1, cy, zc); g.rotation.y = -Math.PI / 2; scene.add(g);   // local +x runs along the wall to the visitor's right, +z comes out of the wall
+  INSP_ITEMS.expositor = g;
+
+  // ---- the walnut case, a brass fillet around the glass, and its shadow on the wall
+  const WAL = FRAME_SETS.nogueira.outer;
+  const bar = (len, t, dep, mat, x, y, z, vertical) => { const m = new THREE.Mesh(new THREE.BoxGeometry(len, t, dep), mat); m.position.set(x, y, z); if (vertical) m.rotation.z = Math.PI / 2; g.add(m); return m; };
+  const ring = (iw, ih, r0, r1, z0, z1, mat) => { const t = r1 - r0, dep = z1 - z0, z = (z0 + z1) / 2;
+    bar(iw + 2 * r1, t, dep, mat, 0, ih / 2 + r0 + t / 2, z); bar(iw + 2 * r1, t, dep, mat, 0, -(ih / 2 + r0 + t / 2), z);
+    bar(ih + 2 * r0, t, dep, mat, -(iw / 2 + r0 + t / 2), 0, z, true); bar(ih + 2 * r0, t, dep, mat, iw / 2 + r0 + t / 2, 0, z, true); };
+  ring(Win, Hin, 0.001, FWC, 0, D, WAL);
+  ring(Win, Hin, -0.001, 0.006, D - 0.005, D + 0.002, BRASS);
+  const wsh = new THREE.Mesh(new THREE.PlaneGeometry(Wout + 0.22, Hout + 0.26), new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, opacity: 0.5, depthWrite: false }));
+  wsh.position.set(0.012, -0.04, 0.003); g.add(wsh);
+
+  // ---- inside: one linen tray (back + four sides) with the light of the LED strip and the soft shadows of every piece baked in
+  const PPM = 900, dIn = ZF - ZB, UW = Win + 2 * dIn, VH = Hin + 2 * dIn;
+  const X = x => (dIn + Win / 2 + x) * PPM, Y = y => (dIn + Hin / 2 - y) * PPM;
+  const inner = makeCanvas(Math.round(UW * PPM), Math.round(VH * PPM), (c, W, H) => {
+    const bx = dIn * PPM, by = dIn * PPM, bw = Win * PPM, bh = Hin * PPM, d = dIn * PPM;
+    c.fillStyle = '#c4b69b'; c.fillRect(0, 0, W, H);
+    const r = rng(2024);
+    for (let k = 0; k < 30000; k++) { c.fillStyle = r() < 0.5 ? `rgba(255,250,238,${0.05 + r() * 0.07})` : `rgba(96,78,52,${0.04 + r() * 0.06})`;
+      if (r() < 0.5) c.fillRect(r() * W, r() * H, 3 + r() * 16, 1); else c.fillRect(r() * W, r() * H, 1, 3 + r() * 16); }
+    const lg = c.createLinearGradient(0, by, 0, by + bh); lg.addColorStop(0, 'rgba(255,247,228,.3)'); lg.addColorStop(0.35, 'rgba(255,247,228,.08)'); lg.addColorStop(1, 'rgba(48,34,18,.17)');
+    c.fillStyle = lg; c.fillRect(bx, by, bw, bh);
+    for (const s of [0, 1]) { const x0 = s ? bx + bw : bx, gx = c.createLinearGradient(x0, 0, x0 + (s ? -1 : 1) * bw * 0.14, 0); gx.addColorStop(0, 'rgba(40,28,14,.15)'); gx.addColorStop(1, 'rgba(40,28,14,0)'); c.fillStyle = gx; c.fillRect(s ? bx + bw * 0.86 : bx, by, bw * 0.14, bh); }
+    c.fillStyle = 'rgba(38,28,16,.5)'; c.fillRect(bx, 0, bw, by);                                  // the ceiling of the case, where the LED strip hides
+    const ly = 0.016 * PPM;
+    const cg = c.createLinearGradient(0, ly, 0, by); cg.addColorStop(0, 'rgba(255,240,214,.2)'); cg.addColorStop(1, 'rgba(255,240,214,0)'); c.fillStyle = cg; c.fillRect(bx, ly, bw, by - ly);
+    c.save(); c.shadowColor = 'rgba(255,236,200,1)'; c.shadowBlur = 14; c.fillStyle = '#fff7e6'; c.fillRect(bx + 0.015 * PPM, ly - 2, bw - 0.03 * PPM, 4); c.restore();
+    const fl = c.createLinearGradient(0, by + bh, 0, H); fl.addColorStop(0, 'rgba(255,248,230,.1)'); fl.addColorStop(1, 'rgba(255,248,230,.28)'); c.fillStyle = fl; c.fillRect(bx, by + bh, bw, d);   // the floor catches the light
+    for (const s of [0, 1]) { const sg = c.createLinearGradient(0, by, 0, by + bh); sg.addColorStop(0, 'rgba(255,246,226,.12)'); sg.addColorStop(1, 'rgba(40,28,14,.22)'); c.fillStyle = sg; c.fillRect(s ? bx + bw : 0, by, d, bh); }
+    const band = (gx0, gy0, gx1, gy1, rx, ry, rw, rh, a) => { const gr = c.createLinearGradient(gx0, gy0, gx1, gy1); gr.addColorStop(0, `rgba(30,20,10,${a})`); gr.addColorStop(1, 'rgba(30,20,10,0)'); c.fillStyle = gr; c.fillRect(rx, ry, rw, rh); };
+    const k1 = 0.04 * PPM, k2 = 0.03 * PPM;   // soft occlusion in the folds
+    band(0, by, 0, by + k1, bx, by, bw, k1, 0.22); band(0, by + bh, 0, by + bh - k1, bx, by + bh - k1, bw, k1, 0.26);
+    band(bx, 0, bx + k1, 0, bx, by, k1, bh, 0.22); band(bx + bw, 0, bx + bw - k1, 0, bx + bw - k1, by, k1, bh, 0.22);
+    band(0, by, 0, by - k2, bx, by - k2, bw, k2, 0.3); band(0, by + bh, 0, by + bh + k2, bx, by + bh, bw, k2, 0.22);
+    band(bx, 0, bx - k2, 0, bx - k2, by, k2, bh, 0.25); band(bx + bw, 0, bx + bw + k2, 0, bx + bw, by, k2, bh, 0.25);
+    const shadow = (x, y, w, h, off, blur, a) => { c.save(); c.shadowColor = `rgba(36,24,10,${a})`; c.shadowBlur = blur; c.shadowOffsetY = 20000 + off; c.fillStyle = '#000';
+      c.fillRect(X(x - w / 2), Y(y + h / 2) - 20000, w * PPM, h * PPM); c.restore(); };
+    items.forEach(it => shadow(it.x, it.y, it.w, it.h, 0.008 * PPM, 0.012 * PPM, 0.5));
+    shadow(0, fy, fw, fh, 0.016 * PPM, 0.02 * PPM, 0.55);
+    shadow(0, py, PLW, PLH, 0.009 * PPM, 0.012 * PPM, 0.5);
+  });
+  {
+    const pos = [], uv = [], ix = [], x0 = -Win / 2, x1 = Win / 2, y0 = -Hin / 2, y1 = Hin / 2, U = x => x + Win / 2 + dIn, V = y => y + Hin / 2 + dIn;
+    const quad = (P, T, n) => {
+      const b = pos.length / 3; P.forEach(p => pos.push(...p)); T.forEach(t => uv.push(t[0] / UW, t[1] / VH));
+      const e1 = new THREE.Vector3(...P[1]).sub(new THREE.Vector3(...P[0])), e2 = new THREE.Vector3(...P[2]).sub(new THREE.Vector3(...P[0]));
+      ix.push(...(e1.cross(e2).dot(new THREE.Vector3(...n)) > 0 ? [b, b + 1, b + 2, b, b + 2, b + 3] : [b, b + 2, b + 1, b, b + 3, b + 2]));
+    };
+    quad([[x0, y0, ZB], [x1, y0, ZB], [x1, y1, ZB], [x0, y1, ZB]], [[U(x0), V(y0)], [U(x1), V(y0)], [U(x1), V(y1)], [U(x0), V(y1)]], [0, 0, 1]);
+    quad([[x0, y0, ZB], [x1, y0, ZB], [x1, y0, ZF], [x0, y0, ZF]], [[U(x0), dIn], [U(x1), dIn], [U(x1), 0], [U(x0), 0]], [0, 1, 0]);
+    quad([[x0, y1, ZB], [x1, y1, ZB], [x1, y1, ZF], [x0, y1, ZF]], [[U(x0), dIn + Hin], [U(x1), dIn + Hin], [U(x1), VH], [U(x0), VH]], [0, -1, 0]);
+    quad([[x0, y0, ZB], [x0, y1, ZB], [x0, y1, ZF], [x0, y0, ZF]], [[dIn, V(y0)], [dIn, V(y1)], [0, V(y1)], [0, V(y0)]], [1, 0, 0]);
+    quad([[x1, y0, ZB], [x1, y1, ZB], [x1, y1, ZF], [x1, y0, ZF]], [[dIn + Win, V(y0)], [dIn + Win, V(y1)], [UW, V(y1)], [UW, V(y0)]], [-1, 0, 0]);
+    const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); geo.setIndex(ix); geo.computeVertexNormals();
+    const tex = smoothTex(inner); tex.minFilter = THREE.LinearMipmapLinearFilter;
+    g.add(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: tex, color: 0xffffff })));
+  }
+  const glass = new THREE.Mesh(new THREE.PlaneGeometry(Win + 0.002, Hin + 0.002), new THREE.MeshBasicMaterial({ map: glassTex(), transparent: true, depthWrite: false }));
+  glass.position.z = ZF; g.add(glass);
+
+  // ---- the drawings, floating a little off the linen on brass pins; each one is a work of the museum
+  const wp = new THREE.Vector3();
+  for (const it of items) {
+    const { d, im, w, h } = it, idx = paintings.length, max = w * h > 0.1 ? 1280 : 720, s = Math.min(1, max / Math.max(im.naturalWidth, im.naturalHeight));
+    const tex = smoothTex(makeCanvas(Math.round(im.naturalWidth * s), Math.round(im.naturalHeight * s), (c, W, H) => {
+      c.drawImage(im, 0, 0, W, H);
+      const lg = c.createLinearGradient(0, 0, 0, H); lg.addColorStop(0, 'rgba(255,250,238,.06)'); lg.addColorStop(1, 'rgba(40,30,18,.08)'); c.fillStyle = lg; c.fillRect(0, 0, W, H);
+      c.strokeStyle = 'rgba(0,0,0,.12)'; c.lineWidth = 2; c.strokeRect(1, 1, W - 2, H - 2);
+    }));
+    const anchor = new THREE.Object3D(); anchor.position.set(it.x, it.y, ZB + 0.012); g.add(anchor);
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: tex, color: 0xf4f4f4 }));
+    mesh.userData.idx = idx; anchor.add(mesh);
+    for (const [sx, sy] of w * h > 0.1 ? [[-1, 1], [1, 1], [-1, -1], [1, -1]] : [[-1, 1], [1, 1]]) {
+      const pin = new THREE.Mesh(PIN_GEO, BRASS); pin.scale.z = 0.6; pin.position.set(sx * (w / 2 - 0.01), sy * (h / 2 - 0.01), 0.0012); anchor.add(pin);
+    }
+    g.updateMatrixWorld(true); anchor.getWorldPosition(wp);
+    const art = { ...d, i: idx, w, h, src: dir + d.arquivo, moldura: 'nenhuma', medida: `${fmt(w)} × ${fmt(h)} cm${d.formato ? ' · ' + d.formato : ''}` };
+    paintings.push({ art, group: anchor, wall: { n: [-1, 0] }, pos: wp.clone(), cy: wp.y, sala: 'Sala de Inspirações', starAt: [0, h / 2 + 0.017, 0.001], meshes: [mesh] });
+  }
+
+  // ---- in the middle: the photo in a gilded frame with a white mat, and the brass plaque with the phrase
+  const pIdx = paintings.length, click = foto ? pIdx : undefined;
+  const fg = new THREE.Group(); fg.position.set(0, fy, ZB - 0.009); g.add(fg);
+  const pmap = foto ? smoothTex(downscale(foto, 1100)) : smoothTex(makeCanvas(600, Math.round(600 / ar), (c, W, H) => {
+    const gr = c.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, '#f1eadf'); gr.addColorStop(1, '#e3d9c9'); c.fillStyle = gr; c.fillRect(0, 0, W, H);
+    const r = rng(8); for (let k = 0; k < 3000; k++) { c.fillStyle = `rgba(${r() < 0.5 ? '120,100,70' : '255,255,255'},${0.03 + r() * 0.04})`; c.fillRect(r() * W, r() * H, 1 + r() * 2, 1); }
+    c.fillStyle = '#c29a4c'; heartPath(c, W / 2, H * 0.44, 50); c.fill();
+    c.fillStyle = '#7a6a5a'; c.textAlign = 'center'; c.font = '600 56px Caveat, cursive'; c.fillText('foto em breve', W / 2, H * 0.6);
+  }));
+  const photo = new THREE.Mesh(new THREE.PlaneGeometry(pw, ph), new THREE.MeshBasicMaterial({ map: pmap, color: 0xeeeeee }));
+  photo.position.z = 0.012; photo.userData.idx = click; fg.add(photo);
+  addRing(fg, pw, ph, 0, 0.004, 0.007, EXPO_BEVEL, 1, click);
+  addRing(fg, pw, ph, 0.004, MW, 0.006, EXPO_MAT, 1, click);
+  addRing(fg, pw, ph, MW, MW + 0.007, 0.017, GOLD_MATS.bead, 4, click);
+  addRing(fg, pw, ph, MW + 0.007, MW + 0.019, 0.024, GOLD_MATS.cove, 2, click);
+  addRing(fg, pw, ph, MW + 0.019, MW + FWG, 0.028, GOLD_MATS.bead, 4, click);
+  const pc = brassPlaqueCanvas(PLW, PLH, o.frase || ''), ptex = smoothTex(pc);
+  const pg = new THREE.Group(); pg.position.set(0, py, ZB + 0.008); g.add(pg);
+  const pface = new THREE.Mesh(new THREE.PlaneGeometry(PLW, PLH), new THREE.MeshPhongMaterial({ map: ptex, specular: 0x9a7a40, shininess: 60, emissive: 0xffffff, emissiveMap: ptex, emissiveIntensity: 0.3 }));
+  pface.position.z = 0.0036; pface.userData.idx = pIdx; pg.add(pface);
+  const pedge = new THREE.Mesh(new THREE.BoxGeometry(PLW - 0.001, PLH - 0.001, 0.003), BRASS); pedge.position.z = 0.0015; pg.add(pedge);
+  const pa = new THREE.Object3D(); pa.position.set(0, foto ? fy : py, foto ? ZB + 0.012 : ZB + 0.012); g.add(pa);
+  g.updateMatrixWorld(true); pa.getWorldPosition(wp);
+  paintings.push({ art: { titulo: o.titulo_foto || 'A maior inspiração', artista: '', tecnica: foto ? 'Fotografia' : '', descricao: foto ? (o.frase || '') : '', arquivo: o.foto || 'expositor-frase', i: pIdx,
+      w: foto ? pw : PLW, h: foto ? ph : PLH, src: foto ? dir + o.foto : pc.toDataURL('image/jpeg', 0.9), moldura: 'nenhuma', medida: '' },
+    group: pa, wall: { n: [-1, 0] }, pos: wp.clone(), cy: wp.y, insp: true, craft: true, starAt: null, meshes: foto ? [photo, pface] : [pface] });
+}
+
 /* ---------- Performance: merge static meshes that share a material, and hide what's behind the salon door ---------- */
 function matSig(m){
   const h = c => c && c.isColor ? c.getHexString() : '';
@@ -3263,7 +3480,8 @@ function placeAt(idx){
   const p = paintings[idx], n = p.wall.n, gp = p.pos || p.group.position;
   const dist = clamp(Math.max(p.art.w, p.art.h) * 1.6 + 0.55, 0.85, Math.min(ROOM.W, ROOM.D) - 1);
   player.x = gp.x + n[0] * dist; player.z = gp.z + n[1] * dist;
-  if (!p.insp) { player.x = clamp(player.x, -ROOM.W / 2 + .5, ROOM.W / 2 - .5); player.z = clamp(player.z, -ROOM.D / 2 + .5, ROOM.D / 2 - .5); }   // the salon has its own walls
+  const inSalon = INSP.x0 != null && gp.z < INSP.zw - 0.05;
+  if (!p.insp && !inSalon) { player.x = clamp(player.x, -ROOM.W / 2 + .5, ROOM.W / 2 - .5); player.z = clamp(player.z, -ROOM.D / 2 + .5, ROOM.D / 2 - .5); }   // the salon has its own walls
   move(0, 0);                                        // furniture may nudge us: then turn to face the piece
   const dx = gp.x - player.x, dz = gp.z - player.z, hd = Math.hypot(dx, dz) || dist;
   player.yaw = Math.atan2(-dx, -dz); player.pitch = Math.atan2(p.cy - 1.6, hd); player.vx = player.vz = 0;
@@ -3553,7 +3771,7 @@ function loop(){
   for (const [t, d, fn] of extra) { const b = document.createElement('button'); b.innerHTML = `<span>${t}</span><span>${d}</span>`; b.addEventListener('click', fn); lista.appendChild(b); }
   paintings.forEach((p, i) => {
     const b = document.createElement('button');
-    b.innerHTML = `<span>${escapeHtml(p.art.titulo || 'Sem título')}</span><span>${p.insp ? 'Sala de Inspirações' : escapeHtml(dims(p.art))}</span>`;
+    b.innerHTML = `<span>${escapeHtml(p.art.titulo || 'Sem título')}</span><span>${p.insp ? 'Sala de Inspirações' : escapeHtml(p.sala ? p.sala + (p.art.formato ? ' · ' + p.art.formato : '') : dims(p.art))}</span>`;
     b.addEventListener('click', () => teleportTo(i)); lista.appendChild(b);
   });
   if (isTouch) { $('keysDesk').classList.add('hidden'); $('keysTouch').classList.remove('hidden'); }

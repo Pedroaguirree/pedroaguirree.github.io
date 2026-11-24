@@ -83,6 +83,19 @@ window.MUSEU = {
           trecho: "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/19/14/58/19145894-ec4d-25e9-5588-6a3d622eb6f9/mzaf_5901387766328686530.plus.aac.p.m4a",
           link: "https://music.apple.com/br/album/sangue-latino/281165288?i=281165319" },
         ] },
+      // Expositor de vidro na parede ao lado da bicicleta: os desenhos e, no meio, a foto com a plaquinha.
+      // foto: o arquivo da foto na pasta "inspiracoes/" (enquanto estiver vazio, a moldura fica esperando por ela).
+      // Desenhos: largura e altura em cm; o maior vai para a esquerda e os outros formam a grade da direita, na ordem da lista.
+      { tipo: "expositor", centro: 4.15,
+        foto: "", titulo_foto: "A maior inspiração",
+        frase: "Acredito que a energia criativa mais poderosa que podemos vivenciar é o mais puro amor que sentimos pelo próximo, acredito nisso pois vivo isso na pele e me leva para lugares incríveis!",
+        desenhos: [
+          { arquivo: "desenho-copo.jpg", titulo: "Copo e flores", ano: "", tecnica: "Pastel oleoso sobre papel", largura: 42, altura: 59.4, formato: "A2", descricao: "" },
+          { arquivo: "desenho-girassol.jpg", titulo: "Girassol", ano: "", tecnica: "Pastel oleoso sobre papel", largura: 14.8, altura: 21, formato: "A5", descricao: "" },
+          { arquivo: "desenho-besouro.jpg", titulo: "Besouro", ano: "", tecnica: "Pastel oleoso e grafite sobre papel", largura: 14.8, altura: 21, formato: "A5", descricao: "" },
+          { arquivo: "desenho-ovo-tucano.jpg", titulo: "Ovo e tucano", ano: "", tecnica: "Pastel oleoso sobre papel", largura: 21, altura: 14.8, formato: "A5", descricao: "" },
+          { arquivo: "desenho-gato.jpg", titulo: "Gato na lua", ano: "", tecnica: "Pastel oleoso sobre papel", largura: 14.8, altura: 21, formato: "A5", descricao: "" },
+        ] },
     ],
   },
 
