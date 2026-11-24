@@ -93,11 +93,12 @@ window.MUSEU = {
           { arquivo: "desenho-copo.jpg", titulo: "Copo e flores", ano: "", tecnica: "Pastel oleoso sobre papel", largura: 42, altura: 59.4, formato: "A2", descricao: "" },
           { arquivo: "desenho-girassol.jpg", titulo: "Girassol", ano: "", tecnica: "Pastel oleoso sobre papel", largura: 14.8, altura: 21, formato: "A5", descricao: "" },
           { arquivo: "desenho-besouro.jpg", titulo: "Besouro", ano: "", tecnica: "Pastel oleoso e grafite sobre papel", largura: 14.8, altura: 21, formato: "A5", descricao: "" },
+          // As duas telinhas das árvores ficam lado a lado no meio da grade (tela: true dá a espessura de tela esticada).
+          // Para pôr uma peça entre a foto e a placa, use lado: "meio".
+          { arquivo: "arvore-pedro.jpg", titulo: "Árvore do parque", ano: "", tecnica: "Acrílica sobre tela", largura: 15, altura: 15, medida: "cerca de 15 × 15 cm", tela: true, descricao: "Uma das árvores do parque da cidade, pintada lá mesmo, junto com a Juliana." },
+          { arquivo: "arvore-juliana.jpg", titulo: "Árvores do parque", artista: "Juliana", ano: "", tecnica: "Acrílica sobre tela", largura: 15, altura: 15, medida: "cerca de 15 × 15 cm", tela: true, descricao: "Pintada pela Juliana no parque da cidade, no mesmo dia da árvore do Pedro." },
           { arquivo: "desenho-ovo-tucano.jpg", titulo: "Ovo e tucano", ano: "", tecnica: "Pastel oleoso sobre papel", largura: 21, altura: 14.8, formato: "A5", descricao: "" },
           { arquivo: "desenho-gato.jpg", titulo: "Gato na lua", artista: "Juliana", ano: "", tecnica: "Pastel oleoso sobre papel", largura: 14.8, altura: 21, formato: "A5", descricao: "Desenho feito pela Juliana." },
-          // As duas telinhas ficam lado a lado entre a foto e a placa (lado: "meio"); tela: true dá a espessura de tela esticada.
-          { arquivo: "arvore-pedro.jpg", titulo: "Árvore do parque", ano: "", tecnica: "Acrílica sobre tela", largura: 15, altura: 15, medida: "cerca de 15 × 15 cm", lado: "meio", tela: true, descricao: "Uma das árvores do parque da cidade, pintada lá mesmo, junto com a Juliana." },
-          { arquivo: "arvore-juliana.jpg", titulo: "Árvores do parque", artista: "Juliana", ano: "", tecnica: "Acrílica sobre tela", largura: 15, altura: 15, medida: "cerca de 15 × 15 cm", lado: "meio", tela: true, descricao: "Pintada pela Juliana no parque da cidade, no mesmo dia da árvore do Pedro." },
         ] },
     ],
   },
