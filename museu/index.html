@@ -3008,10 +3008,11 @@ function brassPlaqueCanvas(w, h, text){
       c.strokeStyle = 'rgba(60,40,10,.8)'; c.lineWidth = 2.4; c.beginPath(); c.moveTo(x - 7, y + 3); c.lineTo(x + 7, y - 3); c.stroke();
     }
     // the words, in the largest size that fits
-    const words = ('“' + text.trim() + '”').split(/\s+/), maxW = W - 200, ornH = 58;
+    const words = ('“' + text.trim() + '”').split(/\s+/), ornH = 58; let maxW = W - 200;
     let fs = 72, lines = [];
     const wrap = () => { lines = []; let line = ''; for (const wd of words) { const t = line ? line + ' ' + wd : wd; if (c.measureText(t).width > maxW && line) { lines.push(line); line = wd; } else line = t; } if (line) lines.push(line); };
     for (; fs > 30; fs -= 2) { c.font = `italic 600 ${fs}px ${SERIF}`; wrap(); if (lines.length * fs * 1.17 + ornH <= H - 160) break; }
+    { const n = lines.length; for (let mw = maxW - 10; mw > W * 0.4; mw -= 10) { maxW = mw; wrap(); if (lines.length > n) { maxW = mw + 10; wrap(); break; } } }   // even out the lines
     const lh = fs * 1.17, y0 = (H - (lines.length * lh + ornH)) / 2 + fs * 0.88;
     c.textAlign = 'center'; c.textBaseline = 'alphabetic';
     engrave(c, () => lines.forEach((l, k) => c.fillText(l, W / 2, y0 + k * lh)), 1.5);
@@ -3048,7 +3049,7 @@ async function buildExpositor(o){
   // ---- layout: the biggest drawing on the left, the photo and its plaque in the middle, the others in a grid on the right
   const GAP = 0.05;
   const big = items.reduce((b, it) => !b || it.w * it.h > b.w * b.h ? it : b, null);
-  items.forEach(it => it.side = it.d.lado === 'esquerda' ? -1 : it.d.lado === 'direita' ? 1 : it === big && items.length > 1 ? -1 : 1);
+  items.forEach(it => it.side = it.d.lado === 'meio' ? 0 : it.d.lado === 'esquerda' ? -1 : it.d.lado === 'direita' ? 1 : it === big && items.length > 1 ? -1 : 1);
   const grid = list => {
     if (!list.length) return { W: 0, H: 0 };
     const cols = list.length >= 3 ? 2 : 1, rows = [];
@@ -3074,13 +3075,15 @@ async function buildExpositor(o){
   let pw = Math.sqrt(0.0588 * ar), ph = pw / ar;            // a 21 x 28 cm print for a 3:4 photo
   if (ph > 0.3) { ph = 0.3; pw = ph * ar; } if (pw > 0.3) { pw = 0.3; ph = pw / ar; }
   const MW = 0.042, FWG = 0.026, fw = pw + 2 * (MW + FWG), fh = ph + 2 * (MW + FWG);
-  const PLW = 0.34, PLH = 0.13, CW = Math.max(fw, PLW), CH = fh + 0.035 + PLH;
+  const MID = items.filter(it => it.side === 0), MG = 0.04, midW = MID.reduce((s, it) => s + it.w, 0) + MG * Math.max(0, MID.length - 1), midH = Math.max(0, ...MID.map(it => it.h));
+  const PLW = 0.34, PLH = 0.13, CW = Math.max(fw, PLW, midW), CH = fh + 0.035 + (MID.length ? midH + 0.035 : 0) + PLH;   // photo, then the little paintings side by side, then the plaque
   const Z = Math.max(GL.W, GR.W, 0.3), G = 0.11, M = 0.1, MV = 0.1;
   const Win = 2 * M + 2 * Z + 2 * G + CW, Hin = Math.max(GL.H, GR.H, CH) + 2 * MV;
   const D = 0.11, FWC = 0.05, ZB = 0.014, ZF = D - 0.008, Wout = Win + 2 * FWC, Hout = Hin + 2 * FWC;
   const zx = CW / 2 + G + Z / 2;
+  const fy = CH / 2 - fh / 2, py = -CH / 2 + PLH / 2, my = CH / 2 - fh - 0.035 - midH / 2;
   items.forEach(it => { it.x = it.side * zx + it.gx; it.y = it.gy; });
-  const fy = CH / 2 - fh / 2, py = -CH / 2 + PLH / 2;
+  { let x = -midW / 2; MID.forEach(it => { it.x = x + it.w / 2; it.y = my; x += it.w + MG; }); }
 
   const zc = rz1 + (+o.centro || 4.15), cy = clamp((+o.altura_centro || 162) / 100, 1.06 + Hout / 2, 2.39 - Hout / 2);
   const g = new THREE.Group(); g.position.set(rx1, cy, zc); g.rotation.y = -Math.PI / 2; scene.add(g);   // local +x runs along the wall to the visitor's right, +z comes out of the wall
@@ -3123,7 +3126,7 @@ async function buildExpositor(o){
     band(bx, 0, bx - k2, 0, bx - k2, by, k2, bh, 0.25); band(bx + bw, 0, bx + bw + k2, 0, bx + bw, by, k2, bh, 0.25);
     const shadow = (x, y, w, h, off, blur, a) => { c.save(); c.shadowColor = `rgba(36,24,10,${a})`; c.shadowBlur = blur; c.shadowOffsetY = 20000 + off; c.fillStyle = '#000';
       c.fillRect(X(x - w / 2), Y(y + h / 2) - 20000, w * PPM, h * PPM); c.restore(); };
-    items.forEach(it => shadow(it.x, it.y, it.w, it.h, 0.008 * PPM, 0.012 * PPM, 0.5));
+    items.forEach(it => it.d.tela ? shadow(it.x, it.y, it.w, it.h, 0.014 * PPM, 0.017 * PPM, 0.55) : shadow(it.x, it.y, it.w, it.h, 0.008 * PPM, 0.012 * PPM, 0.5));
     shadow(0, fy, fw, fh, 0.016 * PPM, 0.02 * PPM, 0.55);
     shadow(0, py, PLW, PLH, 0.009 * PPM, 0.012 * PPM, 0.5);
   });
@@ -3150,19 +3153,24 @@ async function buildExpositor(o){
   const wp = new THREE.Vector3();
   for (const it of items) {
     const { d, im, w, h } = it, idx = paintings.length, max = w * h > 0.1 ? 1280 : 720, s = Math.min(1, max / Math.max(im.naturalWidth, im.naturalHeight));
+    let edgeCol = 0xeeeae2;
     const tex = smoothTex(makeCanvas(Math.round(im.naturalWidth * s), Math.round(im.naturalHeight * s), (c, W, H) => {
       c.drawImage(im, 0, 0, W, H);
+      if (d.tela) { const px = c.getImageData(0, 0, W, H).data; let r = 0, gg = 0, b = 0, n = 0;   // the painted sides of a canvas take the colour of its border
+        for (let k = 0; k < W * H; k += 7) { const x = k % W, y = (k / W) | 0; if (x > 6 && x < W - 7 && y > 6 && y < H - 7) continue; r += px[k * 4]; gg += px[k * 4 + 1]; b += px[k * 4 + 2]; n++; }
+        edgeCol = (Math.round(r / n * 0.8) << 16) | (Math.round(gg / n * 0.8) << 8) | Math.round(b / n * 0.8); }
       const lg = c.createLinearGradient(0, 0, 0, H); lg.addColorStop(0, 'rgba(255,250,238,.06)'); lg.addColorStop(1, 'rgba(40,30,18,.08)'); c.fillStyle = lg; c.fillRect(0, 0, W, H);
       c.strokeStyle = 'rgba(0,0,0,.12)'; c.lineWidth = 2; c.strokeRect(1, 1, W - 2, H - 2);
     }));
-    const anchor = new THREE.Object3D(); anchor.position.set(it.x, it.y, ZB + 0.012); g.add(anchor);
+    const anchor = new THREE.Object3D(); anchor.position.set(it.x, it.y, ZB + (d.tela ? 0.019 : 0.012)); g.add(anchor);
+    if (d.tela) { const box = new THREE.Mesh(new THREE.BoxGeometry(w - 0.001, h - 0.001, 0.018), new THREE.MeshLambertMaterial({ color: edgeCol })); box.position.z = -0.0092; anchor.add(box); }
     const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: tex, color: 0xf4f4f4 }));
     mesh.userData.idx = idx; anchor.add(mesh);
-    for (const [sx, sy] of w * h > 0.1 ? [[-1, 1], [1, 1], [-1, -1], [1, -1]] : [[-1, 1], [1, 1]]) {
+    if (!d.tela) for (const [sx, sy] of w * h > 0.1 ? [[-1, 1], [1, 1], [-1, -1], [1, -1]] : [[-1, 1], [1, 1]]) {
       const pin = new THREE.Mesh(PIN_GEO, BRASS); pin.scale.z = 0.6; pin.position.set(sx * (w / 2 - 0.01), sy * (h / 2 - 0.01), 0.0012); anchor.add(pin);
     }
     g.updateMatrixWorld(true); anchor.getWorldPosition(wp);
-    const art = { ...d, i: idx, w, h, src: dir + d.arquivo, moldura: 'nenhuma', medida: `${fmt(w)} × ${fmt(h)} cm${d.formato ? ' · ' + d.formato : ''}` };
+    const art = { ...d, i: idx, w, h, src: dir + d.arquivo, moldura: 'nenhuma', medida: d.medida ?? `${fmt(w)} × ${fmt(h)} cm${d.formato ? ' · ' + d.formato : ''}` };
     paintings.push({ art, group: anchor, wall: { n: [-1, 0] }, pos: wp.clone(), cy: wp.y, sala: 'Sala de Inspirações', starAt: [0, h / 2 + 0.017, 0.001], meshes: [mesh] });
   }
 
@@ -3771,7 +3779,7 @@ function loop(){
   for (const [t, d, fn] of extra) { const b = document.createElement('button'); b.innerHTML = `<span>${t}</span><span>${d}</span>`; b.addEventListener('click', fn); lista.appendChild(b); }
   paintings.forEach((p, i) => {
     const b = document.createElement('button');
-    b.innerHTML = `<span>${escapeHtml(p.art.titulo || 'Sem título')}</span><span>${p.insp ? 'Sala de Inspirações' : escapeHtml(p.sala ? p.sala + (p.art.formato ? ' · ' + p.art.formato : '') : dims(p.art))}</span>`;
+    b.innerHTML = `<span>${escapeHtml(p.art.titulo || 'Sem título')}</span><span>${p.insp ? 'Sala de Inspirações' : escapeHtml(p.sala ? p.sala + (p.art.formato ? ' · ' + p.art.formato : '') + (p.art.artista ? ' · ' + p.art.artista : '') : dims(p.art))}</span>`;
     b.addEventListener('click', () => teleportTo(i)); lista.appendChild(b);
   });
   if (isTouch) { $('keysDesk').classList.add('hidden'); $('keysTouch').classList.remove('hidden'); }
