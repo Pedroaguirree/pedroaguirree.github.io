@@ -197,6 +197,29 @@
   #cStatus{font-size:13px;color:var(--muted);min-height:16px} #cStatus.err{color:#ff9a8a}
   @media (max-width:600px){ #cPanel{top:auto;height:82vh;width:100vw;border-left:0;border-top:1px solid var(--line);border-radius:14px 14px 0 0;transform:translateY(105%)} }
   /* atelier videos */
+  #disc{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;z-index:30}
+  #discBg{position:absolute;inset:0;background:radial-gradient(ellipse at 40% 45%,#2c241e 0%,#100d0b 60%,#070605 100%);opacity:0;transition:opacity .4s}
+  #disc.show #discBg{opacity:1}
+  #discBox{position:relative;display:flex;gap:min(6vw,64px);align-items:center;justify-content:center;flex-wrap:wrap;max-width:min(1000px,96vw)}
+  #discArt{position:relative;width:min(360px,62vw,52vh);aspect-ratio:1;margin-right:min(14vw,130px)}
+  #discCover{position:absolute;inset:0;background:#3b2f27 center/cover no-repeat;box-shadow:0 18px 50px rgba(0,0,0,.6);border-radius:2px;display:flex;align-items:center;justify-content:center;color:#f3ead8;font:800 26px Manrope,sans-serif;text-align:center;padding:20px}
+  #discVinyl{position:absolute;inset:2%;border-radius:50%;background:radial-gradient(circle,transparent 0 18%,rgba(255,255,255,.07) 18.5%,transparent 19.5%),repeating-radial-gradient(circle,#0c0c0d 0 2px,#1a1a1c 2px 3px);box-shadow:0 10px 30px rgba(0,0,0,.6);transition:transform 1s cubic-bezier(.3,.8,.2,1)}
+  #discVinyl::after{content:"";position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 30deg,transparent 0 10%,rgba(255,255,255,.10) 14%,transparent 20% 60%,rgba(255,255,255,.08) 64%,transparent 70%)}
+  #discVinyl i{position:absolute;inset:34%;border-radius:50%;background:var(--lbl,#b8913f);box-shadow:inset 0 0 0 3px rgba(0,0,0,.25)}
+  #discVinyl i::after{content:"";position:absolute;inset:44%;border-radius:50%;background:#0b0b0b}
+  #discArt.out #discVinyl{transform:translateX(42%)}
+  #discArt.spin #discVinyl i{animation:discSpin 1.8s linear infinite}
+  #discArt.spin #discVinyl::after{animation:discSpin 1.8s linear infinite}
+  @keyframes discSpin{to{transform:rotate(360deg)}}
+  #discInfo{max-width:380px;color:var(--ink)}
+  #discInfo .k{font:600 12px Karla,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#c9a14f;margin-bottom:8px}
+  #discInfo h2{font:800 30px Manrope,sans-serif;margin:0 0 6px;line-height:1.15}
+  #discArtist{font:600 18px Karla,sans-serif;margin:0 0 2px;opacity:.9} #discAlbum{font:15px Karla,sans-serif;margin:0 0 16px;opacity:.6}
+  #discProg{height:4px;background:rgba(255,255,255,.12);border-radius:2px;overflow:hidden} #discBar{display:block;height:100%;width:0;background:#c9a14f;transition:width .25s linear}
+  #discMsg{min-height:20px;font:14px Karla,sans-serif;opacity:.7;margin:8px 0 10px}
+  #discInfo .row{display:flex;gap:10px;flex-wrap:wrap} #discInfo .row .btn{font-size:16px;padding:9px 14px;text-decoration:none}
+  #discInfo .cred{font:12px Karla,sans-serif;opacity:.45;margin-top:14px}
+  @media (max-width:700px){ #discArt{margin-right:28vw} #discInfo{text-align:center} #discInfo .row{justify-content:center} }
   #vid{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:16px}
   #vidBg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,#2c241e 0%,#100d0b 60%,#070605 100%);opacity:0;transition:opacity .4s}
   #vid.show #vidBg{opacity:1}
@@ -422,6 +445,19 @@
       <div id="vidSoon" class="hidden"><div class="ic">▶</div><b>Vídeos do ateliê</b><span>Os vídeos chegam em breve.</span></div></div>
     <div id="vidInfo"><div><h2 id="vidTitle">Vídeos do ateliê</h2><p id="vidDesc"></p></div><button class="btn ghost" id="vidClose">Voltar ao museu</button></div>
     <div id="vidList"></div>
+  </div>
+</div>
+<div id="disc" class="hidden">
+  <div id="discBg"></div>
+  <div id="discBox">
+    <div id="discArt"><div id="discVinyl"><i></i></div><div id="discCover"></div></div>
+    <div id="discInfo">
+      <div class="k">Trilha sonora</div>
+      <h2 id="discTitle"></h2><p id="discArtist"></p><p id="discAlbum"></p>
+      <div id="discProg"><i id="discBar"></i></div><div id="discMsg"></div>
+      <div class="row"><button class="btn" id="discPlay">❚❚ Pausar</button><a id="discLink" class="btn ghost" target="_blank" rel="noopener">Ouvir no Apple Music</a><button class="btn ghost" id="discClose">Voltar ao museu</button></div>
+      <div class="cred">Capa e trecho de 30 segundos fornecidos pelo Apple Music.</div>
+    </div>
   </div>
 </div>
 <button id="musBtn" class="hidden" aria-label="Música" title="Música (M)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z" fill="currentColor" stroke="none"/><path class="w1" d="M15.5 9.2a4 4 0 0 1 0 5.6"/><path class="w2" d="M18.3 6.6a7.6 7.6 0 0 1 0 10.8"/><path class="x" d="M16 9.5l5 5M21 9.5l-5 5"/></svg></button>
@@ -1811,6 +1847,9 @@ function closeVideo(){
   $('vid').classList.remove('show'); setTimeout(startPlaying, 220);
 }
 $('vidClose').addEventListener('click', closeVideo);
+$('discClose').addEventListener('click', closeDisc);
+$('disc').addEventListener('click', e => { if (e.target.id === 'discBg' || e.target.id === 'disc') closeDisc(); });
+$('discPlay').addEventListener('click', () => { const a = DISC.audio; if (!a) return; if (a.paused) { if (a.ended) a.currentTime = 0; a.volume = 1; $('discMsg').textContent = ''; a.play().catch(() => {}); } else a.pause(); });
 $('vid').addEventListener('click', e => { if (e.target.id === 'vidBg' || e.target.id === 'vid') closeVideo(); });
 
 /* ---------- Background music: a calm, endless piece made on the fly (or a file set in obras.js) ---------- */
@@ -2345,7 +2384,7 @@ async function buildInspiracao(){
   const lamp = new THREE.PointLight(0xffe0b4, 2.6, 7.5, 1.3); lamp.position.set(xc, rh - 0.95, zc); scene.add(lamp);
   // --- a little card on the back wall, until the inspirations arrive
   {
-    const card = new THREE.Group(); card.position.set(rx0 + 0.01, 1.55, rz0 - 1.45); card.rotation.y = Math.PI / 2; scene.add(card);
+    const card = new THREE.Group(); card.position.set(rx0 + 0.01, 1.55, rz0 - 0.62); card.rotation.y = Math.PI / 2; scene.add(card);
     const cc = makeCanvas(1000, 640, (g, w, h) => {
       g.fillStyle = '#f4ecdc'; g.fillRect(0, 0, w, h);
       g.strokeStyle = '#b8913f'; g.lineWidth = 6; g.strokeRect(30, 30, w - 60, h - 60); g.lineWidth = 2; g.strokeRect(46, 46, w - 92, h - 92);
@@ -2602,6 +2641,8 @@ async function buildInspItems(){
       paintings[paintings.length - 1].insp = true;
     }
     if (o.tipo === 'vitrine' && o.arquivo) await buildVitrine(o, dir, xc, rz1 + 0.55);
+    if (o.tipo === 'cavalete') buildEasel(o, rx0 + 0.8, rz1 + 0.85, Math.PI / 4);
+    if (o.tipo === 'discos') buildDiscos(o, rx0, rz1 + 1.95, INSP.rz0 - 1.25);
     if (o.tipo === 'bicicleta') {
       const outer = new THREE.Group(); outer.position.set(rx1 - 0.52, 0, rz1 + 0.95); outer.rotation.y = -Math.PI / 2; scene.add(outer);
       const bike = buildBike(); bike.rotation.x = -0.17; outer.add(bike);
@@ -2675,6 +2716,139 @@ function inspTick(){
   }
 }
 
+/* ---------- Sala de Inspirações: o cavalete do ateliê e a parede de discos ---------- */
+function buildEasel(o, x, z, yaw){
+  const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = yaw; scene.add(g);
+  const woodTex = smoothTex(makeCanvas(64, 512, (c, w, h) => {
+    c.fillStyle = '#c4935c'; c.fillRect(0, 0, w, h); const r = rng(77);
+    for (let k = 0; k < 60; k++) { c.strokeStyle = `rgba(${r() < 0.5 ? '120,72,30' : '230,190,140'},${0.08 + r() * 0.12})`; c.lineWidth = 1 + r() * 2; const x0 = r() * w; c.beginPath(); c.moveTo(x0, 0); c.bezierCurveTo(x0 + (r() - .5) * 10, h / 3, x0 + (r() - .5) * 10, h * 2 / 3, x0 + (r() - .5) * 6, h); c.stroke(); }
+  }));
+  const wood = new THREE.MeshLambertMaterial({ map: woodTex });
+  const bar = (a, b, w, d = w) => { const dir = b.clone().sub(a), L = dir.length(); const m = new THREE.Mesh(new THREE.BoxGeometry(w, L, d), wood);
+    m.position.copy(a).addScaledVector(dir, 0.5); m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize()); g.add(m); return m; };
+  const V = (a, b, c) => new THREE.Vector3(a, b, c);
+  for (const s of [-1, 1]) bar(V(s * 0.31, 0, 0.13), V(s * 0.05, 1.66, -0.04), 0.038, 0.03);      // front legs
+  bar(V(0, 0, 0.1), V(0, 1.92, -0.09), 0.045, 0.035);                                                  // mast
+  bar(V(0, 1.55, -0.1), V(0, 0, -0.66), 0.036, 0.03);                                                  // back leg
+  bar(V(-0.26, 0.4, 0.085), V(0.26, 0.4, 0.085), 0.03, 0.025);                                         // cross bar
+  bar(V(0, 0.42, -0.42), V(0, 0.45, 0.06), 0.02, 0.016);                                               // brace to the back leg
+  const lean = -Math.atan2(0.17, 1.66);
+  const tray = new THREE.Group(); tray.position.set(0, 0.8, 0.07); tray.rotation.x = lean; g.add(tray);
+  const tb = new THREE.Mesh(new THREE.BoxGeometry(0.66, 0.025, 0.085), wood); tray.add(tb);
+  const lip = new THREE.Mesh(new THREE.BoxGeometry(0.66, 0.035, 0.012), wood); lip.position.set(0, 0.02, 0.037); tray.add(lip);
+  const clamp = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.05, 0.06), wood); clamp.position.set(0, 1.49, -0.02); clamp.rotation.x = lean; g.add(clamp);
+  // the canvas on it (primed, waiting for the next painting)
+  const cw = (+o.tela?.[0] || 50) / 100, ch = (+o.tela?.[1] || 60) / 100;
+  const prim = smoothTex(makeCanvas(512, 600, (c, w, h) => {
+    c.fillStyle = '#f4f1ea'; c.fillRect(0, 0, w, h); const r = rng(5);
+    for (let k = 0; k < 2600; k++) { c.fillStyle = `rgba(${r() < 0.5 ? '0,0,0' : '255,255,255'},${0.02 + r() * 0.03})`; c.fillRect(r() * w, r() * h, 1 + r() * 3, 1); }
+    for (let y = 0; y < h; y += 3) { c.fillStyle = 'rgba(0,0,0,.012)'; c.fillRect(0, y, w, 1); }
+  }));
+  const canvasM = new THREE.Mesh(new THREE.BoxGeometry(cw, ch, 0.022), [new THREE.MeshLambertMaterial({ color: 0xe8e2d6 }), new THREE.MeshLambertMaterial({ color: 0xe8e2d6 }), new THREE.MeshLambertMaterial({ color: 0xe8e2d6 }), new THREE.MeshLambertMaterial({ color: 0xe8e2d6 }), new THREE.MeshLambertMaterial({ map: prim }), new THREE.MeshLambertMaterial({ color: 0xc8b89c })]);
+  canvasM.position.set(0, 0.815 + ch / 2 * Math.cos(lean), 0.075 + ch / 2 * Math.sin(lean)); canvasM.rotation.x = lean; g.add(canvasM);
+  const sh = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 1.2), new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, opacity: 0.22, depthWrite: false }));
+  sh.rotation.x = -Math.PI / 2; sh.position.set(0, 0.003, -0.25); g.add(sh);
+  // the rag and the palettes on the floor, laid out like the photo
+  const fl = new THREE.Group(); fl.position.set(0.12, 0, 0.66); g.add(fl);
+  for (const [k, it] of (o.chao || []).entries()) {
+    const tex = new THREE.TextureLoader().load('inspiracoes/' + it.arquivo); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(it.w, it.d), new THREE.MeshLambertMaterial({ map: tex, transparent: true, alphaTest: 0.35 }));
+    m.rotation.x = -Math.PI / 2; m.position.set(it.x, 0.004 + k * 0.002, it.z); fl.add(m);
+    const s2 = new THREE.Mesh(new THREE.PlaneGeometry(it.w * 1.25, it.d * 1.25), new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, opacity: 0.16, depthWrite: false }));
+    s2.rotation.x = -Math.PI / 2; s2.position.set(it.x + 0.01, 0.002, it.z + 0.01); fl.add(s2);
+  }
+  colliders.push({ x0: x - 0.55, x1: x + 0.55, z0: z - 0.55, z1: z + 0.55 });
+}
+
+const DISC = { list: [], meshes: [], audio: null, cur: -1, open: false };
+function discSleeveCanvas(d, k){
+  const hues = ['#7a2e2a', '#2f4f6f', '#5b4a2e', '#2e5b4a', '#6a3d6b', '#8a5a1a', '#3b3b3b'];
+  return makeCanvas(600, 600, (c, w, h) => {
+    c.fillStyle = hues[k % hues.length]; c.fillRect(0, 0, w, h);
+    c.fillStyle = 'rgba(255,255,255,.08)'; c.beginPath(); c.arc(w / 2, h / 2, w * 0.42, 0, Math.PI * 2); c.fill();
+    c.fillStyle = '#f3ead8'; c.textAlign = 'center'; c.font = '800 54px Manrope, "Helvetica Neue", Arial, sans-serif';
+    const lines = []; let line = ''; for (const wd of (d.musica || '').split(' ')) { const t = line ? line + ' ' + wd : wd; if (c.measureText(t).width > w - 90 && line) { lines.push(line); line = wd; } else line = t; } if (line) lines.push(line);
+    lines.forEach((l, i) => c.fillText(l, w / 2, h / 2 - (lines.length - 1) * 32 + i * 64));
+    c.font = '600 34px Manrope, "Helvetica Neue", Arial, sans-serif'; c.fillStyle = 'rgba(243,234,216,.8)'; c.fillText(d.artista || '', w / 2, h - 70);
+  });
+}
+function buildDiscos(o, rx0, zA, zB){
+  const list = (o.lista || []).filter(d => d && d.musica); if (!list.length) return;
+  DISC.list = list;
+  const grooves = smoothTex(makeCanvas(512, 512, (c, w, h) => {
+    c.fillStyle = '#0d0d0e'; c.beginPath(); c.arc(w / 2, h / 2, w / 2, 0, Math.PI * 2); c.fill();
+    for (let r = 90; r < 250; r += 2.2) { c.strokeStyle = `rgba(255,255,255,${0.025 + (r % 7 < 1 ? 0.03 : 0)})`; c.lineWidth = 1; c.beginPath(); c.arc(w / 2, h / 2, r, 0, Math.PI * 2); c.stroke(); }
+    const gr = c.createLinearGradient(0, 0, w, h); gr.addColorStop(0.35, 'rgba(255,255,255,0)'); gr.addColorStop(0.5, 'rgba(255,255,255,.10)'); gr.addColorStop(0.65, 'rgba(255,255,255,0)');
+    c.fillStyle = gr; c.beginPath(); c.arc(w / 2, h / 2, w / 2, 0, Math.PI * 2); c.fill();
+  }));
+  const zc = (zA + zB) / 2, top = Math.ceil(list.length / 2), S = 0.62, sleeveEdge = new THREE.MeshLambertMaterial({ color: 0xe9e2d4 });
+  list.forEach((d, k) => {
+    const row = k < top ? 0 : 1, i = row ? k - top : k, n = row ? list.length - top : top;
+    const g = new THREE.Group(); g.position.set(rx0 + 0.004, row ? 1.3 : 1.86, zc + ((n - 1) / 2 - i) * S + (row ? 0 : 0)); g.rotation.y = Math.PI / 2; scene.add(g);
+    const face = new THREE.MeshLambertMaterial({ map: smoothTex(discSleeveCanvas(d, k)), emissive: 0xffffff, emissiveIntensity: 0.1 });
+    face.emissiveMap = face.map;
+    const sleeve = new THREE.Mesh(new THREE.BoxGeometry(0.315, 0.315, 0.005), [sleeveEdge, sleeveEdge, sleeveEdge, sleeveEdge, face, sleeveEdge]);
+    sleeve.position.z = 0.03; g.add(sleeve);
+    if (d.capa) { const im = new Image(); im.crossOrigin = 'anonymous';
+      im.onload = () => { const t = smoothTex(im); face.map = t; face.emissiveMap = t; face.needsUpdate = true; d.img = im; };
+      im.src = d.capa; }
+    const disc = new THREE.Mesh(new THREE.CircleGeometry(0.148, 64), new THREE.MeshPhongMaterial({ map: grooves, color: 0x3a3a3a, shininess: 50, specular: 0x444444 }));
+    disc.position.set(-0.105, 0.0, 0.024); g.add(disc);
+    const lab = new THREE.Mesh(new THREE.CircleGeometry(0.05, 40), new THREE.MeshLambertMaterial({ color: new THREE.Color(['#c9a14f', '#d9d0bd', '#b23a2f', '#3f6fa0', '#e0b84a', '#8c5aa0', '#4f8a5b'][k % 7]) }));
+    lab.position.set(-0.105, 0, 0.0245); g.add(lab);
+    const sh = new THREE.Mesh(new THREE.PlaneGeometry(0.48, 0.38), new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, opacity: 0.4, depthWrite: false }));
+    sh.position.set(-0.04, -0.015, 0.006); g.add(sh);
+    for (const m of [sleeve, disc, lab]) { m.userData.disc = k; DISC.meshes.push(m); }
+  });
+  // title on the wall and a small plaque
+  const title = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 0.16), new THREE.MeshLambertMaterial({ transparent: true, emissive: 0xffffff, emissiveIntensity: 0.12,
+    map: smoothTex(makeCanvas(1600, 160, (c, w, h) => { const gr = c.createLinearGradient(0, 20, 0, 140); gr.addColorStop(0, '#e9cf8a'); gr.addColorStop(0.5, '#b8913f'); gr.addColorStop(1, '#8e6a28');
+      c.fillStyle = gr; c.textAlign = 'center'; c.font = '700 92px Manrope, "Helvetica Neue", Arial, sans-serif'; c.letterSpacing = '18px'; c.fillText((o.titulo || 'Trilha sonora').toUpperCase(), w / 2 + 9, 112); })) }));
+  title.material.emissiveMap = title.material.map; title.position.set(rx0 + 0.006, 2.36, zc); title.rotation.y = Math.PI / 2; scene.add(title);
+  inspCard(scene, 0.34, 0.2, (c, w, h) => quotePlaque(c, w, h, o.titulo || 'Trilha sonora', o.subtitulo || '', o.descricao || 'Toque num disco para ouvir um trecho.'),
+    new THREE.Vector3(rx0 + 0.004, 1.3, zc - ((list.length - top - 1) / 2 + 1) * S - 0.02), Math.PI / 2);
+}
+function discLabelColor(im){
+  try { const c = document.createElement('canvas'); c.width = c.height = 8; const x = c.getContext('2d'); x.drawImage(im, 0, 0, 8, 8);
+    const p = x.getImageData(0, 0, 8, 8).data; let r = 0, g = 0, b = 0; for (let i = 0; i < p.length; i += 4) { r += p[i]; g += p[i + 1]; b += p[i + 2]; }
+    const n = p.length / 4; return `rgb(${r / n | 0},${g / n | 0},${b / n | 0})`; } catch { return '#b8913f'; }
+}
+function openDisc(k){
+  const d = DISC.list[k]; if (!d) return;
+  state = 'disc'; DISC.open = true; DISC.cur = k; if (locked) document.exitPointerLock();
+  for (const id of ['hint', 'cross', 'prompt', 'touch', 'musBtn']) $(id).classList.add('hidden');
+  $('discTitle').textContent = d.musica; $('discArtist').textContent = d.artista || '';
+  $('discAlbum').textContent = [d.album, d.ano].filter(Boolean).join(' · ');
+  $('discLink').href = d.link || '#'; $('discLink').classList.toggle('hidden', !d.link);
+  const cov = $('discCover'); cov.style.backgroundImage = d.capa ? `url("${d.capa}")` : 'none'; cov.textContent = d.capa ? '' : d.musica;
+  $('discArt').style.setProperty('--lbl', d.img ? discLabelColor(d.img) : '#b8913f');
+  $('discMsg').textContent = ''; $('discBar').style.width = '0%';
+  const art = $('discArt'); art.classList.remove('out', 'spin'); void art.offsetWidth;
+  const el = $('disc'); el.classList.remove('hidden', 'show'); void el.offsetWidth; el.classList.add('show');
+  $('discBox').animate([{ transform: 'scale(.85) translateY(30px)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 520, easing: 'cubic-bezier(.2,.8,.2,1)' });
+  setTimeout(() => { if (DISC.open && DISC.cur === k) art.classList.add('out'); }, 350);
+  discStop();
+  if (d.trecho) {
+    const a = new Audio(); a.preload = 'auto'; a.src = d.trecho; a.volume = 0; DISC.audio = a;
+    a.addEventListener('timeupdate', () => { if (a.duration) $('discBar').style.width = (a.currentTime / a.duration * 100).toFixed(1) + '%'; });
+    a.addEventListener('playing', () => { art.classList.add('spin'); $('discPlay').textContent = '❚❚ Pausar'; });
+    a.addEventListener('pause', () => { art.classList.remove('spin'); $('discPlay').textContent = '▶ Tocar'; });
+    a.addEventListener('ended', () => { $('discMsg').textContent = 'Fim do trecho.'; $('discPlay').textContent = '▶ Ouvir de novo'; });
+    a.addEventListener('error', () => { $('discMsg').textContent = 'Não consegui tocar o trecho aqui.'; });
+    musDuck(0);
+    const fade = () => { let v = 0; const t = setInterval(() => { if (DISC.audio !== a) return clearInterval(t); v = Math.min(1, v + 0.08); a.volume = v; if (v >= 1) clearInterval(t); }, 60); };
+    setTimeout(() => { if (DISC.audio !== a) return; a.play().then(fade).catch(() => { $('discMsg').textContent = 'Toque em ▶ para ouvir.'; }); }, 500);
+  } else $('discMsg').textContent = 'Sem trecho para esta música.';
+  $('discPlay').classList.toggle('hidden', !d.trecho);
+  Z.opened = performance.now();
+}
+function discStop(){ const a = DISC.audio; if (a) { a.pause(); a.removeAttribute('src'); a.load(); } DISC.audio = null; }
+function closeDisc(){
+  if (performance.now() - Z.opened < 300) return;
+  discStop(); DISC.open = false; musDuck(1); $('discArt').classList.remove('spin', 'out');
+  $('disc').classList.remove('show'); setTimeout(startPlaying, 220);
+}
+
 /* ---------- Player & controls ---------- */
 const player = { x: 0, z: 0, yaw: 0, pitch: 0, vx: 0, vz: 0, bob: 0 };
 const keys = {}; let state = 'menu'; let locked = false; let lockOK = !isTouch && 'requestPointerLock' in canvas;
@@ -2684,7 +2858,7 @@ let target = -1;
 function placePlayerStart(){ player.x = 0; player.z = ROOM.D / 2 - 1.8; player.yaw = 0; player.pitch = 0; }
 
 function startPlaying(){
-  $('menu').classList.add('hidden'); $('viewer').classList.add('hidden'); $('viewer').classList.remove('show'); $('book').classList.add('hidden'); $('book').classList.remove('show'); $('note').classList.add('hidden'); $('note').classList.remove('show'); $('rec').classList.add('hidden'); $('rec').classList.remove('show'); $('vid').classList.add('hidden'); $('vid').classList.remove('show'); $('vidPlayer').pause(); VID.open = false; state = 'playing';
+  $('menu').classList.add('hidden'); $('viewer').classList.add('hidden'); $('viewer').classList.remove('show'); $('book').classList.add('hidden'); $('book').classList.remove('show'); $('note').classList.add('hidden'); $('note').classList.remove('show'); $('rec').classList.add('hidden'); $('rec').classList.remove('show'); $('vid').classList.add('hidden'); $('vid').classList.remove('show'); $('vidPlayer').pause(); VID.open = false; $('disc').classList.add('hidden'); $('disc').classList.remove('show'); if (DISC.open) { discStop(); DISC.open = false; musDuck(1); } state = 'playing';
   musStart();
   $('cross').classList.remove('hidden'); if (isTouch) $('touch').classList.remove('hidden');
   if (lockOK) {
@@ -2713,6 +2887,7 @@ function openViewer(idx){
   if (idx === -3) return openNote();
   if (idx === -4) return openRecWrite();
   if (idx === -5) return openVideo();
+  if (idx <= -10000) return openDisc(-10000 - idx);
   if (idx <= -100) return openRecRead(-100 - idx);
   if (idx < 0) return;
   vIdx = idx; const a = paintings[idx].art; state = 'inspect';
@@ -2934,6 +3109,7 @@ addEventListener('keydown', e => {
   keys[e.code] = true;
   if (state === 'rec') { if (e.code === 'Escape') { e.preventDefault(); closeRec(); } return; }
   if (state === 'video') { if (e.code === 'Escape') { e.preventDefault(); closeVideo(); } return; }
+  if (state === 'disc') { if (e.code === 'Escape') { e.preventDefault(); closeDisc(); } return; }
   if (e.code === 'KeyM' && state !== 'menu') musToggle();
   if (state === 'note') { if (e.code === 'Escape' || e.code === 'KeyE' || e.code === 'Enter') { e.preventDefault(); closeNote(); } return; }
   if (state === 'book') {
@@ -3014,6 +3190,7 @@ function pick(cx, cy, far){
   if (hit?.object.userData.recWrite && hit.distance < 3) return -4;
   if (hit?.object.userData.video && hit.distance < 4) return -5;
   if (hit?.object.userData.rec !== undefined && hit.distance < 3) return -100 - hit.object.userData.rec;
+  if (hit?.object.userData.disc !== undefined && hit.distance < 3) return -10000 - hit.object.userData.disc;
   const i = hit?.object.userData.idx;
   return i !== undefined && hit.distance <= viewDist(i) ? i : -1;
 }
@@ -3047,9 +3224,9 @@ function update(dt){
     ray.setFromCamera(center, camera); ray.far = 4;
     const hit = ray.intersectObjects(pickables, false)[0]; const ud = hit?.object.userData || {};
     const isSoon = !!ud.soon && hit.distance < 3, isNote = !!ud.note && hit.distance < 2.4, isBook = !!ud.book && hit.distance < 2.6;
-    const isWrite = !!ud.recWrite && hit.distance < 2.6, isRec = ud.rec !== undefined && hit.distance < 2.4, isVid = !!ud.video && hit.distance < 3.6;
+    const isWrite = !!ud.recWrite && hit.distance < 2.6, isRec = ud.rec !== undefined && hit.distance < 2.4, isVid = !!ud.video && hit.distance < 3.6, isDisc = ud.disc !== undefined && hit.distance < 2.8;
     const hi = hit && !isSoon ? ud.idx : undefined;
-    target = isBook ? -2 : isNote ? -3 : isWrite ? -4 : isVid ? -5 : isRec ? -100 - ud.rec : (hi !== undefined && hit.distance <= viewDist(hi) ? hi : -1);
+    target = isBook ? -2 : isNote ? -3 : isWrite ? -4 : isVid ? -5 : isRec ? -100 - ud.rec : isDisc ? -10000 - ud.disc : (hi !== undefined && hit.distance <= viewDist(hi) ? hi : -1);
     const on = target >= 0 || target <= -2;
     $('cross').classList.toggle('on', on);
     $('tView').classList.toggle('on', on);
@@ -3058,6 +3235,7 @@ function update(dt){
     else if (isBook) { pr.innerHTML = `${isTouch ? '' : '<kbd>E</kbd>'}folhear o caderno criativo`; pr.classList.remove('hidden'); }
     else if (isNote) { pr.innerHTML = `${isTouch ? '' : '<kbd>E</kbd>'}ler a mensagem`; pr.classList.remove('hidden'); }
     else if (isVid) { pr.innerHTML = `${isTouch ? '' : '<kbd>E</kbd>'}${VID.list.length ? 'assistir aos vídeos do ateliê' : 'vídeos do ateliê: em breve'}`; pr.classList.remove('hidden'); }
+    else if (isDisc) { const d = DISC.list[ud.disc]; pr.innerHTML = `${isTouch ? '' : '<kbd>E</kbd>'}ouvir: ${escapeHtml(d.musica)} · ${escapeHtml(d.artista || '')}`; pr.classList.remove('hidden'); }
     else if (isWrite) { pr.innerHTML = `${isTouch ? '' : '<kbd>E</kbd>'}escrever um bilhete`; pr.classList.remove('hidden'); }
     else if (isRec) { pr.innerHTML = `${isTouch ? '' : '<kbd>E</kbd>'}${REC.mine[REC.list[ud.rec]?.id] ? 'ver o seu bilhete' : 'ler o bilhete' + (REC.list[ud.rec]?.nome ? ' de ' + escapeHtml(REC.list[ud.rec].nome) : '')}`; pr.classList.remove('hidden'); }
     else if (target >= 0) { pr.innerHTML = `${isTouch ? '' : '<kbd>E</kbd>'}ver de perto: ${escapeHtml(paintings[target].art.titulo || 'Sem título')}${paintings[target].art.verso ? ' (tem verso)' : ''}`; pr.classList.remove('hidden'); }
@@ -3140,7 +3318,7 @@ function loop(){
   }
   await buildCraft();
   await buildInspiracao();
-  pickables = [...paintings.flatMap(p => p.meshes), ...soon.flatMap(p => p.meshes), ...occluders, ...bookMeshes];
+  pickables = [...paintings.flatMap(p => p.meshes), ...soon.flatMap(p => p.meshes), ...occluders, ...bookMeshes, ...DISC.meshes];
   buildNote().then(() => { pickables.push(...noteMeshes); });
   buildVideoScreen();
   const recReady = REC.on ? recInit() : null;

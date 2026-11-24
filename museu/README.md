@@ -84,6 +84,8 @@ Na parede do fundo, logo depois do mural, há uma porta de madeira com a placa d
 
 No fundo da sala, onde o tapete termina, fica a homenagem à Rosinha: o retrato dela em moldura dourada, com céu azul de nuvens, e logo à frente uma vitrine de vidro num pedestal com o bonequinho de crochê dela, em tamanho real (cerca de 10 cm). O boneco é feito com as fotos de verdade e muda de foto conforme o lado de onde a pessoa olha (frente, três-quartos e perfil). Clicando no retrato ou na vitrine, abre para ver de perto, com reações e comentários. No canto direito, encostada na parede, está a bicicleta Caloi, com uma plaquinha.
 
+No canto esquerdo do fundo fica o cavalete de madeira com uma tela em branco e, no chão, o pano e as paletas de tinta (feitos com a foto de verdade). Na parede da esquerda está a **Trilha sonora**: sete discos de vinil pendurados com as capas dos álbuns. Clicando num disco, a capa abre grande, o vinil desliza para fora e começa a girar, e toca um trecho de 30 segundos da música (a música de fundo do museu abaixa sozinha). As capas e os trechos vêm do Apple Music, direto da internet; por isso eles aparecem no site do GitHub, mas não na página do museu dentro do Claude. Cada disco está em `discos` → `lista` no `obras.js`; para trocar ou acrescentar uma música é preciso o endereço da capa e do trecho, então é mais fácil pedir ao Claude.
+
 Os arquivos ficam na pasta `inspiracoes/` e a lista em `inspiracoes` no `obras.js` (textos das plaquinhas e descrições). As peças da sala não entram na contagem de obras nem no ranking de estrelinhas. Para esconder a sala (a parede volta a ficar inteira), use `inspiracoes: false`. As obras da parede do fundo sempre ficam à direita da porta, sem cobri-la.
 
 ## Mensagem na entrada
