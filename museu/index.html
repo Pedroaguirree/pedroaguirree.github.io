@@ -491,8 +491,10 @@ scene.background = new THREE.Color(0x15110e);
 const camera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 0.05, 100);
 camera.rotation.order = 'YXZ';
 
+const ADAPT = { t: 0, n: 0, slow: 0, fast: 0, max: 1, cur: 0 };
 function applySize(){
-  renderer.setPixelRatio(Math.min(devicePixelRatio, isTouch ? 1.75 : 2));
+  ADAPT.max = Math.min(devicePixelRatio, isTouch ? 1.75 : 2); ADAPT.cur = ADAPT.cur ? Math.min(ADAPT.cur, ADAPT.max) : ADAPT.max;
+  renderer.setPixelRatio(ADAPT.cur);
   renderer.setSize(innerWidth, innerHeight, true);
   camera.aspect = innerWidth / innerHeight;
   camera.fov = innerWidth < innerHeight ? 80 : 70;   // a bit wider when the phone is upright
@@ -2704,7 +2706,7 @@ async function buildVitrine(o, dir, x, z){
   const top = PH + 0.031;
   // the doll: real photos, the one that matches where you stand (front, left three-quarter, right profile)
   const hgt = (+o.altura || 10) / 100 * 1.05;
-  const dollG = new THREE.Group(); dollG.position.set(0, top, 0.01); g.add(dollG);
+  const dollG = new THREE.Group(); dollG.userData.dynamic = true; dollG.position.set(0, top, 0.01); g.add(dollG);
   const views = [];
   ims.forEach((im, k) => { if (!im) return;
     const w = hgt * im.naturalWidth / im.naturalHeight;
@@ -2973,6 +2975,94 @@ function buildVaral(o){
   const heart = new THREE.Mesh(new THREE.ExtrudeGeometry(hs, { depth: 0.008, bevelEnabled: true, bevelThickness: 0.004, bevelSize: 0.004, bevelSegments: 3 }), yarn('#f2a3b3'));
   heart.position.set(hx, hy, 0.01); heart.rotation.z = -0.15; g.add(heart);
   const hang = new THREE.Mesh(new THREE.CylinderGeometry(0.0015, 0.0015, 0.05, 5), new THREE.MeshLambertMaterial({ color: 0xf2a3b3 })); hang.position.set(hx, hy + 0.045, 0.012); g.add(hang);
+}
+
+/* ---------- Performance: merge static meshes that share a material, and hide what's behind the salon door ---------- */
+function matSig(m){
+  const h = c => c && c.isColor ? c.getHexString() : '';
+  return [m.type, h(m.color), h(m.emissive), m.emissiveIntensity, m.map?.uuid, m.emissiveMap?.uuid, m.alphaMap?.uuid, m.alphaTest, m.side, m.shininess, h(m.specular),
+    m.flatShading, m.vertexColors, m.wireframe, m.fog, m.toneMapped, m.polygonOffset, m.depthTest, m.depthWrite, m.colorWrite, m.blending].join('|');
+}
+function batchStatic(){
+  scene.updateMatrixWorld(true);
+  const keep = new Set([...occluders, ...bookMeshes, ...DISC.meshes, ...soon.flatMap(s => s.meshes)]);
+  const zw = INSP.zw ?? -ROOM.D / 2;
+  const buckets = new Map();
+  scene.traverse(o => {
+    if (!o.isMesh || o.isInstancedMesh || o.isSkinnedMesh || keep.has(o) || Array.isArray(o.material) || o.renderOrder) return;
+    const m = o.material; if (!m || m.transparent || m.isShaderMaterial || m.isRawShaderMaterial) return;
+    const ud = Object.entries(o.userData).filter(([, v]) => v !== undefined);
+    if (ud.some(([k]) => k !== 'idx' && k !== 'bike')) return;
+    if (!o.visible) return; for (let a = o.parent; a; a = a.parent) if (a.userData.dynamic || !a.visible) return;
+    const g = o.geometry; if (!g?.attributes?.position || g.morphAttributes?.position) return;
+    const c = new THREE.Vector3(); g.computeBoundingSphere(); c.copy(g.boundingSphere.center).applyMatrix4(o.matrixWorld);
+    const zone = INSP.x0 != null && c.z < zw - 0.15 ? 's' : 'h';
+    const idx = o.userData.idx;
+    const key = matSig(m) + '#' + (idx ?? '') + '#' + zone;
+    let b = buckets.get(key); if (!b) buckets.set(key, b = { mat: m, idx, list: [] }); b.list.push(o);
+  });
+  let merged = 0, removed = 0;
+  for (const b of buckets.values()) {
+    if (b.list.length < 2) continue;
+    let n = 0; const parts = [];
+    for (const o of b.list) { const g = o.geometry.index ? o.geometry.toNonIndexed() : o.geometry; parts.push([o, g]); n += g.attributes.position.count; }
+    const pos = new Float32Array(n * 3), nor = new Float32Array(n * 3), uv = new Float32Array(n * 2);
+    let off = 0; const v = new THREE.Vector3(), nm = new THREE.Matrix3();
+    for (const [o, g] of parts) {
+      const P = g.attributes.position, N = g.attributes.normal, U = g.attributes.uv, cnt = P.count;
+      nm.getNormalMatrix(o.matrixWorld); const flip = o.matrixWorld.determinant() < 0;
+      for (let i = 0; i < cnt; i++) {
+        const j = flip ? i - (i % 3) + [0, 2, 1][i % 3] : i;   // keep faces pointing out when mirrored
+        v.fromBufferAttribute(P, j).applyMatrix4(o.matrixWorld); pos.set([v.x, v.y, v.z], (off + i) * 3);
+        if (N) { v.fromBufferAttribute(N, j).applyMatrix3(nm).normalize(); nor.set([v.x, v.y, v.z], (off + i) * 3); }
+        if (U) { uv[(off + i) * 2] = U.getX(j); uv[(off + i) * 2 + 1] = U.getY(j); }
+      }
+      off += cnt;
+      if (g !== o.geometry) g.dispose();
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.setAttribute('normal', new THREE.BufferAttribute(nor, 3)); geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+    geo.computeBoundingSphere(); geo.computeBoundingBox();
+    const mesh = new THREE.Mesh(geo, b.mat); if (b.idx !== undefined) mesh.userData.idx = b.idx;
+    scene.add(mesh); merged++;
+    for (const o of b.list) { o.parent.remove(o); removed++; }
+    if (b.idx !== undefined && paintings[b.idx]) { const p = paintings[b.idx]; p.meshes = p.meshes.filter(m => !b.list.includes(m)); p.meshes.push(mesh); }
+  }
+  // portal culling: what's only in the salon, and what's only in the hall
+  PORTAL.salon = []; PORTAL.hall = [];
+  if (INSP.x0 != null && !INSP.blocked && INSP.on) {
+    const bx = new THREE.Box3();
+    for (const o of scene.children) {
+      if (o.isLight || o.isCamera) continue;
+      bx.setFromObject(o); if (bx.isEmpty()) continue;
+      if (bx.max.z < zw - 0.02) PORTAL.salon.push(o); else if (bx.min.z > zw + 0.02) PORTAL.hall.push(o);
+    }
+    PORTAL.box = new THREE.Box3(new THREE.Vector3(INSP.x0 - 0.2, 0, zw - INSP.t - 0.05), new THREE.Vector3(INSP.x1 + 0.2, INSP.dh + 0.2, zw + 0.05));
+  }
+  console.info(`museu: ${removed} peças juntadas em ${merged}; sala ${PORTAL.salon.length} · salão ${PORTAL.hall.length}`);
+  try { renderer.compile(scene, camera); } catch {}   // compile every shader now, so walking into the salon doesn't stutter
+}
+const PORTAL = { salon: [], hall: [], box: null, fr: new THREE.Frustum(), pm: new THREE.Matrix4(), state: '' };
+function portalTick(){
+  if (!PORTAL.box) return;
+  camera.updateMatrixWorld(); PORTAL.pm.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse); PORTAL.fr.setFromProjectionMatrix(PORTAL.pm);
+  const inSalon = camera.position.z < INSP.zw - INSP.t / 2, seesDoor = PORTAL.fr.intersectsBox(PORTAL.box) || PORTAL.box.containsPoint(camera.position);
+  const showSalon = inSalon || seesDoor, showHall = !inSalon || seesDoor, st = (showSalon ? 1 : 0) + (showHall ? 2 : 0);
+  if (st === PORTAL.state) return; PORTAL.state = st;
+  for (const o of PORTAL.salon) o.visible = showSalon;
+  for (const o of PORTAL.hall) o.visible = showHall;
+}
+// adaptive resolution: only steps down on high-density screens when frames drop, and steps back up when they recover
+function adaptTick(dt){
+  if (state !== 'playing' || document.hidden) return;
+  ADAPT.t += dt; ADAPT.n++;
+  if (ADAPT.t < 1) return;
+  const fps = ADAPT.n / ADAPT.t; ADAPT.t = 0; ADAPT.n = 0;
+  if (fps < 45) { ADAPT.slow++; ADAPT.fast = 0; } else if (fps > 57) { ADAPT.fast++; ADAPT.slow = 0; } else { ADAPT.slow = ADAPT.fast = 0; }
+  let pr = ADAPT.cur;
+  if (ADAPT.slow >= 2 && pr > 1) { pr = Math.max(1, +(pr - 0.25).toFixed(2)); ADAPT.slow = 0; }
+  else if (ADAPT.fast >= 5 && pr < ADAPT.max) { pr = Math.min(ADAPT.max, +(pr + 0.25).toFixed(2)); ADAPT.fast = 0; }
+  if (pr !== ADAPT.cur) { ADAPT.cur = pr; renderer.setPixelRatio(pr); renderer.setSize(innerWidth, innerHeight, false); }
 }
 
 /* ---------- Player & controls ---------- */
@@ -3402,7 +3492,7 @@ const escapeHtml = s => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;',
 
 function loop(){
   const dt = Math.min(clock.getDelta(), 0.05);
-  update(dt); renderer.render(scene, camera); requestAnimationFrame(loop);
+  update(dt); portalTick(); adaptTick(dt); renderer.render(scene, camera); requestAnimationFrame(loop);
 }
 
 /* ---------- Boot ---------- */
@@ -3444,6 +3534,7 @@ function loop(){
   }
   await buildCraft();
   await buildInspiracao();
+  batchStatic();
   pickables = [...paintings.flatMap(p => p.meshes), ...soon.flatMap(p => p.meshes), ...occluders, ...bookMeshes, ...DISC.meshes];
   buildNote().then(() => { pickables.push(...noteMeshes); });
   buildVideoScreen();
@@ -3470,7 +3561,8 @@ function loop(){
   if (recReady) { $('loadTxt').textContent = 'Colando os bilhetes…'; await Promise.race([Promise.all([recReady, reaReady, visReady]), new Promise(r => setTimeout(r, 6000))]); }
   statsDirty();
   $('loading').classList.add('hidden'); $('menu').classList.remove('hidden');
-  window.__museu = { INSP, REC, ROOM, MUS, VID, REA, COM, STATS, rankUpdate, openRecRead, openRecWrite, paintings, player, startPlaying, teleportTo, openViewer, openBook, openNote, closeNote, bookGo, flipCard, closeViewer, update, render: () => renderer.render(scene, camera) };
+  window.__perf = { renderer, scene, camera };
+  window.__museu = { INSP, REC, ROOM, MUS, VID, REA, COM, STATS, rankUpdate, openRecRead, openRecWrite, paintings, player, startPlaying, teleportTo, openViewer, openBook, openNote, closeNote, bookGo, flipCard, closeViewer, update, render: () => { portalTick(); renderer.render(scene, camera); } };
   loop();
 })();
 </script>
