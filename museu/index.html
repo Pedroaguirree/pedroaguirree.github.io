@@ -2642,6 +2642,7 @@ async function buildInspItems(){
     }
     if (o.tipo === 'vitrine' && o.arquivo) await buildVitrine(o, dir, xc, rz1 + 0.55);
     if (o.tipo === 'cavalete') buildEasel(o, rx0 + 0.8, rz1 + 0.85, Math.PI / 4);
+    if (o.tipo === 'varal') buildVaral(o);
     if (o.tipo === 'discos') buildDiscos(o, rx0, rz1 + 1.95, INSP.rz0 - 1.25);
     if (o.tipo === 'bicicleta') {
       const outer = new THREE.Group(); outer.position.set(rx1 - 0.52, 0, rz1 + 0.95); outer.rotation.y = -Math.PI / 2; scene.add(outer);
@@ -2868,6 +2869,84 @@ function closeDisc(){
   if (performance.now() - Z.opened < 300) return;
   discStop(); DISC.open = false; musDuck(1); $('discArt').classList.remove('spin', 'out');
   $('disc').classList.remove('show'); setTimeout(startPlaying, 220);
+}
+
+/* ---------- Sala de Inspirações: varal de polaroides dos pedais ---------- */
+function buildVaral(o){
+  const fotos = (o.fotos || []).filter(f => f && f.arquivo); if (!fotos.length) return;
+  const { rx1, rz1 } = INSP, zc = rz1 + (+o.centro || 1.42), W = +o.largura || 2.5;
+  const g = new THREE.Group(); g.position.set(rx1 - 0.004, 0, zc); g.rotation.y = -Math.PI / 2; scene.add(g);   // local +x runs along the wall, to the visitor's right
+  const twine = smoothTex(makeCanvas(64, 16, (c, w, h) => { c.fillStyle = '#efe6d2'; c.fillRect(0, 0, w, h); c.strokeStyle = 'rgba(150,130,100,.45)'; c.lineWidth = 2; for (let x = -16; x < w; x += 8) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x + 16, h); c.stroke(); } }));
+  twine.wrapS = THREE.RepeatWrapping; twine.repeat.set(60, 1);
+  const cordM = new THREE.MeshLambertMaterial({ map: twine }), pinM = new THREE.MeshLambertMaterial({ color: 0xd7ae7c }), pinDark = new THREE.MeshLambertMaterial({ color: 0x9c7348 });
+  const rows = [fotos.slice(0, Math.ceil(fotos.length / 2)), fotos.slice(Math.ceil(fotos.length / 2))];
+  const CW = 0.25, CH = 0.335, PW = 0.215, PH = 0.256;   // card and photo size (instax-like)
+  const cordAt = (row, x) => { const y0 = row ? 2.32 : 2.98, sag = 0.08, u = x / (W / 2); return y0 - sag * (1 - u * u) + (row ? -0.015 : 0.012) * u; };
+  let idx0 = 0;
+  rows.forEach((list, row) => {
+    if (!list.length) return;
+    const pts = []; for (let k = 0; k <= 40; k++) { const x = -W / 2 + k / 40 * W; pts.push(new THREE.Vector3(x, cordAt(row, x), 0.012)); }
+    g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 80, 0.0045, 6), cordM));
+    for (const s of [-1, 1]) {   // bows at the ends
+      const bx = s * W / 2, by = cordAt(row, bx);
+      for (const a of [0.5, -0.5]) { const loop = new THREE.Mesh(new THREE.TorusGeometry(0.03, 0.004, 6, 20), cordM); loop.position.set(bx + Math.cos(a + (s < 0 ? Math.PI : 0)) * 0.03, by + Math.sin(a) * 0.022, 0.012); loop.scale.set(1, 0.6, 1); loop.rotation.z = a; g.add(loop); }
+      for (const a of [-1.2, -1.9]) { const tail = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.004, 0.07, 6), cordM); tail.position.set(bx + Math.cos(a) * 0.035 * s, by + Math.sin(a) * 0.035, 0.012); tail.rotation.z = a + Math.PI / 2; g.add(tail); }
+      const tape = new THREE.Mesh(new THREE.PlaneGeometry(0.05, 0.03), new THREE.MeshLambertMaterial({ color: 0xf2ead2, transparent: true, opacity: 0.75 })); tape.position.set(bx, by, 0.006); tape.rotation.z = 0.3 * s; g.add(tape);
+    }
+    list.forEach((f, i) => {
+      const n = list.length, x = (-(n - 1) / 2 + i) * (W - 0.62) / (n - 1 || 1), cy = cordAt(row, x), slope = (cordAt(row, x + 0.01) - cordAt(row, x - 0.01)) / 0.02;
+      const r = rng(hash(f.arquivo)), tilt = Math.atan(slope) * 0.8 + (r() - 0.5) * 0.12;
+      const card = new THREE.Group(); card.position.set(x, cy + 0.01, 0.006); card.rotation.z = tilt; g.add(card);
+      const face = new THREE.MeshLambertMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.1 });
+      const paint = (img) => {
+        const cv = makeCanvas(600, 810, (c, w, h) => {
+          c.fillStyle = '#fbfaf6'; c.fillRect(0, 0, w, h);
+          const m = (CW - PW) / 2 / CW * w, pw = w - 2 * m, ph = PH / CH * h;
+          if (img) { c.drawImage(img, m, m, pw, ph); const gl = c.createLinearGradient(m, m, m + pw, m + ph); gl.addColorStop(0, 'rgba(255,255,255,.10)'); gl.addColorStop(0.45, 'rgba(255,255,255,0)'); c.fillStyle = gl; c.fillRect(m, m, pw, ph); }
+          else { c.fillStyle = '#ddd6c8'; c.fillRect(m, m, pw, ph); }
+          c.strokeStyle = 'rgba(0,0,0,.08)'; c.strokeRect(m, m, pw, ph);
+          c.fillStyle = '#3a3532'; c.textAlign = 'center'; let fs = 52; c.font = `600 ${fs}px Caveat, cursive`;
+          const words = (f.legenda || '').split(' '), lines = []; let line = '';
+          for (const wd of words) { const t = line ? line + ' ' + wd : wd; if (c.measureText(t).width > w - 50 && line) { lines.push(line); line = wd; } else line = t; } if (line) lines.push(line);
+          if (lines.length > 2) { fs = 40; c.font = `600 ${fs}px Caveat, cursive`; }
+          const top = m + ph, avail = h - top; lines.slice(0, 3).forEach((l, k) => c.fillText(l, w / 2, top + avail / 2 + (k - (Math.min(lines.length, 3) - 1) / 2) * fs * 0.95 + fs * 0.3));
+        });
+        const t = smoothTex(cv); face.map = t; face.emissiveMap = t; face.needsUpdate = true;
+      };
+      paint(null);
+      const im = new Image(); im.onload = () => paint(im); im.src = 'inspiracoes/' + f.arquivo;
+      const back = new THREE.MeshLambertMaterial({ color: 0xf3f1ea });
+      const m = new THREE.Mesh(new THREE.BoxGeometry(CW, CH, 0.002), [back, back, back, back, face, back]); m.position.y = -CH / 2 - 0.004; card.add(m);
+      const sh = new THREE.Mesh(new THREE.PlaneGeometry(CW * 1.25, CH * 1.2), new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, opacity: 0.28, depthWrite: false }));
+      sh.position.set(0.006, -CH / 2 - 0.012, -0.004); card.add(sh);
+      // wooden clothespin
+      const pin = new THREE.Group(); pin.position.set(0, 0.004, 0.006); card.add(pin);
+      for (const dz of [-0.0035, 0.0035]) { const half = new THREE.Mesh(new THREE.BoxGeometry(0.011, 0.068, 0.0055), pinM); half.position.set(0, 0, dz); pin.add(half); }
+      const spring = new THREE.Mesh(new THREE.TorusGeometry(0.005, 0.0012, 6, 12), new THREE.MeshPhongMaterial({ color: 0xb9bec4, shininess: 90 })); spring.rotation.y = Math.PI / 2; spring.position.set(0, 0.006, 0); pin.add(spring);
+      const gr = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.004, 0.012), pinDark); gr.position.set(0, -0.012, 0); pin.add(gr);
+      // clickable like a work: opens the photo
+      const anchor = new THREE.Object3D(); anchor.position.y = -CH / 2 - 0.004; card.add(anchor); g.updateMatrixWorld(true);
+      const wp = new THREE.Vector3(); anchor.getWorldPosition(wp);
+      const art = { titulo: f.legenda || '', artista: '', tecnica: f.tecnica || 'Foto de pedal', medida: '', descricao: f.descricao || '', arquivo: f.arquivo, i: paintings.length,
+        w: PW, h: PH, src: 'inspiracoes/' + f.arquivo, moldura: 'nenhuma' };
+      m.userData.idx = paintings.length;
+      paintings.push({ art, group: anchor, wall: { n: [-1, 0] }, pos: wp, cy: wp.y, craft: true, insp: true, starAt: null, meshes: [m] });
+      idx0++;
+    });
+  });
+  // crochet details like the reference: a pink heart and a pair of cherries
+  const yarn = (hex) => { const t = smoothTex(makeCanvas(64, 64, (c, w, h) => { c.fillStyle = hex; c.fillRect(0, 0, w, h); const r = rng(3); for (let y = 0; y < h; y += 5) for (let x = (y / 5 % 2) * 3; x < w; x += 6) { c.fillStyle = 'rgba(0,0,0,.10)'; c.fillRect(x, y, 3, 2); c.fillStyle = 'rgba(255,255,255,.10)'; c.fillRect(x + 1, y + 2, 3, 1); } })); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(2, 2); return new THREE.MeshLambertMaterial({ map: t }); };
+  const hx = W / 2 - 0.1, hy = cordAt(0, hx) - 0.07;
+  const hs = new THREE.Shape(); hs.moveTo(0, -0.03); hs.bezierCurveTo(-0.045, 0.0, -0.035, 0.035, 0, 0.018); hs.bezierCurveTo(0.035, 0.035, 0.045, 0.0, 0, -0.03);
+  const heart = new THREE.Mesh(new THREE.ExtrudeGeometry(hs, { depth: 0.008, bevelEnabled: true, bevelThickness: 0.004, bevelSize: 0.004, bevelSegments: 3 }), yarn('#f2a3b3'));
+  heart.position.set(hx, hy, 0.01); heart.rotation.z = -0.15; g.add(heart);
+  const hang = new THREE.Mesh(new THREE.CylinderGeometry(0.0015, 0.0015, 0.05, 5), new THREE.MeshLambertMaterial({ color: 0xf2a3b3 })); hang.position.set(hx, hy + 0.045, 0.012); g.add(hang);
+  const cx = -W / 2 + 0.1, cyy = cordAt(1, cx), stemM = new THREE.MeshLambertMaterial({ color: 0x7fbf4a });
+  [[-0.025, -0.13, '#f4b3c2'], [0.02, -0.15, '#c8a6dc']].forEach(([dx, dy, col]) => {
+    const b = new THREE.Mesh(new THREE.SphereGeometry(0.028, 18, 14), yarn(col)); b.scale.set(1, 1.08, 0.85); b.position.set(cx + dx, cyy + dy, 0.03); g.add(b);
+    const st = new THREE.Mesh(new THREE.TubeGeometry(new THREE.QuadraticBezierCurve3(new THREE.Vector3(cx + dx, cyy + dy + 0.025, 0.03), new THREE.Vector3(cx + dx * 0.4, cyy - 0.04, 0.03), new THREE.Vector3(cx, cyy - 0.005, 0.02)), 12, 0.0022, 5), stemM); g.add(st);
+  });
+  const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.018, 10, 8), yarn('#8cc657')); leaf.scale.set(1.3, 0.55, 0.3); leaf.position.set(cx + 0.03, cyy - 0.012, 0.02); leaf.rotation.z = 0.4; g.add(leaf);
 }
 
 /* ---------- Player & controls ---------- */

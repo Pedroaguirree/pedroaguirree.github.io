@@ -34,6 +34,17 @@ window.MUSEU = {
         descricao: "Um bonequinho de crochê da Rosinha, com a coleirinha com o nome dela." },
       { tipo: "bicicleta", titulo: "Minha bicicleta", subtitulo: "Caloi aro 29",
         descricao: "Com ela descobri novos caminhos e encontrei paisagens que nunca vou esquecer." },
+      { tipo: "varal",   // polaroides dos pedais, na parede em cima da bicicleta
+        fotos: [
+          { arquivo: "pedal-1.jpg", legenda: "Fazenda Águas de Santa Bárbara" },
+          { arquivo: "pedal-2.jpg", legenda: "Fazenda, com o Padoca" },
+          { arquivo: "pedal-3.jpg", legenda: "Fazenda Águas de Santa Bárbara" },
+          { arquivo: "pedal-4.jpg", legenda: "Pico do Lopo (MG), com o Juan" },
+          { arquivo: "pedal-5.jpg", legenda: "Pico do Lopo (MG)" },
+          { arquivo: "pedal-6.jpg", legenda: "Bica de Louveira, com o Pedro" },
+          { arquivo: "pedal-7.jpg", legenda: "Capelinha, Serra do Japi" },
+          { arquivo: "pedal-8.jpg", legenda: "Pedra do Índio" },
+        ] },
       { tipo: "cavalete", tela: [50, 60],
         chao: [
           { arquivo: "atelie-pano.webp", x: -0.15, z: -0.15, w: 0.364, d: 0.368 },
