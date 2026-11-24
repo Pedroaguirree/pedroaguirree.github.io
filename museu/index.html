@@ -7,7 +7,7 @@
 <link rel="icon" href="data:,">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Karla:wght@400;600;700&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Karla:wght@400;600;700&family=Caveat:wght@500;600&family=Cormorant+Garamond:ital,wght@0,600;1,500;1,600&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#14110f; --panel:rgba(22,18,15,.92); --ink:#f2ede4; --muted:#b7ab99;
@@ -2629,7 +2629,39 @@ function quotePlaque(c, w, h, title, sub, quote){
   for (const wd of words) { const t = line ? line + ' ' + wd : wd; if (c.measureText(t).width > MW && line) { c.fillText(line, X, y); y += 80; line = wd; } else line = t; }
   if (line) c.fillText(line, X, y);
 }
+const SERIF = '"Cormorant Garamond", Georgia, "Times New Roman", serif';
+function prettyPlaque(parent, w, h, t, pos, rotY){
+  const tex = smoothTex(makeCanvas(Math.round(w * 4400), Math.round(h * 4400), (c, W, H) => {
+    c.fillStyle = '#f6f0e3'; c.fillRect(0, 0, W, H);
+    const r = rng(41); for (let k = 0; k < 5000; k++) { c.fillStyle = `rgba(${r() < 0.5 ? '120,100,70' : '255,255,255'},${0.025 + r() * 0.03})`; c.fillRect(r() * W, r() * H, 1 + r() * 2, 1); }
+    const gold = c.createLinearGradient(0, 0, W, H); gold.addColorStop(0, '#b8913f'); gold.addColorStop(0.5, '#e3c47e'); gold.addColorStop(1, '#a5802f');
+    c.strokeStyle = gold; c.lineWidth = 7; c.strokeRect(26, 26, W - 52, H - 52); c.lineWidth = 2.5; c.strokeRect(42, 42, W - 84, H - 84);
+    for (const [x, y] of [[42, 42], [W - 42, 42], [42, H - 42], [W - 42, H - 42]]) { c.fillStyle = gold; c.save(); c.translate(x, y); c.rotate(Math.PI / 4); c.fillRect(-7, -7, 14, 14); c.restore(); }
+    c.textAlign = 'center'; c.textBaseline = 'alphabetic'; const cx = W / 2; let y = H * 0.21;
+    if (t.sub) { c.fillStyle = '#8a6a28'; c.font = `700 ${Math.round(H * 0.068)}px Manrope, "Helvetica Neue", Arial, sans-serif`; c.letterSpacing = `${Math.round(H * 0.012)}px`; c.fillText(t.sub.toUpperCase(), cx + H * 0.006, y); c.letterSpacing = '0px'; }
+    y += H * 0.2; c.fillStyle = '#21180f'; c.font = `italic 600 ${Math.round(H * 0.19)}px ${SERIF}`; c.fillText(t.title, cx, y);
+    y += H * 0.08; c.strokeStyle = gold; c.lineWidth = 3; c.beginPath(); c.moveTo(cx - W * 0.16, y); c.lineTo(cx - 16, y); c.moveTo(cx + 16, y); c.lineTo(cx + W * 0.16, y); c.stroke();
+    c.save(); c.translate(cx, y); c.rotate(Math.PI / 4); c.fillStyle = gold; c.fillRect(-7, -7, 14, 14); c.restore();
+    if (t.quote) {
+      c.fillStyle = '#3a2e24'; const fs = Math.round(H * 0.105); c.font = `italic 500 ${fs}px ${SERIF}`;
+      const words = ('“' + t.quote + '”').split(' '), lines = []; let line = '';
+      for (const wd of words) { const tt = line ? line + ' ' + wd : wd; if (c.measureText(tt).width > W * 0.84 && line) { lines.push(line); line = wd; } else line = tt; } if (line) lines.push(line);
+      y += H * 0.15; lines.slice(0, 3).forEach((l, k) => c.fillText(l, cx, y + k * fs * 1.12));
+    }
+  }));
+  const g = new THREE.Group(); g.position.copy(pos); g.rotation.y = rotY; parent.add(g);
+  const edge = new THREE.MeshLambertMaterial({ color: 0xd9cfbb });
+  const card = new THREE.Mesh(new THREE.BoxGeometry(w, h, 0.006), [edge, edge, edge, edge, new THREE.MeshLambertMaterial({ map: tex, emissive: 0xffffff, emissiveMap: tex, emissiveIntensity: 0.3 }), edge]);
+  card.position.z = 0.02; g.add(card);
+  for (const [sx, sy] of [[-1, 1], [1, 1], [-1, -1], [1, -1]]) {   // brass standoffs
+    const st = new THREE.Mesh(new THREE.CylinderGeometry(0.0075, 0.0075, 0.03, 16), BRASS); st.rotation.x = Math.PI / 2; st.position.set(sx * (w / 2 - 0.018), sy * (h / 2 - 0.018), 0.016); g.add(st);
+  }
+  const sh = new THREE.Mesh(new THREE.PlaneGeometry(w * 1.3, h * 1.35), new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, opacity: 0.35, depthWrite: false })); sh.position.set(0.01, -0.012, 0.002); g.add(sh);
+  return g;
+}
+
 async function buildInspItems(){
+  try { await Promise.race([Promise.all(['italic 600 40px "Cormorant Garamond"', 'italic 500 40px "Cormorant Garamond"'].map(f => document.fonts.load(f))), new Promise(r => setTimeout(r, 3000))]); } catch {}
   const cfg = CFG.inspiracoes; if (!cfg || !Array.isArray(cfg.itens)) return;
   const { xc, rx0, rx1, rz1 } = INSP, dir = 'inspiracoes/';
   for (const o of cfg.itens) {
@@ -2650,8 +2682,8 @@ async function buildInspItems(){
       const sh = new THREE.Mesh(new THREE.PlaneGeometry(2.1, 0.7), new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, opacity: 0.45, depthWrite: false }));
       sh.rotation.x = -Math.PI / 2; sh.position.set(0.13, 0.003, -0.05); outer.add(sh);
       colliders.push({ x0: rx1 - 0.8, x1: rx1, z0: rz1 + 0.05, z1: rz1 + 2.1 });
-      inspCard(scene, 0.34, 0.2, (c, w, h) => quotePlaque(c, w, h, o.titulo || 'Minha bicicleta', o.subtitulo || '', o.descricao || ''),
-        new THREE.Vector3(rx1 - 0.004, 1.42, rz1 + 1.05), -Math.PI / 2);
+      prettyPlaque(scene, 0.36, 0.23, { title: o.titulo || 'Minha bicicleta', sub: o.subtitulo || '', quote: o.descricao || '' },
+        new THREE.Vector3(rx1 - 0.004, 1.62, rz1 + 2.12), -Math.PI / 2);
       INSP_ITEMS.bike = outer;
     }
   }
@@ -2827,7 +2859,7 @@ function buildDiscos(o, rx0, zA, zB){
     map: smoothTex(makeCanvas(1600, 160, (c, w, h) => { const gr = c.createLinearGradient(0, 20, 0, 140); gr.addColorStop(0, '#e9cf8a'); gr.addColorStop(0.5, '#b8913f'); gr.addColorStop(1, '#8e6a28');
       c.fillStyle = gr; c.textAlign = 'center'; c.font = '700 92px Manrope, "Helvetica Neue", Arial, sans-serif'; c.letterSpacing = '18px'; c.fillText((o.titulo || 'Trilha sonora').toUpperCase(), w / 2 + 9, 112); })) }));
   title.material.emissiveMap = title.material.map; title.position.set(rx0 + 0.006, 2.36, zc); title.rotation.y = Math.PI / 2; scene.add(title);
-  inspCard(scene, 0.34, 0.2, (c, w, h) => quotePlaque(c, w, h, o.titulo || 'Trilha sonora', o.subtitulo || '', o.descricao || 'Toque num disco para ouvir um trecho.'),
+  prettyPlaque(scene, 0.36, 0.23, { title: o.titulo || 'Trilha sonora', sub: o.subtitulo || '', quote: o.descricao || 'Toque num disco para ouvir um trecho.' },
     new THREE.Vector3(rx0 + 0.004, 1.3, zc - ((list.length - top - 1) / 2 + 1) * S - 0.02), Math.PI / 2);
 }
 function discLabelColor(im){
@@ -2874,14 +2906,14 @@ function closeDisc(){
 /* ---------- Sala de Inspirações: varal de polaroides dos pedais ---------- */
 function buildVaral(o){
   const fotos = (o.fotos || []).filter(f => f && f.arquivo); if (!fotos.length) return;
-  const { rx1, rz1 } = INSP, zc = rz1 + (+o.centro || 1.42), W = +o.largura || 2.5;
+  const { rx1, rz1 } = INSP, zc = rz1 + (+o.centro || 1.0), W = +o.largura || 1.5;
   const g = new THREE.Group(); g.position.set(rx1 - 0.004, 0, zc); g.rotation.y = -Math.PI / 2; scene.add(g);   // local +x runs along the wall, to the visitor's right
   const twine = smoothTex(makeCanvas(64, 16, (c, w, h) => { c.fillStyle = '#efe6d2'; c.fillRect(0, 0, w, h); c.strokeStyle = 'rgba(150,130,100,.45)'; c.lineWidth = 2; for (let x = -16; x < w; x += 8) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x + 16, h); c.stroke(); } }));
   twine.wrapS = THREE.RepeatWrapping; twine.repeat.set(60, 1);
   const cordM = new THREE.MeshLambertMaterial({ map: twine }), pinM = new THREE.MeshLambertMaterial({ color: 0xd7ae7c }), pinDark = new THREE.MeshLambertMaterial({ color: 0x9c7348 });
   const rows = [fotos.slice(0, Math.ceil(fotos.length / 2)), fotos.slice(Math.ceil(fotos.length / 2))];
-  const CW = 0.25, CH = 0.335, PW = 0.215, PH = 0.256;   // card and photo size (instax-like)
-  const cordAt = (row, x) => { const y0 = row ? 2.32 : 2.98, sag = 0.08, u = x / (W / 2); return y0 - sag * (1 - u * u) + (row ? -0.015 : 0.012) * u; };
+  const CW = 0.15, CH = 0.2, PW = 0.129, PH = 0.153;   // card and photo size (instax-like)
+  const cordAt = (row, x) => { const y0 = row ? 1.6 : 2.03, sag = 0.045, u = x / (W / 2); return y0 - sag * (1 - u * u) + (row ? -0.015 : 0.012) * u; };
   let idx0 = 0;
   rows.forEach((list, row) => {
     if (!list.length) return;
@@ -2889,12 +2921,12 @@ function buildVaral(o){
     g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 80, 0.0045, 6), cordM));
     for (const s of [-1, 1]) {   // bows at the ends
       const bx = s * W / 2, by = cordAt(row, bx);
-      for (const a of [0.5, -0.5]) { const loop = new THREE.Mesh(new THREE.TorusGeometry(0.03, 0.004, 6, 20), cordM); loop.position.set(bx + Math.cos(a + (s < 0 ? Math.PI : 0)) * 0.03, by + Math.sin(a) * 0.022, 0.012); loop.scale.set(1, 0.6, 1); loop.rotation.z = a; g.add(loop); }
-      for (const a of [-1.2, -1.9]) { const tail = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.004, 0.07, 6), cordM); tail.position.set(bx + Math.cos(a) * 0.035 * s, by + Math.sin(a) * 0.035, 0.012); tail.rotation.z = a + Math.PI / 2; g.add(tail); }
+      for (const a of [0.5, -0.5]) { const loop = new THREE.Mesh(new THREE.TorusGeometry(0.022, 0.0035, 6, 20), cordM); loop.position.set(bx + Math.cos(a + (s < 0 ? Math.PI : 0)) * 0.022, by + Math.sin(a) * 0.016, 0.012); loop.scale.set(1, 0.6, 1); loop.rotation.z = a; g.add(loop); }
+      for (const a of [-1.2, -1.9]) { const tail = new THREE.Mesh(new THREE.CylinderGeometry(0.0035, 0.0035, 0.05, 6), cordM); tail.position.set(bx + Math.cos(a) * 0.026 * s, by + Math.sin(a) * 0.026, 0.012); tail.rotation.z = a + Math.PI / 2; g.add(tail); }
       const tape = new THREE.Mesh(new THREE.PlaneGeometry(0.05, 0.03), new THREE.MeshLambertMaterial({ color: 0xf2ead2, transparent: true, opacity: 0.75 })); tape.position.set(bx, by, 0.006); tape.rotation.z = 0.3 * s; g.add(tape);
     }
     list.forEach((f, i) => {
-      const n = list.length, x = (-(n - 1) / 2 + i) * (W - 0.62) / (n - 1 || 1), cy = cordAt(row, x), slope = (cordAt(row, x + 0.01) - cordAt(row, x - 0.01)) / 0.02;
+      const n = list.length, x = (-(n - 1) / 2 + i) * (W - 0.4) / (n - 1 || 1), cy = cordAt(row, x), slope = (cordAt(row, x + 0.01) - cordAt(row, x - 0.01)) / 0.02;
       const r = rng(hash(f.arquivo)), tilt = Math.atan(slope) * 0.8 + (r() - 0.5) * 0.12;
       const card = new THREE.Group(); card.position.set(x, cy + 0.01, 0.006); card.rotation.z = tilt; g.add(card);
       const face = new THREE.MeshLambertMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.1 });
@@ -2921,7 +2953,7 @@ function buildVaral(o){
       sh.position.set(0.006, -CH / 2 - 0.012, -0.004); card.add(sh);
       // wooden clothespin
       const pin = new THREE.Group(); pin.position.set(0, 0.004, 0.006); card.add(pin);
-      for (const dz of [-0.0035, 0.0035]) { const half = new THREE.Mesh(new THREE.BoxGeometry(0.011, 0.068, 0.0055), pinM); half.position.set(0, 0, dz); pin.add(half); }
+      for (const dz of [-0.003, 0.003]) { const half = new THREE.Mesh(new THREE.BoxGeometry(0.008, 0.05, 0.0045), pinM); half.position.set(0, 0, dz); pin.add(half); }
       const spring = new THREE.Mesh(new THREE.TorusGeometry(0.005, 0.0012, 6, 12), new THREE.MeshPhongMaterial({ color: 0xb9bec4, shininess: 90 })); spring.rotation.y = Math.PI / 2; spring.position.set(0, 0.006, 0); pin.add(spring);
       const gr = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.004, 0.012), pinDark); gr.position.set(0, -0.012, 0); pin.add(gr);
       // clickable like a work: opens the photo
@@ -2936,17 +2968,11 @@ function buildVaral(o){
   });
   // crochet details like the reference: a pink heart and a pair of cherries
   const yarn = (hex) => { const t = smoothTex(makeCanvas(64, 64, (c, w, h) => { c.fillStyle = hex; c.fillRect(0, 0, w, h); const r = rng(3); for (let y = 0; y < h; y += 5) for (let x = (y / 5 % 2) * 3; x < w; x += 6) { c.fillStyle = 'rgba(0,0,0,.10)'; c.fillRect(x, y, 3, 2); c.fillStyle = 'rgba(255,255,255,.10)'; c.fillRect(x + 1, y + 2, 3, 1); } })); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(2, 2); return new THREE.MeshLambertMaterial({ map: t }); };
-  const hx = W / 2 - 0.1, hy = cordAt(0, hx) - 0.07;
-  const hs = new THREE.Shape(); hs.moveTo(0, -0.03); hs.bezierCurveTo(-0.045, 0.0, -0.035, 0.035, 0, 0.018); hs.bezierCurveTo(0.035, 0.035, 0.045, 0.0, 0, -0.03);
+  const hx = W / 2 - 0.06, hy = cordAt(0, hx) - 0.05;
+  const hs = new THREE.Shape(); hs.moveTo(0, -0.021); hs.bezierCurveTo(-0.032, 0.0, -0.025, 0.025, 0, 0.013); hs.bezierCurveTo(0.025, 0.025, 0.032, 0.0, 0, -0.021);
   const heart = new THREE.Mesh(new THREE.ExtrudeGeometry(hs, { depth: 0.008, bevelEnabled: true, bevelThickness: 0.004, bevelSize: 0.004, bevelSegments: 3 }), yarn('#f2a3b3'));
   heart.position.set(hx, hy, 0.01); heart.rotation.z = -0.15; g.add(heart);
   const hang = new THREE.Mesh(new THREE.CylinderGeometry(0.0015, 0.0015, 0.05, 5), new THREE.MeshLambertMaterial({ color: 0xf2a3b3 })); hang.position.set(hx, hy + 0.045, 0.012); g.add(hang);
-  const cx = -W / 2 + 0.1, cyy = cordAt(1, cx), stemM = new THREE.MeshLambertMaterial({ color: 0x7fbf4a });
-  [[-0.025, -0.13, '#f4b3c2'], [0.02, -0.15, '#c8a6dc']].forEach(([dx, dy, col]) => {
-    const b = new THREE.Mesh(new THREE.SphereGeometry(0.028, 18, 14), yarn(col)); b.scale.set(1, 1.08, 0.85); b.position.set(cx + dx, cyy + dy, 0.03); g.add(b);
-    const st = new THREE.Mesh(new THREE.TubeGeometry(new THREE.QuadraticBezierCurve3(new THREE.Vector3(cx + dx, cyy + dy + 0.025, 0.03), new THREE.Vector3(cx + dx * 0.4, cyy - 0.04, 0.03), new THREE.Vector3(cx, cyy - 0.005, 0.02)), 12, 0.0022, 5), stemM); g.add(st);
-  });
-  const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.018, 10, 8), yarn('#8cc657')); leaf.scale.set(1.3, 0.55, 0.3); leaf.position.set(cx + 0.03, cyy - 0.012, 0.02); leaf.rotation.z = 0.4; g.add(leaf);
 }
 
 /* ---------- Player & controls ---------- */
