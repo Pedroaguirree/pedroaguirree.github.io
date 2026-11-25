@@ -89,6 +89,8 @@ window.MUSEU = {
       // solto: true deixa tudo um pouco fora do alinhamento, como se tivesse sido preso à mão: giro = inclinação em graus,
       // desloc = [direita, cima] em cm para empurrar a peça; fixacao: "alfinete" ou "fita" (fita crepe nos cantos).
       { tipo: "expositor", centro: 4.15, solto: true,
+        // Escrito à mão e entalhado na lateral de madeira do expositor (do lado da porta), quase escondido.
+        segredo: { frase: "me sinto o cara mais sortudo do mundo ao seu lado", iniciais: "P + J" },
         foto: "casal.jpg", titulo_foto: "Pedro e Juliana",
         frase: "Acredito que uma das energias criativas mais poderosas venha do nosso amor, acredito nisso pois vivo ela na pele e me leva para lugares incríveis",
         desenhos: [

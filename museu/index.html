@@ -3103,6 +3103,33 @@ async function buildExpositor(o){
     bar(ih + 2 * r0, t, dep, mat, -(iw / 2 + r0 + t / 2), 0, z, true); bar(ih + 2 * r0, t, dep, mat, iw / 2 + r0 + t / 2, 0, z, true); };
   ring(Win, Hin, 0.001, FWC, 0, D, WAL);
   ring(Win, Hin, -0.001, 0.006, D - 0.005, D + 0.002, BRASS);
+  if (o.segredo && o.segredo.frase) {   // a secret on the outer side of the case: words scratched into the walnut by hand, and a carved heart
+    const sw = D - 0.012, sh = Hout - 0.04, PX = 2400;
+    const sc = makeCanvas(Math.round(sw * PX), Math.round(sh * PX), (c, W, H) => {
+      const r = rng(1406), cut = (draw, lw) => {   // dark groove, then the pale wood on its edge
+        c.save(); c.lineWidth = lw; c.strokeStyle = c.fillStyle = 'rgba(24,12,5,.72)'; draw(); c.restore();
+        c.save(); c.translate(-1.3, -1.1); c.lineWidth = lw * 0.55; c.strokeStyle = c.fillStyle = 'rgba(222,178,128,.34)'; draw(); c.restore(); };
+      // the words, along the side from bottom to top, a little uneven like a hand on a narrow edge
+      const txt = o.segredo.frase; c.save(); c.translate(W / 2 + 6, H * 0.44); c.rotate(-Math.PI / 2);
+      c.font = '600 54px Caveat, cursive'; c.textBaseline = 'middle';
+      let x = -c.measureText(txt).width / 2;
+      for (const ch of txt) {
+        const cw = c.measureText(ch).width, dy = (r() - 0.5) * 5, a = (r() - 0.5) * 0.12;
+        cut(() => { c.save(); c.translate(x + cw / 2, dy); c.rotate(a); c.fillText(ch, -cw / 2, 0); c.restore(); }, 1);
+        x += cw * (0.96 + r() * 0.06);
+      }
+      c.restore();
+      // the carved heart with the initials, near the bottom
+      const hx = W / 2, hy = H * 0.86, hs = 104;
+      cut(() => { heartPath(c, hx, hy, hs); c.stroke(); }, 6);
+      cut(() => { heartPath(c, hx, hy + 4, hs * 0.86); c.stroke(); }, 1.6);
+      c.save(); c.translate(hx, hy - 6); c.rotate(-0.06); c.font = '600 52px Caveat, cursive'; c.textAlign = 'center'; c.textBaseline = 'middle';
+      cut(() => c.fillText(o.segredo.iniciais || 'P + J', 0, 0), 1); c.restore();
+      for (let k = 0; k < 40; k++) { const y = r() * H; c.strokeStyle = `rgba(24,12,5,${0.05 + r() * 0.07})`; c.lineWidth = 1; c.beginPath(); c.moveTo(r() * W, y); c.lineTo(r() * W, y + (r() - 0.5) * 30); c.stroke(); }   // a few old scratches
+    });
+    const sm = new THREE.Mesh(new THREE.PlaneGeometry(sw, sh), new THREE.MeshLambertMaterial({ map: smoothTex(sc), transparent: true, depthWrite: false }));
+    sm.rotation.y = Math.PI / 2; sm.position.set(Win / 2 + FWC + 0.0008, 0, D / 2); g.add(sm);
+  }
   const wsh = new THREE.Mesh(new THREE.PlaneGeometry(Wout + 0.22, Hout + 0.26), new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, opacity: 0.5, depthWrite: false }));
   wsh.position.set(0.012, -0.04, 0.003); g.add(wsh);
 
