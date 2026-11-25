@@ -19,7 +19,7 @@ const EN = {
   "hero.projetos": "See projects", "hero.cv": "Download résumé (PDF)", "hero.links": "Contacts", "hero.email": "Email",
   "foto.label": "Pedro Aguirre: show personal details", "cracha.label": "Professional summary",
   "nota.l1": "Pedro Aguirre, ", "nota.anos": " years old,", "nota.l2": "Jundiaí, Brazil",
-  "cracha.status": "Open to new opportunities",
+  "cracha.status": ".NET developer",
   "soft.1": "Communication", "soft.2": "Teamwork", "soft.3": "Proactivity", "soft.4": "Organization", "soft.5": "Continuous learning",
   "cracha.empresa": "Company", "cracha.area": "Developing software for", "cracha.estudo": "Studying",
   "cracha.estudo.v": "Systems degree, Fatec Jundiaí",
@@ -103,7 +103,7 @@ const EN = {
   "form.3.p": "Rocketseat, short course: front-end, back-end, networks, servers and databases",
 
   "cont.titulo": "Let's talk?",
-  "cont.p": "I am open to new opportunities, preferably remote. The fastest way to reach me is by email or LinkedIn.",
+  "cont.p": "The fastest way to reach me is by email or LinkedIn.",
   "cont.email": "Send an email", "cont.copiar": "Copy address", "cont.whats": "Message me on WhatsApp", "cont.github": "See my GitHub",
   "rod.p": "Made by Pedro Aguirre with HTML, CSS and JavaScript, with help from Claude Code.",
   "rod.term": "Open terminal",

@@ -90,7 +90,7 @@ Quando a página abre, a anotação aparece sozinha por 4 segundos para o visita
 
 ### Soft skills do crachá
 
-Ficam no bloco `<div class="soft">` do `index.html`, logo abaixo do "Aberto a novas oportunidades". As traduções são `soft.1` a `soft.5` no `EN`. Prefira nomes curtos, para caberem no crachá.
+Ficam no bloco `<div class="soft">` do `index.html`, logo abaixo do título "Desenvolvedor .NET". As traduções são `soft.1` a `soft.5` no `EN`. Prefira nomes curtos, para caberem no crachá.
 
 ### Logo do Claude na seção de IA
 
