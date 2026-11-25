@@ -94,9 +94,12 @@ window.MUSEU = {
         foto: "casal.jpg", titulo_foto: "Pedro e Juliana",
         frase: "Acredito que uma das energias criativas mais poderosas venha do nosso amor, acredito nisso pois vivo ela na pele e me leva para lugares incríveis",
         desenhos: [
-          { arquivo: "desenho-copo.jpg", giro: -1.2, desloc: [0, -1.5], titulo: "Copo e flores", ano: "", tecnica: "Pastel oleoso sobre papel", largura: 42, altura: 59.4, formato: "A2", descricao: "" },
+          { arquivo: "desenho-copo.jpg", linha: 0, giro: -1.2, desloc: [0, -1.5], titulo: "Copo e flores", ano: "", tecnica: "Pastel oleoso sobre papel", largura: 42, altura: 59.4, formato: "A2", descricao: "" },
           { arquivo: "desenho-girassol.jpg", giro: 4, desloc: [-3, -2], titulo: "Girassol", ano: "", tecnica: "Pastel oleoso sobre papel", largura: 14.8, altura: 21, formato: "A5", descricao: "" },
           { arquivo: "desenho-besouro.jpg", giro: -3, desloc: [2, 3], fixacao: "fita", titulo: "Besouro", ano: "", tecnica: "Pastel oleoso e grafite sobre papel", largura: 14.8, altura: 21, formato: "A5", descricao: "" },
+          // A Casa dos Patos de Campos do Jordão, uma do Pedro e uma da Juliana: lado a lado embaixo do copo (lado: "esquerda", linha: 1).
+          { arquivo: "desenho-patos-pedro.jpg", giro: 2, desloc: [-1, 1], titulo: "Casa dos Patos", ano: "", tecnica: "Pastel oleoso sobre papel", largura: 21, altura: 14.8, formato: "A5", lado: "esquerda", linha: 1, descricao: "A Casa dos Patos, em Campos do Jordão." },
+          { arquivo: "desenho-patos-juliana.jpg", giro: -2.5, desloc: [1.5, -0.5], fixacao: "fita", titulo: "Casa dos Patos", artista: "Juliana", ano: "", tecnica: "Pastel oleoso sobre papel", largura: 21, altura: 14.8, formato: "A5", lado: "esquerda", linha: 1, descricao: "A Casa dos Patos, em Campos do Jordão, pela Juliana." },
           // As duas telinhas das árvores ficam lado a lado no meio da grade (tela: true dá a espessura de tela esticada).
           // Para pôr uma peça entre a foto e a placa, use lado: "meio".
           { arquivo: "arvore-pedro.jpg", giro: -2.5, desloc: [-2, -0.5], titulo: "Árvore do parque", ano: "", tecnica: "Acrílica sobre tela", largura: 15, altura: 15, medida: "cerca de 15 × 15 cm", tela: true, descricao: "Uma das árvores do parque da cidade, pintada lá mesmo, junto com a Juliana." },
