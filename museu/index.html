@@ -254,6 +254,20 @@
   #nCard p{margin:0 0 .6em}
   #nCard .sig{margin-top:.9em;text-align:right;font-size:.9em;color:#6b5a48}
   #nClose{position:absolute;right:max(18px,env(safe-area-inset-right));bottom:max(18px,env(safe-area-inset-bottom));width:auto;padding:10px 18px}
+  /* the handwritten letter: the photo, and its transcription beside it */
+  #nCard.letter{width:auto;max-width:min(1120px,96vw);max-height:none;overflow:visible;padding:0;background:none;box-shadow:none;transform:none;border-radius:0;
+    display:flex;align-items:center;gap:clamp(18px,3vw,36px);font-family:Karla,system-ui,sans-serif;font-weight:400;font-size:16px;line-height:1.62;color:var(--ink)}
+  #nCard.letter .nPhoto{display:block;height:min(84vh,880px);width:auto;aspect-ratio:148/210;max-width:58vw;object-fit:contain;border-radius:2px;background:#f7f2e7;
+    transform:rotate(-.6deg);box-shadow:0 30px 80px rgba(0,0,0,.6),0 6px 16px rgba(0,0,0,.4)}
+  #nCard.letter .nTrans{width:clamp(260px,26vw,340px);max-height:84vh;overflow-y:auto;padding:22px 24px 18px;background:var(--panel);border:1px solid var(--line);border-radius:6px;box-shadow:0 18px 50px rgba(0,0,0,.45)}
+  #nCard.letter .nLabel{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--brass);margin:0 0 12px}
+  #nCard.letter .nTrans p{margin:0 0 .85em}
+  #nCard.letter .nTrans .sig{margin:1.1em 0 0;text-align:right;font-family:Caveat,"Segoe Script",cursive;font-size:28px;line-height:1.1;color:var(--brass)}
+  @media (max-width:760px), (max-aspect-ratio:4/5){
+    #nCard.letter{flex-direction:column;justify-content:flex-start;max-height:calc(100% - 60px);overflow-y:auto;overscroll-behavior:contain;padding:4px 4px 14px;width:100%}
+    #nCard.letter .nPhoto{height:auto;width:min(88vw,520px);max-width:none;flex:none}
+    #nCard.letter .nTrans{width:min(88vw,520px);max-height:none;overflow:visible;flex:none}
+  }
   #nHint{position:absolute;left:0;right:0;bottom:max(24px,env(safe-area-inset-bottom));text-align:center;color:var(--muted);font-size:14px;pointer-events:none}
   #bShadow{position:absolute;left:0;right:0;bottom:-26px;height:40px;background:radial-gradient(ellipse at center,rgba(0,0,0,.55),transparent 70%);transform:translateZ(-2px)}
   .bNav{position:absolute;top:50%;transform:translateY(-50%);width:54px;height:54px;border-radius:50%;border:1px solid var(--line);
@@ -417,6 +431,7 @@
   <div id="nBg"></div>
   <div id="nCard" role="dialog" aria-label="Mensagem do artista"></div>
   <span id="nHint"></span>
+  <button class="btn ghost" id="nClose">Fechar</button>
 </div>
 
 <div id="rec" class="hidden">
@@ -1418,34 +1433,99 @@ async function noteTexture(){
 }
 async function buildNote(){
   const zc = PART_T / 2 + 0.9, ped = new THREE.Group(); ped.position.set(0, 0, zc); scene.add(ped);
-  const stone = new THREE.MeshLambertMaterial({ map: marbleTex }), stone2 = new THREE.MeshLambertMaterial({ map: marbleTex, color: 0xd8d2c6 });
-  const base = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.1, 0.56), stone2); base.position.y = 0.05; ped.add(base);
-  const plinth = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.05, 0.5), stone); plinth.position.y = 0.125; ped.add(plinth);
-  const shaft = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.86, 0.4), stone); shaft.position.y = 0.58; ped.add(shaft);
-  const cap1 = new THREE.Mesh(new THREE.BoxGeometry(0.47, 0.04, 0.47), stone); cap1.position.y = 1.03; ped.add(cap1);
-  const cap2 = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.06, 0.52), stone2); cap2.position.y = 1.08; ped.add(cap2);
-  colliders.push({ x0: -0.28, x1: 0.28, z0: zc - 0.28, z1: zc + 0.28 });
-  // the stand: a walnut lectern tilted toward the visitor
-  const W = FRAME_SETS.nogueira, brass = new THREE.MeshStandardMaterial({ color: 0xb08d4a, metalness: .85, roughness: .35 });
-  const tilt = 0.62, desk = new THREE.Group(); desk.position.set(0, 1.215, 0.01); desk.rotation.x = tilt; ped.add(desk);
-  const board = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.022, 0.34), W.outer); desk.add(board);
-  const lip = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.03, 0.014), W.lip); lip.position.set(0, 0.02, 0.163); desk.add(lip);
-  const wedge = new THREE.Shape([new THREE.Vector2(-0.125, 0), new THREE.Vector2(0.105, 0), new THREE.Vector2(-0.125, 0.165)]);
-  const wg = new THREE.ExtrudeGeometry(wedge, { depth: 0.3, bevelEnabled: false }); wg.rotateY(-Math.PI / 2); wg.translate(0.15, 0, 0);
-  const sup = new THREE.Mesh(wg, W.inner); sup.position.set(0, 1.11, 0.01); ped.add(sup);
-  // the sheet
+  // a walnut pedestal: stepped base, a slim paneled shaft with brass bands and fine brass inlay, a cornice, and a reading desk tilted toward the visitor.
+  // parts of the same material are joined into one piece
+  const wt = woodCanvas([94, 59, 36], 27, .42), brass = new THREE.MeshStandardMaterial({ color: 0xb08d4a, metalness: .85, roughness: .35 });
+  const Wd = { outer: phong(wt), inner: phong(wt, 0xc8ab92), lip: phong(wt, 0x8f7158, 36) };
+  const parts = new Map(), one = new THREE.Vector3(1, 1, 1);
+  const M = (x, y, z, rx = 0, ry = 0, rz = 0) => new THREE.Matrix4().compose(new THREE.Vector3(x, y, z), new THREE.Quaternion().setFromEuler(new THREE.Euler(rx, ry, rz)), one);
+  const put = (mat, geo, m, parent) => { if (!parts.has(mat)) parts.set(mat, []); parts.get(mat).push([geo, parent ? parent.clone().multiply(m) : m]); };
+  const hbox = (mat, w, h, d, m, parent) => put(mat, new THREE.BoxGeometry(w, h, d), m, parent);                            // grain runs sideways
+  const vbox = (mat, w, h, d, m, parent) => put(mat, new THREE.BoxGeometry(h, w, d), m.clone().multiply(M(0, 0, 0, 0, 0, Math.PI / 2)), parent);   // grain runs up and down
+  // base
+  hbox(Wd.lip, 0.48, 0.08, 0.48, M(0, 0.04, 0));
+  hbox(Wd.outer, 0.40, 0.035, 0.40, M(0, 0.0975, 0));
+  hbox(brass, 0.346, 0.01, 0.346, M(0, 0.12, 0));
+  // shaft, with a raised frame, a darker inset panel and a fine brass inlay line on each face
+  const S = 0.32, y0 = 0.125, y1 = 0.89, yc = (y0 + y1) / 2;
+  vbox(Wd.outer, S, y1 - y0, S, M(0, yc, 0));
+  const PW = 0.24, PH = 0.60, FW = 0.016, FD = 0.007, IW = 0.004, IN = 0.022;
+  for (let k = 0; k < 4; k++) {
+    const F = M(0, 0, 0, 0, k * Math.PI / 2, 0), z = S / 2;
+    vbox(Wd.lip, FW, PH, FD, M(-(PW - FW) / 2, yc, z + FD / 2), F); vbox(Wd.lip, FW, PH, FD, M((PW - FW) / 2, yc, z + FD / 2), F);
+    hbox(Wd.lip, PW - 2 * FW, FW, FD, M(0, yc + (PH - FW) / 2, z + FD / 2), F); hbox(Wd.lip, PW - 2 * FW, FW, FD, M(0, yc - (PH - FW) / 2, z + FD / 2), F);
+    vbox(Wd.inner, PW - 2 * FW, PH - 2 * FW, 0.003, M(0, yc, z + 0.0015), F);
+    const iw = PW - 2 * FW - 2 * IN, ih = PH - 2 * FW - 2 * IN, iz = z + 0.003 + 0.00075;
+    vbox(brass, IW, ih, 0.0015, M(-(iw - IW) / 2, yc, iz), F); vbox(brass, IW, ih, 0.0015, M((iw - IW) / 2, yc, iz), F);
+    hbox(brass, iw - 2 * IW, IW, 0.0015, M(0, yc + (ih - IW) / 2, iz), F); hbox(brass, iw - 2 * IW, IW, 0.0015, M(0, yc - (ih - IW) / 2, iz), F);
+  }
+  hbox(brass, 0.346, 0.01, 0.346, M(0, y1 + 0.005, 0));
+  // cornice
+  hbox(Wd.outer, 0.38, 0.028, 0.38, M(0, 0.914, 0));
+  hbox(Wd.outer, 0.43, 0.016, 0.43, M(0, 0.936, 0));
+  hbox(Wd.lip, 0.48, 0.035, 0.48, M(0, 0.9615, 0));
+  const top = 0.979;
+  colliders.push({ x0: -0.27, x1: 0.27, z0: zc - 0.27, z1: zc + 0.27 });
+  // the reading desk, tilted toward the visitor, on a walnut wedge
+  const tilt = 0.56, BW = 0.34, BT = 0.022, BD = 0.28, zd = 0.03;
+  const yd = top + 0.004 + (BT / 2) * Math.cos(tilt) + (BD / 2) * Math.sin(tilt);
+  const D = M(0, yd, zd, tilt, 0, 0);
+  hbox(Wd.outer, BW, BT, BD, M(0, 0, 0), D);
+  const fz = zd - (BT / 2) * Math.sin(tilt) + (BD / 2) * Math.cos(tilt), bz = zd - (BT / 2) * Math.sin(tilt) - (BD / 2) * Math.cos(tilt);
+  const by = yd - (BT / 2) * Math.cos(tilt) + (BD / 2) * Math.sin(tilt);
+  const wg = new THREE.ExtrudeGeometry(new THREE.Shape([new THREE.Vector2(fz - 0.01, top), new THREE.Vector2(bz + 0.01, top), new THREE.Vector2(bz + 0.01, by - 0.004)]), { depth: 0.26, bevelEnabled: false });
+  wg.rotateY(-Math.PI / 2); wg.translate(0.13, 0, 0);
+  { const P = wg.attributes.position, U = wg.attributes.uv; for (let i = 0; i < P.count; i++) U.setXY(i, (P.getX(i) + 0.13) / 0.26 * 0.6 + (P.getZ(i) - bz) * 1.2, (P.getY(i) - top) * 3 + 0.2); }
+  put(Wd.inner, wg, M(0, 0, 0));
+  // brass ledge the letter rests on, and two brass photo corners holding its top
+  const LW = 0.148, LH = 0.21, sy = BT / 2, lz = BD / 2 - 0.017 - LH / 2;   // A5, resting on the ledge
+  hbox(brass, 0.30, 0.018, 0.01, M(0, sy + 0.009, BD / 2 - 0.012), D);
+  for (const sx of [-1, 1]) {
+    const cx = sx * (LW / 2 + 0.003), cz = lz - LH / 2 - 0.003, L = 0.028;
+    const tri = new THREE.Shape([new THREE.Vector2(0, 0), new THREE.Vector2(-sx * L, 0), new THREE.Vector2(0, L)]);
+    const tg = new THREE.ExtrudeGeometry(tri, { depth: 0.0016, bevelEnabled: false }); tg.rotateX(Math.PI / 2);   // lies flat, legs along the top edge and down the side
+    put(brass, tg, M(cx, sy + 0.0026, cz), D);
+  }
+  // brass gooseneck lamp rising from behind the desk
+  put(brass, new THREE.CylinderGeometry(0.024, 0.027, 0.012, 24), M(0.13, top + 0.006, -0.17));
+  const P = (x, y, z) => new THREE.Vector3(x, y, z);
+  const curve = new THREE.CatmullRomCurve3([P(0.13, top + 0.006, -0.17), P(0.15, 1.2, -0.2), P(0.13, 1.40, -0.15), P(0.08, 1.47, -0.06), P(0.03, 1.43, -0.005)]);
+  put(brass, new THREE.TubeGeometry(curve, 40, 0.007, 8, false), M(0, 0, 0));
+  // the welcome plate on the front panel: brass edges, engraved face
+  const plY = 0.70, plZ = S / 2 + 0.003 + 0.003;
+  hbox(brass, 0.15, 0.042, 0.006, M(0, plY, plZ));   // fits inside the panel's brass inlay
+  const pc = makeCanvas(400, 112, (c, w, h) => { const gr = c.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#d9b15c'); gr.addColorStop(.5, '#b48a3a'); gr.addColorStop(1, '#8a6626');
+    c.fillStyle = gr; c.fillRect(0, 0, w, h); c.fillStyle = '#3a2a10'; c.textAlign = 'center'; c.font = '700 38px Manrope, "Helvetica Neue", Arial, sans-serif'; c.letterSpacing = '4px'; c.fillText('BEM-VINDO', w / 2 + 2, 54);
+    c.letterSpacing = '1px'; c.font = '500 23px Manrope, "Helvetica Neue", Arial, sans-serif'; c.fillText('uma mensagem do artista', w / 2, 88); });
+  const plate = new THREE.Mesh(new THREE.PlaneGeometry(0.147, 0.0395), new THREE.MeshStandardMaterial({ map: smoothTex(pc), metalness: .6, roughness: .4 }));
+  plate.position.set(0, plY, plZ + 0.0031); ped.add(plate);
+  // join everything
+  const pieces = [];
+  for (const [mat, list] of parts) {
+    let n = 0; const gs = list.map(([g, m]) => { const q = g.index ? g.toNonIndexed() : g.clone(); q.applyMatrix4(m); n += q.attributes.position.count; return q; });
+    const Pp = new Float32Array(n * 3), Nn = new Float32Array(n * 3), Uu = new Float32Array(n * 2); let o = 0;
+    for (const q of gs) { Pp.set(q.attributes.position.array, o * 3); Nn.set(q.attributes.normal.array, o * 3); if (q.attributes.uv) Uu.set(q.attributes.uv.array, o * 2); o += q.attributes.position.count; q.dispose(); }
+    const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(Pp, 3)); geo.setAttribute('normal', new THREE.BufferAttribute(Nn, 3)); geo.setAttribute('uv', new THREE.BufferAttribute(Uu, 2));
+    const mesh = new THREE.Mesh(geo, mat); ped.add(mesh); pieces.push(mesh);
+  }
+  // the letter itself: the photo of the handwritten letter (or, without one, the message written out)
+  const desk = new THREE.Group(); desk.position.set(0, yd, zd); desk.rotation.x = tilt; ped.add(desk);
   const sheetMat = new THREE.MeshLambertMaterial({ color: 0xffffff, emissive: 0x2a2620 });
-  const sheet = new THREE.Mesh(new THREE.PlaneGeometry(0.21, 0.297), sheetMat);
-  sheet.rotation.x = -Math.PI / 2; sheet.position.set(0, 0.0118, -0.005); desk.add(sheet);
-  noteTexture().then(t => { sheetMat.map = t; sheetMat.emissiveMap = t; sheetMat.needsUpdate = true; });
-  const shadowSheet = new THREE.Mesh(new THREE.PlaneGeometry(0.225, 0.31), new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, opacity: .35, depthWrite: false }));
-  shadowSheet.rotation.x = -Math.PI / 2; shadowSheet.position.set(0.004, 0.0113, 0); desk.add(shadowSheet);
-  // brass gooseneck lamp rising from behind, shining on the sheet
+  const sheet = new THREE.Mesh(new THREE.PlaneGeometry(LW, LH), sheetMat);
+  sheet.rotation.x = -Math.PI / 2; sheet.position.set(0, sy + 0.0012, lz); desk.add(sheet);
+  let tex = null;
+  if (CFG.carta) { try { const im = await loadImage(CFG.carta), cw = 724, ch = Math.round(cw * im.height / im.width);
+    tex = smoothTex(makeCanvas(cw, ch, (c, w, h) => { c.imageSmoothingQuality = 'high'; c.drawImage(im, 0, 0, w, h); })); } catch {} }
+  if (!tex) tex = await noteTexture();
+  sheetMat.map = tex; sheetMat.emissiveMap = tex; sheetMat.needsUpdate = true;
+  const shadowSheet = new THREE.Mesh(new THREE.PlaneGeometry(LW + 0.016, LH + 0.018), new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, opacity: .32, depthWrite: false }));
+  shadowSheet.rotation.x = -Math.PI / 2; shadowSheet.position.set(0.003, sy + 0.0006, lz + 0.004); desk.add(shadowSheet);
+  // a soft shadow on the floor around the pedestal
+  const fsh = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.9), new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, opacity: 0.26, depthWrite: false }));
+  fsh.rotation.x = -Math.PI / 2; fsh.position.y = 0.004; ped.add(fsh);
+  // the lamp's shade, bulb, soft beam and light, aimed at the letter
   ped.updateMatrixWorld(true);
   const target = new THREE.Vector3(); sheet.getWorldPosition(target);
-  const P = (x, y, z) => new THREE.Vector3(x, y, z);
-  const curve = new THREE.CatmullRomCurve3([P(0.17, 1.2, -0.13), P(0.18, 1.42, -0.17), P(0.14, 1.6, -0.12), P(0.07, 1.64, -0.04), P(0.03, 1.6, 0.0)]);
-  const neck = new THREE.Mesh(new THREE.TubeGeometry(curve, 40, 0.007, 8, false), brass); ped.add(neck);
   const headPos = curve.getPoint(1);
   const shade = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.04, 0.07, 24, 1, true), new THREE.MeshStandardMaterial({ color: 0xb08d4a, metalness: .85, roughness: .35, side: THREE.DoubleSide }));
   shade.position.copy(headPos); ped.add(shade);
@@ -1454,32 +1534,35 @@ async function buildNote(){
   shade.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), dir);
   const bulb = new THREE.Mesh(new THREE.CircleGeometry(0.034, 24), new THREE.MeshBasicMaterial({ color: 0xfff3d6 }));
   bulb.position.copy(headPos).addScaledVector(dir, 0.033); bulb.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), dir.clone().negate()); ped.add(bulb);
-  // soft visible beam
   const len = headPos.distanceTo(lookAt);
   const beamTex = smoothTex(makeCanvas(8, 128, (c, w, h) => { const g = c.createLinearGradient(0, 0, 0, h); g.addColorStop(0, 'rgba(255,236,200,0)'); g.addColorStop(1, 'rgba(255,236,200,1)'); c.fillStyle = g; c.fillRect(0, 0, w, h); }));
-  const beam = new THREE.Mesh(new THREE.ConeGeometry(0.17, len, 32, 1, true),
+  const beam = new THREE.Mesh(new THREE.ConeGeometry(0.14, len, 32, 1, true),
     new THREE.MeshBasicMaterial({ map: beamTex, transparent: true, opacity: 0.07, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
   beam.position.copy(headPos).addScaledVector(dir, len / 2); beam.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().negate()); ped.add(beam);
   const spot = new THREE.SpotLight(0xfff0d6, 0.55, 1.6, 0.5, 0.7, 0);
   spot.position.copy(headPos); ped.add(spot); spot.target = sheet;
   const glow = new THREE.PointLight(0xffe6c0, 0.12, 0.8, 1.6); glow.position.copy(headPos); ped.add(glow);
-  // a small plate on the pillar
-  const pc = makeCanvas(400, 110, (c, w, h) => { const gr = c.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#d9b15c'); gr.addColorStop(.5, '#b48a3a'); gr.addColorStop(1, '#8a6626');
-    c.fillStyle = gr; c.fillRect(0, 0, w, h); c.fillStyle = '#3a2a10'; c.textAlign = 'center'; c.font = '700 38px Manrope, "Helvetica Neue", Arial, sans-serif'; c.letterSpacing = '4px'; c.fillText('BEM-VINDO', w / 2 + 2, 54);
-    c.letterSpacing = '1px'; c.font = '500 23px Manrope, "Helvetica Neue", Arial, sans-serif'; c.fillText('uma mensagem do artista', w / 2, 88); });
-  const plate = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.066, 0.006), [stone, stone, stone, stone, new THREE.MeshStandardMaterial({ map: smoothTex(pc), metalness: .6, roughness: .4 }), stone]);
-  plate.position.set(0, 0.8, 0.203); ped.add(plate);
-  for (const m of [sheet, board, lip, shade, plate]) { m.userData.note = true; noteMeshes.push(m); }
+  for (const m of [sheet, plate, shade, ...pieces]) { m.userData.note = true; noteMeshes.push(m); }
 }
 function openNote(){
-  if (!NOTE) return;
+  if (!NOTE && !CFG.carta) return;
   state = 'note'; if (locked) document.exitPointerLock();
   $('hint').classList.add('hidden'); $('cross').classList.add('hidden'); $('prompt').classList.add('hidden'); $('touch').classList.add('hidden');
-  const card = $('nCard'); card.innerHTML = '';
-  for (const t of noteParas()) { const p = document.createElement('p'); p.textContent = t; card.appendChild(p); }
-  $('nHint').textContent = isTouch ? 'Toque fora da folha para voltar' : 'Clique fora da folha ou aperte Esc para voltar';
+  const card = $('nCard'), letter = !!CFG.carta; card.innerHTML = ''; card.classList.toggle('letter', letter);
+  if (letter) {   // the photo of the handwritten letter and, beside it, what it says (for anyone who can't read the handwriting)
+    const img = new Image(); img.className = 'nPhoto'; img.alt = 'Carta escrita à mão' + (CFG.assinatura ? ' por ' + CFG.assinatura : ''); img.src = CFG.carta; card.appendChild(img);
+    if (NOTE) {
+      const tr = document.createElement('div'); tr.className = 'nTrans';
+      const lb = document.createElement('div'); lb.className = 'nLabel'; lb.textContent = 'Transcrição'; tr.appendChild(lb);
+      for (const t of noteParas()) { const q = document.createElement('p'); q.textContent = t; tr.appendChild(q); }
+      if (CFG.assinatura) { const q = document.createElement('p'); q.className = 'sig'; q.textContent = CFG.assinatura; tr.appendChild(q); }
+      card.appendChild(tr);
+    }
+    card.scrollTop = 0;
+  } else for (const t of noteParas()) { const p = document.createElement('p'); p.textContent = t; card.appendChild(p); }
+  $('nHint').textContent = isTouch ? '' : `Clique fora da ${letter ? 'carta' : 'folha'} ou aperte Esc para voltar`;
   const v = $('note'); v.classList.remove('hidden', 'show'); void v.offsetWidth; v.classList.add('show');
-  card.animate([{ transform: 'translateY(60px) rotateX(38deg) scale(.55) rotate(-.6deg)', opacity: 0 }, { transform: 'rotate(-.6deg)', opacity: 1 }],
+  card.animate([{ transform: 'translateY(60px) rotateX(38deg) scale(.55)' + (letter ? '' : ' rotate(-.6deg)'), opacity: 0 }, { transform: letter ? 'none' : 'rotate(-.6deg)', opacity: 1 }],
     { duration: 650, easing: 'cubic-bezier(.2,.8,.2,1)' });
   Z.opened = performance.now();
 }
@@ -1489,7 +1572,7 @@ function closeNote(){
   const an = $('nCard').animate([{ opacity: 1 }, { transform: 'translateY(40px) scale(.7) rotate(-.6deg)', opacity: 0 }], { duration: 300, easing: 'ease-in', fill: 'forwards' });
   let done = false; const fin = () => { if (done) return; done = true; an.cancel(); startPlaying(); }; an.onfinish = fin; setTimeout(fin, 450);
 }
-$('note').addEventListener('click', e => { if (!e.target.closest('#nCard')) closeNote(); });
+$('note').addEventListener('click', e => { if ($('nCard').classList.contains('letter') ? !e.target.closest('.nPhoto, .nTrans') : !e.target.closest('#nCard')) closeNote(); });
 
 /* ---------- Visitors' notes (post-its) ---------- */
 let addRecMenu = null;

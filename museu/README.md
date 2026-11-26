@@ -94,7 +94,7 @@ Os arquivos ficam na pasta `inspiracoes/` e a lista em `inspiracoes` no `obras.j
 
 ## Mensagem na entrada
 
-O texto da folha sobre o pilar, em frente à parede "Museu do Pedro", fica em `mensagem` no `obras.js`. Cada linha vira um parágrafo.
+Em frente à parede "Museu do Pedro" fica um pilar de nogueira com painéis, filetes de latão e uma mesinha de leitura inclinada, iluminada por uma luminária de latão. Em cima dela está a carta escrita à mão, presa por cantoneiras de latão: a foto fica em `carta` no `obras.js` (por exemplo `"carta.jpg"`, na pasta do museu). Clicando na carta, ela abre grande com a transcrição ao lado, para quem não entender a letra: o texto fica em `mensagem` (cada linha vira um parágrafo) e o nome do fim em `assinatura`. Sem `carta`, a mensagem aparece escrita na folha.
 
 ## Mural
 
@@ -112,7 +112,7 @@ Dica: use fotos recortadas só na obra (sem a parede em volta), retas e bem ilum
 
 ## Carregamento e desempenho
 
-Ao abrir o site, o museu só aparece depois que tudo está pronto: as obras, os bilhetes, as reações, as capas dos discos, as polaroides e o primeiro quadro do vídeo (cada um com um tempo limite, para uma conexão lenta não travar a entrada). Antes de liberar a visita, todos os materiais, luzes, texturas e formas já vão para a placa de vídeo, nos dois cômodos e na porta entre eles, para não dar engasgo ao andar. Enquanto isso, a tela de carregamento mostra frases que trocam sozinhas ("Pendurando os quadros…", "Tirando a poeira das molduras…", "Calibrando os pneus da Caloi…"). A lista fica em `LOAD.frases` no `index.html` e dá para trocar ou acrescentar frases à vontade.
+Ao abrir o site, o museu só aparece depois que tudo está pronto: as obras, a carta da entrada, os bilhetes, as reações, as capas dos discos, as polaroides e o primeiro quadro do vídeo (cada um com um tempo limite, para uma conexão lenta não travar a entrada). Antes de liberar a visita, todos os materiais, luzes, texturas e formas já vão para a placa de vídeo, nos dois cômodos e na porta entre eles, para não dar engasgo ao andar. Enquanto isso, a tela de carregamento mostra frases que trocam sozinhas ("Pendurando os quadros…", "Tirando a poeira das molduras…", "Calibrando os pneus da Caloi…"). A lista fica em `LOAD.frases` no `index.html` e dá para trocar ou acrescentar frases à vontade.
 
 Para ficar leve, as peças que usam o mesmo material (molduras, bordas das telas, plaquinhas, paredes) são juntadas em poucas peças grandes, as sombras e os halos de luz atrás das obras são desenhados de uma vez, e o que está no outro cômodo (inclusive o vídeo, a mesa dos bilhetes e os bilhetes) fica escondido enquanto não dá para ver. A imagem é a mesma; o computador ou o celular só tem bem menos trabalho: no salão, cada quadro da animação pede cerca de metade dos desenhos de antes e, na Sala de Inspirações, até dois terços a menos.
 

@@ -188,11 +188,14 @@ window.MUSEU = {
   // Enquanto estiver vazio, a mesinha de bilhetes não aparece.
   recados: { url: "https://uxtiifmutbklcnoemrev.supabase.co", chave: "sb_publishable_Bafk5NOm9bNDQJbiZdM8NA_8uJ5SG9T" },
 
-  // Mensagem na folha sobre o pilar, em frente à parede "Museu do Pedro".
-  // Cada linha vira um parágrafo.
-  mensagem: `Aqui estão alguns desenhos/pinturas que fiz ao longo desse ano de 2026, tem sido um processo criativo muito interessante de descobrir, agradeço a você que tirou um tempo para acessar esse "museu" e entrar um pouco dentro da minha mente.
-A maioria das obras aqui eu nunca postei...
-Fique a vontade para explorar como quiser e deixar seu feedback nas obras que mais gostou :)`,
+  // A carta da entrada, sobre o pilar de madeira em frente à parede "Museu do Pedro".
+  // carta: a foto da carta escrita à mão (na pasta do museu). Ao clicar, a foto abre grande com a transcrição ao lado.
+  // mensagem: o texto da carta, para quem não entender a letra (cada linha vira um parágrafo). assinatura: o nome no fim.
+  // Sem carta, a mensagem aparece escrita na folha.
+  carta: "carta.jpg",
+  mensagem: `Aqui estão alguns desenhos/pinturas que fiz ao longo desse ano de 2026, tem sido um processo criativo muito interessante de descobrir, agradeço a você que tirou um tempo para acessar esse “museu” e entrar um pouco na minha mente.
+Fique a vontade para explorar e deixar uma mensagem positiva no final. Você também pode reagir e dar um feedback nas obras que mais gostou! :)`,
+  assinatura: "Pedro Aguirre",
 
   // Obras grandes cobertas por cortina branca, com placa "Em breve".
   // Ficam no lado de trás da parede do meio, junto das obras com parede: "meio". Tamanho em cm.
