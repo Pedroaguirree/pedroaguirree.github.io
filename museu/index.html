@@ -527,9 +527,25 @@ function pixelTex(c){
   t.colorSpace = THREE.SRGBColorSpace; t.minFilter = THREE.LinearMipmapLinearFilter; t.anisotropy = renderer.capabilities.getMaxAnisotropy();
   t.wrapS = t.wrapT = THREE.RepeatWrapping; return t;
 }
+// on phones and tablets big pictures go to the graphics card at about one megapixel (still more than the screen shows),
+// and the copy kept in the page is let go once it's there: a full museum of 2-megapixel pictures was too much memory for a phone
+const TEXPIX = isTouch ? 800 * 800 : Infinity;
+function fitPix(w, h, max = Infinity){ return Math.min(1, max / Math.max(w, h), Math.sqrt(TEXPIX / Math.max(1, w * h))); }
 function smoothTex(c){
+  const w = c.naturalWidth || c.videoWidth || c.width, h = c.naturalHeight || c.videoHeight || c.height;
+  if (w * h > TEXPIX * 1.05 && !(c instanceof HTMLVideoElement)) { const k = fitPix(w, h); const src = c; c = makeCanvas(Math.round(w * k), Math.round(h * k), (g, cw, ch) => { g.imageSmoothingQuality = 'high'; g.drawImage(src, 0, 0, cw, ch); }); c.__own = true; }
   const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy(); return t;
+  t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy(); t.userData.px = [c.width || w, c.height || h];
+  if (isTouch && c.__own) t.onUpdate = () => { t.onUpdate = null; c.width = c.height = 1; };
+  return t;
+}
+// the same budget for pictures loaded straight from a file
+function loadTex(url){
+  return new THREE.TextureLoader().load(url, t => {
+    const im = t.image, w = im.naturalWidth || im.width, h = im.naturalHeight || im.height, k = fitPix(w, h); if (k === 1) return;
+    const c = makeCanvas(Math.round(w * k), Math.round(h * k), (g, cw, ch) => { g.imageSmoothingQuality = 'high'; g.drawImage(im, 0, 0, cw, ch); });
+    t.image = c; t.needsUpdate = true; t.onUpdate = () => { t.onUpdate = null; c.width = c.height = 1; };
+  });
 }
 const rgb = (r,g,b) => `rgb(${r|0},${g|0},${b|0})`;
 
@@ -772,9 +788,10 @@ function placeholderArt(i, wcm, hcm){
 const FRAME_COLORS = { madeira: 0x6b4423, preta: 0x1c1b1a, branca: 0xeeece6, dourada: 0xb58a3c };
 function loadImage(src){ return new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = src; }); }
 function downscale(im, max = 2048){
-  const s = Math.min(1, max / Math.max(im.naturalWidth, im.naturalHeight));
+  const s = fitPix(im.naturalWidth, im.naturalHeight, max);
   if (s === 1) return im;
-  return makeCanvas(Math.round(im.naturalWidth * s), Math.round(im.naturalHeight * s), (g, w, h) => g.drawImage(im, 0, 0, w, h));
+  const c = makeCanvas(Math.round(im.naturalWidth * s), Math.round(im.naturalHeight * s), (g, w, h) => { g.imageSmoothingQuality = 'high'; g.drawImage(im, 0, 0, w, h); });
+  c.__own = true; return c;
 }
 
 async function loadArtworks(){
@@ -1384,7 +1401,7 @@ function buildBookTable(){
   const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.22, 0.04, 36), S.inner); foot.position.y = 0.02; g.add(foot);
   colliders.push({ x0: x - 0.34, x1: x + 0.34, z0: z - 0.34, z1: z + 0.34 });
   // the notebook (slightly enlarged so it reads from a distance)
-  const cover = new THREE.TextureLoader().load('caderno/' + BOOK.capa); cover.colorSpace = THREE.SRGBColorSpace; cover.anisotropy = 8;
+  const cover = loadTex('caderno/' + BOOK.capa); cover.colorSpace = THREE.SRGBColorSpace; cover.anisotropy = 8;
   const pagesEdge = smoothTex(makeCanvas(64, 8, (c, w, h) => { c.fillStyle = '#efe8d8'; c.fillRect(0, 0, w, h); c.fillStyle = 'rgba(120,100,80,.25)'; for (let y = 1; y < h; y += 2) c.fillRect(0, y, w, 1); }));
   const green = new THREE.MeshLambertMaterial({ color: 0x22483a }), paper = new THREE.MeshLambertMaterial({ map: pagesEdge });
   const bw = 0.13, bh = 0.2, bt = 0.018;
@@ -2156,16 +2173,13 @@ async function comPost(e){
   const a = paintings[vIdx]?.art, st = $('cStatus'), texto = $('cText').value.trim(), nome = $('cName').value.trim().slice(0, 40);
   if (!a) return;
   if (!texto) { st.textContent = 'Escreva alguma coisa antes de publicar :)'; st.className = 'err'; return; }
-  let last = 0; try { last = +localStorage.getItem('com-last') || 0; } catch {}
-  const wait = Math.ceil((last + 20000 - Date.now()) / 1000);
-  if (wait > 0) { st.textContent = `Espere ${wait}s para comentar de novo.`; st.className = 'err'; return; }
   COM.busy = true; $('cSend').disabled = true; st.textContent = 'Publicando…'; st.className = '';
   try {
     const token = [...crypto.getRandomValues(new Uint8Array(24))].map(b => b.toString(16).padStart(2, '0')).join('');
     const out = await recRpc('comentar', { p_obra: obraKey(a), p_texto: texto.slice(0, 500), p_nome: nome, p_dono: await recHashToken(token) });
     const c = Array.isArray(out) ? out[0] : out;
     COM.mine[c.id] = token; comSave();
-    try { localStorage.setItem('com-last', String(Date.now())); if (nome) localStorage.setItem('rec-nome', nome); } catch {}
+    try { if (nome) localStorage.setItem('rec-nome', nome); } catch {}
     COM.list.unshift(c); COM.added.push(c); COM.counts[obraKey(a)] = (COM.counts[obraKey(a)] || 0) + 1;
     $('cText').value = ''; st.textContent = 'Comentário publicado. Obrigado!';
     comRender(); comButton(a); rankUpdate(); statsDirty();
@@ -3104,7 +3118,7 @@ function buildEasel(o, x, z, yaw){
   // the rag and the palettes on the floor, laid out like the photo
   const fl = new THREE.Group(); fl.position.set(0.12, 0, 0.66); g.add(fl);
   for (const [k, it] of (o.chao || []).entries()) {
-    const tex = new THREE.TextureLoader().load('inspiracoes/' + it.arquivo); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
+    const tex = loadTex('inspiracoes/' + it.arquivo); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
     const m = new THREE.Mesh(new THREE.PlaneGeometry(it.w, it.d), new THREE.MeshLambertMaterial({ map: tex, transparent: true, alphaTest: 0.35 }));
     m.rotation.x = -Math.PI / 2; m.position.set(it.x, 0.004 + k * 0.002, it.z); fl.add(m);
     const s2 = new THREE.Mesh(new THREE.PlaneGeometry(it.w * 1.25, it.d * 1.25), new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, opacity: 0.16, depthWrite: false }));
@@ -4088,9 +4102,16 @@ function move(dx, dz){
 }
 const escapeHtml = s => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
+const COVERS = ['viewer', 'book', 'note', 'rec', 'vid', 'disc'].map(id => $(id)); let coverAt = 0;
 function loop(){
   const dt = Math.min(clock.getDelta(), 0.05);
-  update(dt); portalTick(); adaptTick(dt); renderer.render(scene, camera); requestAnimationFrame(loop);
+  update(dt);
+  // while a work, the notebook, a letter, a note, the video or a record is open on top, the museum behind it isn't visible:
+  // stop drawing it (the phone gets its breath back) and start again as soon as it begins to close
+  const covered = state !== 'playing' && state !== 'menu' && COVERS.some(e => e.classList.contains('show'));
+  if (!covered) coverAt = 0; else if (!coverAt) coverAt = performance.now();
+  if (!covered || performance.now() - coverAt < 700) { portalTick(); adaptTick(dt); renderer.render(scene, camera); }
+  requestAnimationFrame(loop);
 }
 
 /* ---------- Carregando: frases divertidas, e uma barra que só anda pra frente ---------- */
